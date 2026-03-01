@@ -162,13 +162,21 @@ La aplicación estará disponible en `http://localhost:3000`.
 | Variable | Requerida | Descripción |
 |---|---|---|
 | `NEXT_PUBLIC_MAPBOX_TOKEN` | ✅ Sí | Token de acceso de [Mapbox GL](https://account.mapbox.com/access-tokens/) para renderizar el mapa |
-| `PROXY_BASE` | ❌ Opcional | URL de un proxy CORS para la API de buses (ver abajo) |
+| `BUS_API_TOKEN` | ✅ Sí | Token de autenticación (`x-auth-token`) para la API de TransMilenio (buses, saldo, servicios) |
+| `PROXY_BASE` | ❌ Opcional | URL de un proxy CORS para redirigir las peticiones a la API de TransMilenio (ver abajo) |
 
-#### Sobre `PROXY_BASE`
+#### Sobre `PROXY_BASE` y `BUS_API_TOKEN`
 
-La API de buses en tiempo real de TransMilenio tiene restricciones de CORS/geolocalización. Si despliegas la app **dentro de Colombia**, funciona directamente sin proxy. Si estás **fuera de Colombia** (o tienes bloqueo de red), necesitas configurar `PROXY_BASE` con la URL de un proxy que reenvíe las peticiones.
+Todas las rutas API que se comunican con `tmsa-transmiapp-shvpc.uc.r.appspot.com` (`/api/buses`, `/api/saldo`, `/api/servicios`) usan estas dos variables:
+
+- **`BUS_API_TOKEN`** — Token de autenticación requerido para todas las peticiones a la API de TransMilenio. Se envía como header `x-auth-token`.
+- **`PROXY_BASE`** — URL de un proxy que reenvía las peticiones. Si la app se despliega **dentro de Colombia**, funciona directamente sin proxy. Si estás **fuera de Colombia** (o tienes bloqueo de red), necesitas configurar esta variable.
 
 ```bash
+# Ejemplo .env
+NEXT_PUBLIC_MAPBOX_TOKEN=pk.xxx
+BUS_API_TOKEN=tu-token-aqui
+
 # Sin proxy (Colombia) — funciona directo
 PROXY_BASE=
 
@@ -176,7 +184,12 @@ PROXY_BASE=
 PROXY_BASE=https://tu-proxy.ejemplo.com/proxy/
 ```
 
-Si `PROXY_BASE` no está definido, la app llama directamente a la API de buses sin intermediarios.
+Cuando `PROXY_BASE` está configurado, las peticiones se redirigen así:
+```
+PROXY_BASE?url=https://tmsa-transmiapp-shvpc.uc.r.appspot.com/endpoint
+```
+
+Si `PROXY_BASE` no está definido, la app llama directamente a la API sin intermediarios.
 
 ---
 
