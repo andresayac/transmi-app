@@ -53,9 +53,6 @@ export default function BottomNav() {
     const router = useRouter();
     const [favCount, setFavCount] = useState(0);
 
-    // Hide on map page — it has its own navigation
-    if (pathname === '/mapa') return null;
-
     useEffect(() => {
         const updateCount = () => {
             try {
@@ -75,6 +72,9 @@ export default function BottomNav() {
             window.removeEventListener('favoritesChanged', updateCount);
         };
     }, []);
+
+    // Hide on map page — it has its own navigation
+    if (pathname === '/mapa') return null;
 
     return (
         <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border">
