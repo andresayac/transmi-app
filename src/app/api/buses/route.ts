@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 
 const PROXY_BASE = process.env.PROXY_BASE || '';
-console.log(`[buses] PROXY_BASE=${PROXY_BASE}`);
 const BUS_API_URL = 'https://tmsa-transmiapp-shvpc.uc.r.appspot.com/buses';
 
 // Log proxy configuration on startup

@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import BottomNav from '@/components/layout/BottomNav';
 import { ToastProvider } from '@/components/ui/Toast';
+import ServiceWorkerRegistration from '@/components/pwa/ServiceWorkerRegistration';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -15,6 +16,10 @@ export const metadata: Metadata = {
   description: 'Consulta rutas y ubicación en tiempo real del sistema de transporte de Bogotá',
   keywords: ['TransMilenio', 'Bogotá', 'transporte público', 'rutas', 'SITP', 'buses'],
   manifest: '/manifest.json',
+  icons: {
+    icon: '/icon-512.png',
+    apple: '/icon-512.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
@@ -29,7 +34,7 @@ export const viewport: Viewport = {
   userScalable: false,
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-    { media: '(prefers-color-scheme: dark)', color: '#000000' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a0f1a' },
   ],
 };
 
@@ -40,6 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
       </head>
       <body className={`${inter.className} antialiased`}>
+        <ServiceWorkerRegistration />
         <ToastProvider>
           <div className="min-h-screen max-w-lg mx-auto relative">
             {children}
