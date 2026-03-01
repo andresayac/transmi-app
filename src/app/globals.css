@@ -258,6 +258,18 @@ body {
   }
 }
 
+@keyframes station-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
 .toast-in {
   animation: toastIn 0.3s ease-out forwards;
 }

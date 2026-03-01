@@ -39,6 +39,8 @@ function MapContent() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const busMarkersRef = useRef<any[]>([]);
     const busIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const selectedMarkerRef = useRef<any>(null);
 
     const [loading, setLoading] = useState(true);
     const [mapReady, setMapReady] = useState(false);
@@ -264,8 +266,31 @@ function MapContent() {
 
     // Fly to a specific station (search)
     const flyToStation = useCallback((station: StationMapEntry) => {
+        // Remove previous highlight marker
+        if (selectedMarkerRef.current) {
+            try { selectedMarkerRef.current.remove(); } catch { }
+            selectedMarkerRef.current = null;
+        }
+
         if (mapRef.current) {
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
+            const mapboxgl = require('mapbox-gl');
             mapRef.current.flyTo({ center: [station.lng, station.lat], zoom: 17, duration: 1200 });
+
+            // Add pulsing highlight marker
+            const el = document.createElement('div');
+            el.innerHTML = `
+                <div style="position:relative;width:40px;height:40px;display:flex;align-items:center;justify-content:center;">
+                    <div style="position:absolute;width:40px;height:40px;border-radius:50%;background:rgba(239,68,68,0.25);animation:station-pulse 1.5s ease-out infinite;"></div>
+                    <div style="position:absolute;width:20px;height:20px;border-radius:50%;background:rgba(239,68,68,0.4);animation:station-pulse 1.5s ease-out 0.3s infinite;"></div>
+                    <div style="width:12px;height:12px;border-radius:50%;background:#ef4444;border:2px solid white;box-shadow:0 0 8px rgba(239,68,68,0.6);z-index:1;"></div>
+                </div>
+            `;
+
+            const marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
+                .setLngLat([station.lng, station.lat])
+                .addTo(mapRef.current);
+            selectedMarkerRef.current = marker;
         }
         setSelectedStation(station);
         setStationSearch('');
@@ -973,7 +998,13 @@ function MapContent() {
             {isExplorerMode && selectedStation && (
                 <StationExplorer
                     station={selectedStation}
-                    onClose={() => setSelectedStation(null)}
+                    onClose={() => {
+                        setSelectedStation(null);
+                        if (selectedMarkerRef.current) {
+                            try { selectedMarkerRef.current.remove(); } catch { }
+                            selectedMarkerRef.current = null;
+                        }
+                    }}
                 />
             )}
 
