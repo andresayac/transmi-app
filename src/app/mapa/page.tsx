@@ -604,6 +604,22 @@ function MapContent() {
         const mapboxgl = require('mapbox-gl');
         const map = mapRef.current;
 
+        // Check if route operates today (day only, not hour)
+        const isActiveToday = (routeData: unknown): boolean => {
+            const rd = routeData as { horarios?: { data?: Array<{ convencion: string }> } };
+            const horarios = rd?.horarios?.data;
+            if (!horarios?.length) return true; // no schedule info = assume active
+            const day = new Date().getDay(); // 0=Sun, 1=Mon ... 6=Sat
+            return horarios.some(h => {
+                const conv = h.convencion?.toUpperCase().trim() || '';
+                if (conv === 'L-S') return day >= 1 && day <= 6;
+                if (conv === 'L-V') return day >= 1 && day <= 5;
+                if (conv === 'S' || conv === 'SAB' || conv === 'SABADO' || conv === 'SÁBADO') return day === 6;
+                if (conv === 'D-F' || conv === 'DOM' || conv === 'DOMINGO' || conv.includes('FESTIV') || conv === 'D' || conv === 'DOM-FES') return day === 0;
+                return true; // unknown convention = assume active
+            });
+        };
+
         // Remove old bus markers
         const oldMarkers = [...busMarkersRef.current];
         busMarkersRef.current = [];
@@ -611,6 +627,10 @@ function MapContent() {
 
         for (const route of routes) {
             if (!route.visible || !route.data) continue;
+
+            // Skip bus API call if route doesn't operate today
+            const routeData = Array.isArray(route.data) ? route.data[0] : route.data;
+            if (!isActiveToday(routeData)) continue;
 
             try {
                 const buses: BusLocation[] = await transmilenioApi.getBusesLocation(route.codigo, route.nombre);
@@ -1093,7 +1113,7 @@ function MapContent() {
                 </div>
             ) : (
                 <div
-                    className={`absolute bottom-0 left-0 right-0 z-40 bottom-sheet glass transition-transform ${sheetExpanded ? 'translate-y-0' : 'translate-y-[calc(100%-120px)]'
+                    className={`absolute bottom-0 left-0 right-0 z-40 bottom-sheet bg-background border-t border-border rounded-t-2xl transition-transform pb-[env(safe-area-inset-bottom)] ${sheetExpanded ? 'translate-y-0' : 'translate-y-[calc(100%-120px)]'
                         }`}
                     style={{ maxHeight: '60vh' }}
                 >
@@ -1102,7 +1122,7 @@ function MapContent() {
                         onClick={() => setSheetExpanded((v) => !v)}
                         className="w-full flex justify-center py-3 cursor-pointer"
                     >
-                        <div className="w-10 h-1 rounded-full bg-white/20" />
+                        <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
                     </button>
 
                     <div className="px-5 pb-6 overflow-y-auto" style={{ maxHeight: 'calc(60vh - 48px)' }}>
@@ -1110,7 +1130,7 @@ function MapContent() {
                             /* Multi-route: compact route list with schedules */
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
-                                    <h4 className="text-white/60 text-xs font-semibold uppercase tracking-wider">
+                                    <h4 className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">
                                         {visibleRoutes.length} de {routes.length} rutas · {busCount} buses
                                     </h4>
                                 </div>
@@ -1126,12 +1146,12 @@ function MapContent() {
                                     const horarios = rd2?.horarios?.data || [];
 
                                     return (
-                                        <div key={route.id} className="bg-white/5 rounded-xl p-3">
+                                        <div key={route.id} className="bg-secondary rounded-xl p-3">
                                             <div className="flex items-center gap-2 mb-1.5">
                                                 <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: route.color }} />
-                                                <span className="text-white text-sm font-bold">{route.codigo}</span>
-                                                <span className="text-white/50 text-xs truncate flex-1">{route.nombre}</span>
-                                                <span className="text-white/30 text-[10px]">{stopsCount} paradas</span>
+                                                <span className="text-foreground text-sm font-bold">{route.codigo}</span>
+                                                <span className="text-muted-foreground text-xs truncate flex-1">{route.nombre}</span>
+                                                <span className="text-muted-foreground/50 text-[10px]">{stopsCount} paradas</span>
                                             </div>
                                             {horarios.length > 0 && (
                                                 <div className="flex flex-wrap gap-1 mt-1">
@@ -1157,14 +1177,14 @@ function MapContent() {
                                         {routes[0]?.codigo || routeCode}
                                     </span>
                                     <div>
-                                        <h3 className="text-white font-bold text-base">{routes[0]?.nombre || routeName}</h3>
-                                        <p className="text-white/50 text-xs">{recorrido.length} paradas · {busCount} buses activos</p>
+                                        <h3 className="text-foreground font-bold text-base">{routes[0]?.nombre || routeName}</h3>
+                                        <p className="text-muted-foreground text-xs">{recorrido.length} paradas · {busCount} buses activos</p>
                                     </div>
                                 </div>
 
                                 {horarios.length > 0 && (
                                     <div className="mb-3">
-                                        <h4 className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-2">Horarios</h4>
+                                        <h4 className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-2">Horarios</h4>
                                         <div className="flex flex-wrap gap-1.5">
                                             {horarios.map((h, i) => (
                                                 <span key={i} className="px-2.5 py-1 rounded-lg bg-red-500/15 text-red-400 text-[11px] font-semibold">
