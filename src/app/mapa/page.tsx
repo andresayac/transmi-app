@@ -1113,7 +1113,7 @@ function MapContent() {
                 </div>
             ) : (
                 <div
-                    className={`absolute bottom-0 left-0 right-0 z-40 bottom-sheet bg-background border-t border-border rounded-t-2xl transition-transform pb-[env(safe-area-inset-bottom)] ${sheetExpanded ? 'translate-y-0' : 'translate-y-[calc(100%-120px)]'
+                    className={`absolute bottom-0 left-0 right-0 z-40 bg-background border-t border-border rounded-t-2xl transition-transform pb-[env(safe-area-inset-bottom)] ${sheetExpanded ? 'translate-y-0' : 'translate-y-[calc(100%-100px)]'
                         }`}
                     style={{ maxHeight: '60vh' }}
                 >
