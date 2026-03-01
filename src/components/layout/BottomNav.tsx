@@ -53,6 +53,9 @@ export default function BottomNav() {
     const router = useRouter();
     const [favCount, setFavCount] = useState(0);
 
+    // Hide on map page — it has its own navigation
+    if (pathname === '/mapa') return null;
+
     useEffect(() => {
         const updateCount = () => {
             try {

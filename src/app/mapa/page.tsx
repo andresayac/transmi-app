@@ -1009,7 +1009,7 @@ function MapContent() {
             {/* Bottom Sheet — route modes: schedules; explorer mode: info bar */}
             {isExplorerMode ? (
                 /* Explorer mode: search + GPS + filters */
-                <div className="absolute bottom-[72px] left-0 right-0 z-40 bg-background border-t border-border rounded-t-2xl">
+                <div className="absolute bottom-0 left-0 right-0 z-40 bg-background border-t border-border rounded-t-2xl pb-[env(safe-area-inset-bottom)]">
                     {/* Search results dropdown */}
                     {searchResults.length > 0 && (
                         <div className="px-4 pb-1 max-h-[200px] overflow-y-auto border-b border-border">
