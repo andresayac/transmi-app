@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 
 const PROXY_BASE = process.env.PROXY_BASE || '';
+const BUS_API_TOKEN = process.env.BUS_API_TOKEN || '';
 const BUS_API_URL = 'https://tmsa-transmiapp-shvpc.uc.r.appspot.com/buses';
 
-// Log proxy configuration on startup
 console.log(`[buses] PROXY_BASE=${PROXY_BASE ? 'configured ✓' : 'NOT SET — calling API directly'}`);
 
 const BUS_HEADERS: Record<string, string> = {
-    'x-auth-token': '9FD3akHPaMmAH9iCE82ks4OD6CsUdyd7oppY256Hv6s5mOfxIOZummlpJUBXrjIx',
+    'x-auth-token': BUS_API_TOKEN,
     'Host': 'tmsa-transmiapp-shvpc.uc.r.appspot.com',
     'Appid': '9a2c3b48f0c24ae9bfba38e94f27c3ea',
     'uuid': '951d0eaf-daaf-464f-8baf-1d00fe09a01b',
