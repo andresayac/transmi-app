@@ -159,10 +159,24 @@ La aplicación estará disponible en `http://localhost:3000`.
 
 ### Variables de entorno
 
-| Variable | Descripción |
-|---|---|
-| `NEXT_PUBLIC_MAPBOX_TOKEN` | Token de acceso de Mapbox GL |
-| `NEXT_PUBLIC_API_URL` | URL base de la API de TransMilenio |
+| Variable | Requerida | Descripción |
+|---|---|---|
+| `NEXT_PUBLIC_MAPBOX_TOKEN` | ✅ Sí | Token de acceso de [Mapbox GL](https://account.mapbox.com/access-tokens/) para renderizar el mapa |
+| `PROXY_BASE` | ❌ Opcional | URL de un proxy CORS para la API de buses (ver abajo) |
+
+#### Sobre `PROXY_BASE`
+
+La API de buses en tiempo real de TransMilenio tiene restricciones de CORS/geolocalización. Si despliegas la app **dentro de Colombia**, funciona directamente sin proxy. Si estás **fuera de Colombia** (o tienes bloqueo de red), necesitas configurar `PROXY_BASE` con la URL de un proxy que reenvíe las peticiones.
+
+```bash
+# Sin proxy (Colombia) — funciona directo
+PROXY_BASE=
+
+# Con proxy (fuera de Colombia)
+PROXY_BASE=https://tu-proxy.ejemplo.com/proxy/
+```
+
+Si `PROXY_BASE` no está definido, la app llama directamente a la API de buses sin intermediarios.
 
 ---
 
