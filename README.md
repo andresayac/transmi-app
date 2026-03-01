@@ -162,15 +162,15 @@ La aplicación estará disponible en `http://localhost:3000`.
 | Variable | Requerida | Descripción |
 |---|---|---|
 | `NEXT_PUBLIC_MAPBOX_TOKEN` | ✅ Sí | Token de acceso de [Mapbox GL](https://account.mapbox.com/access-tokens/) para renderizar el mapa |
-| `BUS_API_TOKEN` | ✅ Sí | Token de autenticación (`x-auth-token`) para la API de TransMilenio (buses, saldo, servicios) |
-| `PROXY_BASE` | ❌ Opcional | URL de un proxy CORS para redirigir las peticiones a la API de TransMilenio (ver abajo) |
+| `BUS_API_TOKEN` | ✅ Sí | Token de autorización del proxy (`x-auth-token`) |
+| `PROXY_BASE` | ❌ Opcional | URL del proxy que redirige las peticiones a la API de TransMilenio (ver abajo) |
 
 #### Sobre `PROXY_BASE` y `BUS_API_TOKEN`
 
 Todas las rutas API que se comunican con `tmsa-transmiapp-shvpc.uc.r.appspot.com` (`/api/buses`, `/api/saldo`, `/api/servicios`) usan estas dos variables:
 
-- **`BUS_API_TOKEN`** — Token de autenticación requerido para todas las peticiones a la API de TransMilenio. Se envía como header `x-auth-token`.
-- **`PROXY_BASE`** — URL de un proxy que reenvía las peticiones. Si la app se despliega **dentro de Colombia**, funciona directamente sin proxy. Si estás **fuera de Colombia** (o tienes bloqueo de red), necesitas configurar esta variable.
+- **`BUS_API_TOKEN`** — Token de autorización del proxy. Se envía como header `x-auth-token` en todas las peticiones a la API.
+- **`PROXY_BASE`** — URL del proxy que reenvía las peticiones a la API de TransMilenio. Si la app se despliega **dentro de Colombia**, funciona directamente sin proxy. Si estás **fuera de Colombia** (o tienes bloqueo de red), necesitas configurar esta variable.
 
 ```bash
 # Ejemplo .env
