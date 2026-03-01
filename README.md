@@ -162,7 +162,7 @@ La aplicación estará disponible en `http://localhost:3000`.
 | Variable | Requerida | Descripción |
 |---|---|---|
 | `NEXT_PUBLIC_MAPBOX_TOKEN` | ✅ Sí | Token de acceso de [Mapbox GL](https://account.mapbox.com/access-tokens/) para renderizar el mapa |
-| `BUS_API_TOKEN` | ✅ Sí | Token de autorización del proxy (`x-auth-token`) |
+| `BUS_API_TOKEN` | ❌ Opcional | Token de autorización del proxy (`x-auth-token`) |
 | `PROXY_BASE` | ❌ Opcional | URL del proxy que redirige las peticiones a la API de TransMilenio (ver abajo) |
 
 #### Sobre `PROXY_BASE` y `BUS_API_TOKEN`
