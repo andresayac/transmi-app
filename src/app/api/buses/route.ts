@@ -21,10 +21,12 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Missing ruta parameter' }, { status: 400 });
     }
 
-    const proxyUrl = `${PROXY_BASE}?url=${encodeURIComponent(BUS_API_URL)}`;
+    const fetchUrl = PROXY_BASE
+        ? `${PROXY_BASE}?url=${encodeURIComponent(BUS_API_URL)}`
+        : BUS_API_URL;
 
     try {
-        const response = await fetch(proxyUrl, {
+        const response = await fetch(fetchUrl, {
             method: 'POST',
             headers: BUS_HEADERS,
             body: JSON.stringify({ ruta, Nombre: nombre }),
