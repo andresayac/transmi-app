@@ -3,6 +3,9 @@ import { NextResponse } from 'next/server';
 const PROXY_BASE = process.env.PROXY_BASE || '';
 const BUS_API_URL = 'https://tmsa-transmiapp-shvpc.uc.r.appspot.com/buses';
 
+// Log proxy configuration on startup
+console.log(`[buses] PROXY_BASE=${PROXY_BASE ? 'configured ✓' : 'NOT SET — calling API directly'}`);
+
 const BUS_HEADERS: Record<string, string> = {
     'x-auth-token': '9FD3akHPaMmAH9iCE82ks4OD6CsUdyd7oppY256Hv6s5mOfxIOZummlpJUBXrjIx',
     'Host': 'tmsa-transmiapp-shvpc.uc.r.appspot.com',
