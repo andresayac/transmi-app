@@ -1058,7 +1058,7 @@ function MapContent() {
             )}
 
             {/* Bottom Sheet — route modes: schedules; explorer mode: info bar */}
-            {isExplorerMode ? (
+            {isExplorerMode && !selectedStation ? (
                 /* Explorer mode: search + GPS + filters */
                 <div className="absolute bottom-0 left-0 right-0 z-40 bg-background border-t border-border rounded-t-2xl pb-[env(safe-area-inset-bottom)]">
                     {/* Search results dropdown */}
