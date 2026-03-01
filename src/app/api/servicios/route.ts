@@ -28,7 +28,8 @@ export async function POST(request: Request) {
         });
 
         const data = await response.json();
-        return NextResponse.json(data);
+        console.log(`[servicios] upstream status=${response.status}, type=${typeof data}, isArray=${Array.isArray(data)}, keys=${typeof data === 'object' && data ? Object.keys(data).join(',') : 'N/A'}`);
+        return NextResponse.json(data, { status: response.status });
     } catch (error) {
         console.error('Error fetching servicios:', error);
         return NextResponse.json({ error: 'Failed to fetch ETA' }, { status: 500 });
