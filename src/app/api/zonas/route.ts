@@ -1,0 +1,26 @@
+import { NextResponse } from 'next/server';
+
+const TM_API_BASE = 'https://api.buscador-rutas.transmilenio.gov.co/loader.php';
+
+export async function GET() {
+    const url = `${TM_API_BASE}?lServicio=Rutas&lTipo=api&lFuncion=zonaOperacional&tipo_ruta=8`;
+
+    try {
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'okhttp/4.12.0',
+                'uuid': '951d0eaf-daaf-464f-8baf-1d00fe09a01b',
+                'version': '2.7.6',
+            },
+            next: { revalidate: 3600 },
+        });
+
+        const data = await response.json();
+        return NextResponse.json(data, {
+            headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200' },
+        });
+    } catch (error) {
+        console.error('Error fetching zonas:', error);
+        return NextResponse.json({ error: 'Failed to fetch zonas' }, { status: 500 });
+    }
+}
