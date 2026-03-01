@@ -26,6 +26,7 @@ export async function POST(request: Request) {
                 'User-Agent': 'okhttp/4.12.0',
                 'uuid': '951d0eaf-daaf-464f-8baf-1d00fe09a01b',
                 'version': '2.7.6',
+                'x-auth-token': process.env.BUS_API_TOKEN || '',
             },
             body: JSON.stringify({ numero_tarjeta, consultar: 'true' }),
         });
