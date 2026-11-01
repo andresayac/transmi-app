@@ -34,7 +34,7 @@ La idea surgió como un **proyecto educativo** para aprender a integrar APIs de 
 - **Mis paradas**: fija las estaciones que usas a diario y mira sus llegadas en vivo apenas abres la app
 - **Instalar TransMi**: aviso para agregarla a la pantalla de inicio (Android e iPhone)
 - **¿A dónde vas?**: un toque para planear, con accesos a Casa, Trabajo, lugares guardados y recientes
-- **Estación más cercana** con un **tablero de llegadas en vivo** (animación tipo split-flap) para todas las rutas que paran ahí
+- **Cerca de ti**: la estación de **TransMilenio** o el paradero del **SITP** más cercano (eliges cuál; recuerda tu elección) con un **tablero de llegadas en vivo** (animación tipo split-flap), y los otros paraderos a pocos pasos, como el del otro lado de la calle
 - **Clima** de Bogotá con aviso de **"lluvia en ~N min"**
 - **Saldo TuLlave** con cuántos viajes alcanzan según la tarifa vigente; descuenta los viajes hechos desde la última consulta y, cuando el saldo es bajo, muestra el **punto de recarga más cercano abierto ahora** (con su horario, festivos incluidos). Tu rutina también avisa si no alcanza para el pasaje
 

@@ -53,6 +53,8 @@ export type ThemePref = 'system' | 'light' | 'dark';
 /** "auto" follows the phone's own data saver (see lib/dataSaver.ts) */
 export type DataSaverPref = 'auto' | 'on' | 'off';
 export type TextSize = 'normal' | 'large' | 'xlarge';
+/** Which system the home "Cerca de ti" board shows; "auto" picks the closer one */
+export type NearbySystem = 'auto' | 'TransMilenio' | 'TransMiZonal';
 
 export interface Settings {
     theme: ThemePref;
@@ -69,6 +71,7 @@ export interface Settings {
     /** Scales the whole interface (root font size) */
     textSize: TextSize;
     highContrast: boolean;
+    nearbySystem: NearbySystem;
 }
 
 interface AppState {
@@ -133,7 +136,7 @@ export const useAppStore = create<AppState>()(
             pinnedStops: [],
             cardNumber: '',
             lastBalance: null,
-            settings: { theme: 'system', voice: true, alarmStops: 2, mapLight: 'auto', ttsVoice: DEFAULT_TTS_VOICE, shareName: '', dataSaver: 'auto', textSize: 'normal', highContrast: false },
+            settings: { theme: 'system', voice: true, alarmStops: 2, mapLight: 'auto', ttsVoice: DEFAULT_TTS_VOICE, shareName: '', dataSaver: 'auto', textSize: 'normal', highContrast: false, nearbySystem: 'auto' },
 
             addFavorite: (route) => {
                 if (get().favorites.some((f) => f.id === route.id)) return;
