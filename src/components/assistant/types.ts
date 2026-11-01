@@ -5,7 +5,7 @@ import type { ScheduleEntry } from '@/lib/schedule';
 /** Rich, UI-ready results emitted by tools while the assistant works. */
 export type AssistantCard =
     | { kind: 'itineraries'; from: PlanPlace; to: PlanPlace; itineraries: Itinerary[] }
-    | { kind: 'arrivals'; paradero: string; title: string }
+    | { kind: 'arrivals'; paradero: string; title: string; /** Route the user asked about, highlighted on the board */ route?: string }
     | {
         kind: 'route';
         id: string;

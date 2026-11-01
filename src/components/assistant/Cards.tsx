@@ -1,9 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
     ArrowRight,
+    ChevronRight,
     Cloud,
     CloudDrizzle,
     CloudFog,
@@ -19,11 +21,13 @@ import {
     TrainFront,
 } from 'lucide-react';
 import type { AssistantCard } from './types';
-import type { Itinerary, PlanPlace, ServicePoint, WeatherNow } from '@/types/transit';
+import type { PlanPlace, ServicePoint, WeatherNow } from '@/types/transit';
 import { useAppStore } from '@/stores/app';
 import SegmentBar from '@/components/transit/SegmentBar';
 import RouteBadge from '@/components/transit/RouteBadge';
 import ArrivalBoard from '@/components/transit/ArrivalBoard';
+import NextDepartureHint from '@/components/plan/NextDepartureHint';
+import { stopLabel, transferText } from '@/components/plan/utils';
 import { formatDistance } from '@/lib/geo';
 import { addMinutes, bogotaNow, CONVENTION_LABELS, formatClock, formatTime } from '@/lib/schedule';
 import { cn } from '@/lib/utils';
@@ -46,72 +50,122 @@ function planHref(from: PlanPlace | null, to: PlanPlace) {
     return `/planear?${q.toString()}`;
 }
 
-function ItineraryRow({ itinerary, from, to }: { itinerary: Itinerary; from: PlanPlace; to: PlanPlace }) {
+/**
+ * Trip options from the assistant: the chosen option in full (one clear action),
+ * the alternatives as compact rows that swap in when tapped.
+ */
+function ItinerariesCard({ card }: { card: Extract<AssistantCard, { kind: 'itineraries' }> }) {
     const router = useRouter();
-    const firstRide = itinerary.legs.find((l) => l.mode === 'TRANSIT');
-    const arrival = formatTime(addMinutes(new Date(), itinerary.durationMin));
+    const [selected, setSelected] = useState(0);
+    const options = card.itineraries;
+    const it = options[Math.min(selected, options.length - 1)];
+    if (!it) return null;
+
+    const rides = it.legs.filter((l) => l.mode === 'TRANSIT');
+    const now = new Date();
+    const transfers = Math.max(0, rides.length - 1);
 
     const start = () => {
-        useAppStore.getState().startTrip({ itinerary, from, to });
+        const store = useAppStore.getState();
+        store.startTrip({ itinerary: it, from: card.from, to: card.to });
+        store.pushRecentPlace(card.to);
         router.push('/viaje');
     };
 
     return (
-        <div className="px-4 py-3.5">
-            <div className="flex items-baseline justify-between gap-3">
-                <div className="flex items-baseline gap-2">
-                    <span className="font-signage text-[30px] font-bold leading-none tabular">{itinerary.durationMin}</span>
-                    <span className="font-signage text-[17px] font-semibold text-muted-foreground">min</span>
-                </div>
-                <span className="text-[13px] text-muted-foreground tabular">Llegas {arrival}</span>
-            </div>
-            {itinerary.tags.length > 0 && (
-                <div className="mt-1.5 flex flex-wrap gap-1.5">
-                    {itinerary.tags.map((t) => (
-                        <span key={t} className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-secondary-foreground">{TAG_LABEL[t] || t}</span>
-                    ))}
-                </div>
-            )}
-            <SegmentBar legs={itinerary.legs} className="mt-3" />
-            <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-muted-foreground">
-                <span className="inline-flex items-center gap-1"><Footprints className="h-3.5 w-3.5" />{formatDistance(itinerary.walkMeters)} a pie</span>
-                <span className="inline-flex items-center gap-1"><Repeat className="h-3.5 w-3.5" />{itinerary.transfers === 0 ? 'Sin transbordos' : itinerary.transfers === 1 ? '1 transbordo' : `${itinerary.transfers} transbordos`}</span>
-            </div>
-            {firstRide && (
-                <p className="mt-1.5 text-[13px] text-foreground/85">
-                    Sube a la <span className="font-semibold">{firstRide.line?.code}</span> en {firstRide.from.name}
-                </p>
-            )}
-            <button
-                type="button"
-                onClick={start}
-                className="mt-3 inline-flex h-9 items-center gap-1.5 rounded-full bg-foreground px-4 text-[13px] font-semibold text-background transition active:scale-95"
-            >
-                <Navigation className="h-3.5 w-3.5" />
-                Iniciar viaje
-            </button>
-        </div>
-    );
-}
-
-function ItinerariesCard({ card }: { card: Extract<AssistantCard, { kind: 'itineraries' }> }) {
-    return (
         <div className={shell}>
-            <div className="flex items-center gap-2 px-4 pt-3.5 pb-1 text-[13px] text-muted-foreground">
+            <div className="flex items-center gap-2 px-4 pt-3.5 text-[13px] text-muted-foreground">
                 <span className="truncate">{card.from.name}</span>
                 <ArrowRight className="h-3.5 w-3.5 shrink-0" />
                 <span className="truncate font-medium text-foreground">{card.to.name}</span>
             </div>
-            <div className="divide-y divide-border">
-                {card.itineraries.map((it) => <ItineraryRow key={it.id} itinerary={it} from={card.from} to={card.to} />)}
+
+            <div className="px-4 pt-2 pb-4">
+                <div className="flex items-end justify-between gap-3">
+                    <p className="font-signage tabular text-[40px] font-bold leading-none">
+                        {it.durationMin}<span className="ml-1 text-[20px] font-semibold text-muted-foreground">min</span>
+                    </p>
+                    <p className="pb-0.5 text-right text-[13px] tabular text-muted-foreground">
+                        {formatTime(now)} → <span className="font-semibold text-foreground">{formatTime(addMinutes(now, it.durationMin))}</span>
+                    </p>
+                </div>
+                {it.tags.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                        {it.tags.map((t) => (
+                            <span key={t} className={cn('rounded-full px-2 py-0.5 text-[11px] font-semibold', t === 'fastest' ? 'bg-foreground text-background' : 'bg-secondary text-secondary-foreground')}>
+                                {TAG_LABEL[t] || t}
+                            </span>
+                        ))}
+                    </div>
+                )}
+
+                <SegmentBar legs={it.legs} className="mt-3" />
+
+                {rides.length > 0 && (
+                    <ol className="mt-3 space-y-2">
+                        {rides.map((leg, i) => {
+                            const board = stopLabel(leg.from.name);
+                            const alight = stopLabel(leg.to.name);
+                            return (
+                                <li key={i} className="flex items-start gap-2.5">
+                                    <RouteBadge code={leg.line?.code || ''} color={leg.line?.color} size="sm" className="mt-px" />
+                                    <span className="min-w-0 text-[13px] leading-snug text-foreground/85">
+                                        Sube en <span className="font-semibold text-foreground">{board.station}</span>
+                                        {' '}y bájate en <span className="font-semibold text-foreground">{alight.station}</span>
+                                        <span className="text-muted-foreground"> · {(leg.stops?.length || 0) + 1} paradas</span>
+                                    </span>
+                                </li>
+                            );
+                        })}
+                    </ol>
+                )}
+
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-muted-foreground">
+                    <span className="inline-flex items-center gap-1"><Footprints className="h-3.5 w-3.5" />{formatDistance(it.walkMeters)} a pie</span>
+                    <span className="inline-flex items-center gap-1"><Repeat className="h-3.5 w-3.5" />{transferText(transfers)}</span>
+                </div>
+                {rides[0] && <NextDepartureHint leg={rides[0]} className="mt-2" />}
+
+                <div className="mt-4 flex gap-2">
+                    <button
+                        type="button"
+                        onClick={start}
+                        className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-foreground text-[14px] font-semibold text-background transition active:scale-[0.98]"
+                    >
+                        <Navigation className="h-4 w-4" />
+                        Iniciar viaje
+                    </button>
+                    <Link
+                        href={planHref(card.from, card.to)}
+                        className="inline-flex h-11 items-center justify-center rounded-full border border-border px-4 text-[14px] font-semibold hover:bg-accent"
+                    >
+                        Ver detalles
+                    </Link>
+                </div>
             </div>
-            <Link
-                href={planHref(card.from, card.to)}
-                className="flex items-center justify-between border-t border-border px-4 py-3 text-[13px] font-semibold hover:bg-accent"
-            >
-                Ver detalles en el planeador
-                <ArrowRight className="h-4 w-4" />
-            </Link>
+
+            {options.length > 1 && (
+                <div className="border-t border-border pb-1">
+                    <p className="px-4 pt-2.5 pb-1 text-[12px] text-muted-foreground">Otras opciones</p>
+                    {options.map((o, i) =>
+                        i === selected ? null : (
+                            <button
+                                key={o.id}
+                                type="button"
+                                onClick={() => setSelected(i)}
+                                className="flex w-full items-center gap-3 px-4 py-2 text-left hover:bg-accent active:bg-accent"
+                                aria-label={`Ver opción de ${o.durationMin} minutos`}
+                            >
+                                <span className="w-[58px] shrink-0 font-signage tabular text-[20px] font-bold leading-none">
+                                    {o.durationMin}<span className="ml-0.5 text-[13px] font-semibold text-muted-foreground">min</span>
+                                </span>
+                                <SegmentBar legs={o.legs} className="h-6 min-w-0 flex-1" />
+                                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                            </button>
+                        ),
+                    )}
+                </div>
+            )}
         </div>
     );
 }
@@ -253,7 +307,7 @@ export default function AssistantCardView({ card }: { card: AssistantCard }) {
         case 'arrivals':
             return (
                 <div className="space-y-2">
-                    <ArrivalBoard paradero={card.paradero} title={card.title} limit={5} compact />
+                    <ArrivalBoard paradero={card.paradero} title={card.title} limit={5} compact highlight={card.route} />
                     <Link href={`/mapa?estacion=${encodeURIComponent(card.paradero)}`} className="inline-flex items-center gap-1 px-1 text-[12px] font-semibold text-muted-foreground hover:text-foreground">
                         Ver la estación en el mapa <ArrowRight className="h-3.5 w-3.5" />
                     </Link>

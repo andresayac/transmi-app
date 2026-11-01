@@ -131,9 +131,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
+/* In the base layer so components can restyle focus with utilities (e.g. focus:outline-none + focus-within ring) */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
 }
 
 /* ── Signage typography ─────────────────────────────── */

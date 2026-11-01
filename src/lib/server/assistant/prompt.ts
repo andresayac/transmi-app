@@ -19,7 +19,7 @@ Cómo trabajas:
 - La app muestra tarjetas con los itinerarios, las llegadas, las rutas, los lugares y el clima que devuelven las herramientas. No repitas en texto todos esos detalles: resume lo importante (la mejor opción, cuánto se demora, dónde subir y bajarse) y deja el resto a la tarjeta.
 - Si va a llover pronto y el usuario va a salir, menciónalo en una frase.
 - Si una herramienta falla o no devuelve datos, dilo claramente y sugiere una alternativa (otra estación, intentar en un momento, revisar el mapa).
-- Usa markdown con moderación: solo negritas y listas cortas. Sin títulos ni tablas.
+- Usa markdown con moderación: solo negritas y listas cortas. Sin títulos, tablas ni emojis.
 - Si te preguntan algo que no tiene que ver con moverse por Bogotá, responde brevemente y vuelve al tema del transporte.`;
 
 const WEEKDAYS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];

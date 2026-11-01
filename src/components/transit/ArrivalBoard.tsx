@@ -23,13 +23,16 @@ interface ArrivalBoardProps {
     /** Called when a row is tapped */
     onSelect?: (arrival: Arrival) => void;
     compact?: boolean;
+    /** Route code to emphasize (moved to the top when it's on the board) */
+    highlight?: string;
 }
 
 /**
  * Live departures board for a station. Always dark — it's a piece of station
  * furniture, not a card — with split-flap transitions when times change.
  */
-export default function ArrivalBoard({ paradero, title, limit = 6, className, onSelect, compact }: ArrivalBoardProps) {
+export default function ArrivalBoard({ paradero, title, limit = 6, className, onSelect, compact, highlight }: ArrivalBoardProps) {
+    const wanted = highlight?.trim().toUpperCase() || '';
     const { data, error, loading, refresh, updatedAt } = useLiveData<ArrivalsResponse>(
         paradero ? `/api/llegadas?paradero=${encodeURIComponent(paradero)}` : null,
         30000,
@@ -37,13 +40,17 @@ export default function ArrivalBoard({ paradero, title, limit = 6, className, on
 
     const rows = useMemo(() => {
         const seen = new Set<string>();
-        return (data?.arrivals || []).filter((a) => {
+        const unique = (data?.arrivals || []).filter((a) => {
             const key = `${a.code}|${a.destination}`;
             if (seen.has(key)) return false;
             seen.add(key);
             return true;
-        }).slice(0, limit);
-    }, [data, limit]);
+        });
+        // Stable sort: the requested route first, everything else keeps its time order
+        if (wanted) unique.sort((a, b) => Number(b.code.toUpperCase() === wanted) - Number(a.code.toUpperCase() === wanted));
+        return unique.slice(0, limit);
+    }, [data, limit, wanted]);
+    const wantedMissing = !!wanted && !!data && !rows.some((a) => a.code.toUpperCase() === wanted);
 
     return (
         <div className={cn('rounded-2xl bg-black text-white overflow-hidden ring-1 ring-white/10', className)}>
@@ -83,14 +90,19 @@ export default function ArrivalBoard({ paradero, title, limit = 6, className, on
                     </p>
                 )}
 
+                {wantedMissing && (
+                    <p className="px-4 py-2.5 text-[13px] text-white/60">La {wanted} no aparece en las próximas llegadas. Estas son las demás rutas:</p>
+                )}
+
                 {rows.map((a) => {
                     const arriving = a.minutes === 0;
+                    const isWanted = !!wanted && a.code.toUpperCase() === wanted;
                     return (
                         <button
                             key={`${a.code}|${a.destination}`}
                             onClick={() => onSelect?.(a)}
                             disabled={!onSelect}
-                            className={cn('w-full flex items-center gap-3 px-4 text-left', compact ? 'py-2' : 'py-2.5', onSelect && 'active:bg-white/5')}
+                            className={cn('w-full flex items-center gap-3 px-4 text-left', compact ? 'py-2' : 'py-2.5', onSelect && 'active:bg-white/5', isWanted && 'bg-white/[0.09]')}
                         >
                             <RouteBadge code={a.code} color={a.color} size="sm" />
                             <div className="flex-1 min-w-0">

@@ -193,7 +193,7 @@ export function createTools(emit: Emit, ctx: AssistantContext): ToolDef[] {
 
     const llegadasEstacion = defineTool({
         name: 'llegadas_estacion',
-        description: 'Próximos buses en vivo de una estación de TransMilenio o paradero zonal, por nombre (p. ej. "Calle 72", "Portal Norte"). Opcionalmente filtra por código de ruta. La app muestra el tablero de llegadas.',
+        description: 'Próximos buses en vivo de una estación de TransMilenio o paradero zonal, por nombre (p. ej. "Calle 72", "Portal Norte"). Si el usuario pregunta por una ruta concreta, pasa su código en `ruta` (la app la resalta en el tablero de llegadas).',
         inputSchema: z.object({
             estacion: z.string().min(2).max(100).describe('Nombre de la estación o paradero'),
             ruta: z.string().max(20).optional().describe('Código de ruta para filtrar, p. ej. "B13"'),
@@ -204,7 +204,7 @@ export function createTools(emit: Emit, ctx: AssistantContext): ToolDef[] {
                 if (!matches.length) return `No encontré una estación llamada "${input.estacion}". Pide el nombre exacto o usa buscar_lugar.`;
                 const station = matches[0];
                 const arrivals = await getArrivals(station.codigo);
-                emit({ type: 'card', card: { kind: 'arrivals', paradero: station.codigo, title: station.nombre } });
+                emit({ type: 'card', card: { kind: 'arrivals', paradero: station.codigo, title: station.nombre, route: input.ruta?.trim().toUpperCase() || undefined } });
                 const filter = input.ruta?.trim().toUpperCase();
                 const rows = arrivals.filter((a) => !filter || a.code.toUpperCase() === filter).slice(0, 10);
                 return json({

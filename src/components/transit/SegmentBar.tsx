@@ -5,18 +5,23 @@ import { cn } from '@/lib/utils';
 
 /**
  * An itinerary at a glance: one segment per leg, width proportional to time.
- * Walking is a dotted neutral track; rides take the line's color and code.
+ * Rides never shrink below their route code (so "2-10" never wraps); short walks
+ * give up their space first. Walking is a neutral track; rides take the line's color.
  */
 export default function SegmentBar({ legs, className }: { legs: PlanLeg[]; className?: string }) {
-    const total = legs.reduce((s, l) => s + Math.max(1, l.durationMin), 0) || 1;
     return (
-        <div className={cn('flex w-full items-center gap-[3px] h-7', className)}>
+        <div className={cn('flex w-full items-stretch gap-[3px] h-7 overflow-hidden', className)}>
             {legs.map((leg, i) => {
-                const pct = (Math.max(1, leg.durationMin) / total) * 100;
+                const grow = Math.max(1, leg.durationMin);
                 if (leg.mode === 'WALK') {
                     return (
-                        <div key={i} className="h-full flex items-center justify-center rounded-md bg-secondary text-muted-foreground min-w-[22px]" style={{ flexBasis: `${pct}%` }} title={`Caminar ${leg.durationMin} min`}>
-                            <Footprints className="w-3.5 h-3.5" />
+                        <div
+                            key={i}
+                            className="flex items-center justify-center rounded-md bg-secondary text-muted-foreground"
+                            style={{ flex: `${grow} 1 0%`, minWidth: 18 }}
+                            title={`Caminar ${leg.durationMin} min`}
+                        >
+                            <Footprints className="w-3.5 h-3.5 shrink-0" />
                         </div>
                     );
                 }
@@ -24,8 +29,8 @@ export default function SegmentBar({ legs, className }: { legs: PlanLeg[]; class
                 return (
                     <div
                         key={i}
-                        className="h-full flex items-center justify-center rounded-md font-signage font-bold text-[14px] tabular min-w-[34px] px-1"
-                        style={{ flexBasis: `${pct}%`, backgroundColor: color, color: readableOn(color) }}
+                        className="flex items-center justify-center rounded-md px-1.5 font-signage font-bold text-[14px] leading-none tabular whitespace-nowrap"
+                        style={{ flex: `${grow} 1 0%`, minWidth: 'max-content', backgroundColor: color, color: readableOn(color) }}
                         title={`${leg.line?.code} · ${leg.durationMin} min`}
                     >
                         {leg.line?.code}
