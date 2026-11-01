@@ -10,4 +10,7 @@ export interface BusLocation {
     posicion: number;
     angulo: number;
     nombre_sistema: string;
+    accesibilidad?: string;
+    ocupacion_bus?: string;
+    nombre_estado?: string;
 }

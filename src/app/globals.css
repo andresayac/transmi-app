@@ -21,6 +21,8 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -33,11 +35,13 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --font-sans: var(--font-barlow), system-ui, sans-serif;
+  --font-signage: var(--font-barlow-condensed), var(--font-barlow), system-ui, sans-serif;
 }
 
 :root {
   /* shadcn theme — light (neutral) */
-  --radius: 0.625rem;
+  --radius: 0.75rem;
   --background: #ffffff;
   --foreground: #0a0a0a;
   --card: #ffffff;
@@ -50,9 +54,11 @@
   --secondary-foreground: #171717;
   --muted: #f5f5f5;
   --muted-foreground: #737373;
-  --accent: #f5f5f5;
+  --accent: #f0f0f0;
   --accent-foreground: #171717;
   --destructive: #ef4444;
+  --success: #10b981;
+  --warning: #f59e0b;
   --border: #e5e5e5;
   --input: #e5e5e5;
   --ring: #a3a3a3;
@@ -67,6 +73,13 @@
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --bottom-nav-height: 72px;
+
+  /* Franja del sistema — the 15 troncal colors, in letter order */
+  --system-stripe: linear-gradient(90deg,
+      #26358C 0 6.66%, #80BA27 0 13.33%, #FCBD1B 0 20%, #8064A9 0 26.66%,
+      #AE6B00 0 33.33%, #DC0814 0 40%, #009CDE 0 46.66%, #F18500 0 53.33%,
+      #E1A2AC 0 60%, #D5B079 0 66.66%, #009A9D 0 73.33%, #A80F79 0 80%,
+      #808000 0 86.66%, #BD202A 0 93.33%, #26358C 0 100%);
 }
 
 .dark {
@@ -83,7 +96,7 @@
   --secondary-foreground: #fafafa;
   --muted: #171717;
   --muted-foreground: #a3a3a3;
-  --accent: #171717;
+  --accent: #1f1f1f;
   --accent-foreground: #fafafa;
   --destructive: #ef4444;
   --border: #262626;
@@ -110,29 +123,52 @@ html {
 body {
   background: var(--color-bg);
   color: var(--color-text);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-family: var(--font-sans);
   overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
 
+/* ── Signage typography ─────────────────────────────── */
 
+.font-signage {
+  font-family: var(--font-signage);
+  font-stretch: condensed;
+  letter-spacing: 0.01em;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Brand: system stripe ───────────────────────────── */
+
+.system-stripe {
+  background: var(--system-stripe);
+}
+
+@keyframes stripeSlide {
+  to {
+    background-position: -200% 0;
+  }
+}
 
 /* Glass morphism */
 .glass {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid var(--color-border, var(--border));
 }
 
 .dark .glass {
-  background: rgba(17, 17, 17, 0.85);
+  background: rgba(10, 10, 10, 0.78);
 }
-
-
-
 
 /* Route card */
 .route-card {
@@ -198,6 +234,37 @@ body {
 
 .animate-pulse-dot {
   animation: pulseDot 2s ease-in-out infinite;
+}
+
+/* Live indicator ring */
+@keyframes liveRing {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+.live-dot {
+  position: relative;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--success);
+}
+
+.live-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  animation: liveRing 1.8s ease-out infinite;
 }
 
 /* Bottom nav active indicator */
@@ -278,6 +345,122 @@ body {
   animation: toastOut 0.3s ease-in forwards;
 }
 
+/* ── Split-flap board ───────────────────────────────── */
+
+@keyframes flapIn {
+  0% {
+    transform: rotateX(90deg);
+    opacity: 0.2;
+  }
+
+  60% {
+    transform: rotateX(-12deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: rotateX(0deg);
+  }
+}
+
+.flap-char {
+  display: inline-block;
+  transform-origin: 50% 55%;
+  backface-visibility: hidden;
+  animation: flapIn 0.42s cubic-bezier(0.3, 0.7, 0.4, 1.2) both;
+}
+
+/* ── Assistant orb ──────────────────────────────────── */
+
+@keyframes orbSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes orbBreath {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+.orb {
+  position: relative;
+  border-radius: 9999px;
+  isolation: isolate;
+}
+
+.orb::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(from 0deg, #26358C, #009CDE, #80BA27, #FCBD1B, #F18500, #DC0814, #A80F79, #8064A9, #26358C);
+  animation: orbSpin 6s linear infinite;
+  filter: saturate(1.1);
+  z-index: -1;
+}
+
+.orb::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: inherit;
+  background: radial-gradient(circle at 35% 30%, #2a2a2a 0%, #000 70%);
+  z-index: -1;
+}
+
+.orb-active::before {
+  animation-duration: 1.4s;
+}
+
+.orb-breathe {
+  animation: orbBreath 2.4s ease-in-out infinite;
+}
+
+/* ── Map markers ────────────────────────────────────── */
+
+.bus-marker {
+  width: 30px;
+  height: 30px;
+  pointer-events: auto;
+  cursor: pointer;
+  will-change: transform;
+}
+
+.bus-marker__body {
+  position: absolute;
+  inset: 3px;
+  border-radius: 9999px;
+  border: 2.5px solid #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bus-marker__arrow {
+  position: absolute;
+  inset: 0;
+  transition: transform 0.8s ease;
+}
+
+.bus-marker__occ {
+  position: absolute;
+  right: -1px;
+  top: -1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  border: 2px solid #000;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 4px;
@@ -295,7 +478,7 @@ body {
 
 /* Safe areas for mobile */
 .safe-bottom {
-  padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 16px);
 }
 
 /* Hide scrollbar but keep scrolling */
@@ -316,16 +499,23 @@ body {
 }
 
 .mapboxgl-popup-content {
-  border-radius: 16px !important;
+  border-radius: 14px !important;
   padding: 0 !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
   overflow: hidden;
+  background: var(--popover) !important;
+  color: var(--popover-foreground);
+}
+
+.mapboxgl-popup-tip {
+  border-top-color: var(--popover) !important;
+  border-bottom-color: var(--popover) !important;
 }
 
 .mapboxgl-popup-close-button {
   font-size: 18px !important;
   padding: 4px 8px !important;
-  color: #64748b !important;
+  color: var(--muted-foreground) !important;
 }
 
 .mapboxgl-ctrl-group {
@@ -344,4 +534,16 @@ body {
 
 .station-tooltip .mapboxgl-popup-tip {
   display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

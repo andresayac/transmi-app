@@ -1,66 +1,39 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Monitor, Moon, Sun } from 'lucide-react';
 import TransMiLogo from '@/components/ui/TransMiLogo';
+import SystemStripe from '@/components/brand/SystemStripe';
+import { ThemePref, useAppStore } from '@/stores/app';
+import { cn } from '@/lib/utils';
 
-function getGreeting(): { text: string; emoji: string } {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) return { text: 'Buenos días', emoji: '☀️' };
-    if (hour >= 12 && hour < 18) return { text: 'Buenas tardes', emoji: '🌤️' };
-    if (hour >= 18 && hour < 21) return { text: 'Buenas noches', emoji: '🌆' };
-    return { text: 'Buenas noches', emoji: '🌙' };
-}
+const NEXT_THEME: Record<ThemePref, ThemePref> = { system: 'dark', dark: 'light', light: 'system' };
+const THEME_LABEL: Record<ThemePref, string> = { system: 'Tema del sistema', dark: 'Tema oscuro', light: 'Tema claro' };
 
-export default function AppHeader() {
-    const [isDark, setIsDark] = useState(false);
-    const greeting = getGreeting();
-
-    useEffect(() => {
-        const dark = localStorage.getItem('darkMode') === 'true';
-        setIsDark(dark);
-        if (dark) document.documentElement.classList.add('dark');
-    }, []);
-
-    const toggleDark = () => {
-        const next = !isDark;
-        setIsDark(next);
-        document.documentElement.classList.toggle('dark', next);
-        localStorage.setItem('darkMode', String(next));
-    };
+export default function AppHeader({ title, right, className }: { title?: string; right?: React.ReactNode; className?: string }) {
+    const theme = useAppStore((s) => s.settings.theme);
+    const updateSettings = useAppStore((s) => s.updateSettings);
+    const ThemeIcon = theme === 'dark' ? Moon : theme === 'light' ? Sun : Monitor;
 
     return (
-        <header className="sticky top-0 z-40 bg-background border-b border-border">
-            <div className="flex items-center justify-between max-w-lg mx-auto px-4 py-3">
-                {/* Logo + Title */}
-                <div className="flex items-center gap-2.5">
-                    <TransMiLogo size={36} />
-                    <div>
-                        <h1 className="text-base font-bold text-foreground leading-tight">
-                            TransMi
-                        </h1>
-                        <p className="text-[10px] text-muted-foreground font-medium -mt-0.5">
-                            {greeting.text} {greeting.emoji}
-                        </p>
-                    </div>
+        <header className={cn('sticky top-0 z-40 bg-background/90 backdrop-blur-xl', className)}>
+            <div className="flex items-center justify-between max-w-lg mx-auto px-4 h-14">
+                <div className="flex items-center gap-2.5 min-w-0">
+                    <TransMiLogo size={34} />
+                    {title && <h1 className="font-signage text-[22px] font-bold text-foreground leading-none truncate">{title}</h1>}
                 </div>
-
-                {/* Dark mode toggle */}
-                <button
-                    onClick={toggleDark}
-                    className="w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-200 active:scale-90 bg-secondary hover:bg-accent"
-                    aria-label="Toggle dark mode"
-                >
-                    {isDark ? (
-                        <svg className="w-[18px] h-[18px] text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
-                    ) : (
-                        <svg className="w-[18px] h-[18px] text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                        </svg>
-                    )}
-                </button>
+                <div className="flex items-center gap-1.5">
+                    {right}
+                    <button
+                        onClick={() => updateSettings({ theme: NEXT_THEME[theme] })}
+                        className="w-9 h-9 rounded-full flex items-center justify-center transition active:scale-90 hover:bg-accent"
+                        aria-label={`${THEME_LABEL[theme]}. Cambiar tema`}
+                        title={THEME_LABEL[theme]}
+                    >
+                        <ThemeIcon className="w-[18px] h-[18px] text-foreground" />
+                    </button>
+                </div>
             </div>
+            <SystemStripe />
         </header>
     );
 }
