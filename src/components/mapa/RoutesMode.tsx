@@ -15,6 +15,7 @@ import type { RouteDetailNormalized } from '@/types/transit';
 import { cn } from '@/lib/utils';
 import type { MapRoute, StoredMultiRoute } from './types';
 import { useRouteLayers, fitRoutes } from './useRouteLayers';
+import { panelPadding } from '@/lib/layout';
 import { useBusMarkers, BusGroup } from './useBusMarkers';
 import { useLiveBuses } from './useLiveBuses';
 import RouteDiagram from './RouteDiagram';
@@ -135,7 +136,7 @@ export default function RoutesMode({ map, ready, darkPreset, multi, initial }: P
     const flyToStop = useCallback((routeKey: string, index: number) => {
         const stop = routes.find((r) => r.key === routeKey)?.detail?.stops[index];
         if (!stop || !map) return;
-        map.flyTo({ center: [stop.lng, stop.lat], zoom: Math.max(map.getZoom(), 15.5), duration: 900, padding: { top: 0, bottom: window.innerHeight * 0.45, left: 0, right: 0 } });
+        map.flyTo({ center: [stop.lng, stop.lat], zoom: Math.max(map.getZoom(), 15.5), duration: 900, padding: panelPadding(window.innerHeight * 0.45) });
     }, [routes, map]);
 
     const selectStop = useCallback((routeKey: string, index: number) => {

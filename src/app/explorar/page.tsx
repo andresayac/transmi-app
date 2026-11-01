@@ -242,11 +242,11 @@ function ExplorarContent() {
 
     return (
         <div className="safe-bottom">
-            <AppHeader title="Explorar" />
+            <AppHeader title="Explorar" width="narrow" />
 
             {drill.type === 'list' ? (
-                <div className="sticky top-[59px] z-30 bg-background/95 backdrop-blur px-4 pt-3 pb-2">
-                    <div role="tablist" aria-label="Secciones" className="grid grid-cols-4 p-1 rounded-2xl bg-secondary">
+                <div className="sticky top-[59px] z-30 bg-background/95 backdrop-blur px-4 pt-3 pb-2 lg:top-20 lg:pt-0 lg:px-8">
+                    <div role="tablist" aria-label="Secciones" className="grid grid-cols-4 p-1 rounded-2xl bg-secondary lg:max-w-[44rem] lg:mx-auto">
                         {TABS.map((t) => (
                             <button
                                 key={t.key}
@@ -264,7 +264,7 @@ function ExplorarContent() {
                     </div>
                 </div>
             ) : (
-                <div className="px-4 pt-4 pb-1 flex items-center gap-2">
+                <div className="px-4 pt-4 pb-1 flex items-center gap-2 lg:max-w-3xl lg:mx-auto lg:px-8">
                     <button onClick={goBack} className="w-10 h-10 -ml-2 rounded-full flex items-center justify-center hover:bg-accent active:scale-90 transition" aria-label="Volver">
                         <ArrowLeft className="w-5 h-5" />
                     </button>
@@ -277,7 +277,7 @@ function ExplorarContent() {
                 </div>
             )}
 
-            <main className="px-4 pt-2">
+            <main className="px-4 pt-2 lg:max-w-3xl lg:mx-auto lg:px-8">
                 {/* ── Rutas ─────────────────────────── */}
                 {drill.type === 'list' && tab === 'rutas' && (
                     <div className="space-y-3">
@@ -459,7 +459,7 @@ function ExplorarContent() {
 
             {/* Comparison tray */}
             {selectedCount > 0 && (
-                <div className="fixed left-0 right-0 z-40 px-4" style={{ bottom: 'calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 12px)' }}>
+                <div className="fixed left-0 right-0 z-40 px-4 lg:left-[var(--rail)]" style={{ bottom: 'calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 12px)' }}>
                     <div className="max-w-lg mx-auto flex items-center gap-2 rounded-2xl bg-foreground text-background p-2 pl-4 shadow-2xl">
                         <div className="flex -space-x-1.5">
                             {getSelectedArray().slice(0, 5).map((r) => (

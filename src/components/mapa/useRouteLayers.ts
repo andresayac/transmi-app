@@ -6,6 +6,7 @@ import type { Map as MapboxMap, MapMouseEvent } from 'mapbox-gl';
 import { removeLayers } from '@/lib/mapbox';
 import { firstFeature } from './mapFeature';
 import type { MapRoute } from './types';
+import { isDesktop, SIDE_PANEL_SPACE } from '@/lib/layout';
 
 const HIGHLIGHT_SRC = 'rl-highlight';
 const HIGHLIGHT_LAYERS = ['rl-highlight-halo', 'rl-highlight-dot'];
@@ -176,7 +177,7 @@ export function useRouteLayers(map: MapboxMap | null, ready: boolean, routes: Ma
     }, [map, ready, highlightTarget]);
 }
 
-/** Fit the camera to the given routes, leaving room for the bottom sheet. */
+/** Fit the camera to the given routes, leaving room for the bottom sheet (or the side panel on computers). */
 export function fitRoutes(map: MapboxMap, routes: MapRoute[], bottomPadding = 260) {
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     for (const r of routes) {
@@ -190,7 +191,9 @@ export function fitRoutes(map: MapboxMap, routes: MapRoute[], bottomPadding = 26
     if (!Number.isFinite(minX)) return;
     const h = map.getContainer().clientHeight;
     map.fitBounds([[minX, minY], [maxX, maxY]], {
-        padding: { top: 90, bottom: Math.min(bottomPadding, h * 0.55), left: 40, right: 64 },
+        padding: isDesktop()
+            ? { top: 60, bottom: 60, left: SIDE_PANEL_SPACE + 40, right: 80 }
+            : { top: 90, bottom: Math.min(bottomPadding, h * 0.55), left: 40, right: 64 },
         pitch: 40,
         bearing: -12,
         duration: 1100,

@@ -8,6 +8,7 @@ import BottomSheet from '@/components/ui/BottomSheet';
 import { useToast } from '@/components/ui/Toast';
 import { transmilenioApi } from '@/services/transmilenio';
 import { haversine, formatDistance } from '@/lib/geo';
+import { panelPadding } from '@/lib/layout';
 import { ROUTE_COLORS } from '@/utils/constants';
 import type { StationMapEntry } from '@/types/station';
 import type { RouteSearchResult } from '@/types/route';
@@ -47,7 +48,7 @@ export default function ExplorerMode({ map, ready, darkPreset, layers, userLat, 
     const deepLinkDone = useRef(false);
 
     const flyToStation = useCallback((s: StationMapEntry) => {
-        map?.flyTo({ center: [s.lng, s.lat], zoom: 16.3, pitch: 50, duration: 1200, padding: { top: 0, bottom: window.innerHeight * 0.45, left: 0, right: 0 } });
+        map?.flyTo({ center: [s.lng, s.lat], zoom: 16.3, pitch: 50, duration: 1200, padding: panelPadding(window.innerHeight * 0.45) });
     }, [map]);
 
     const openStation = useCallback((s: StationMapEntry) => {

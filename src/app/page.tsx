@@ -127,49 +127,54 @@ export default function HomePage() {
       </Suspense>
       <AppHeader />
 
-      <main className="px-4 pt-5 space-y-7">
-        <div className="flex items-center justify-between gap-3 min-h-8">
-          <p className="text-15 text-muted-foreground" suppressHydrationWarning>{greeting()}</p>
+      {/* Computers: trip things on the left, card and shortcuts on the right (same order as the phone's single column) */}
+      <main className="px-4 pt-5 space-y-7 lg:max-w-6xl lg:mx-auto lg:px-8 lg:pt-10 lg:space-y-0 lg:grid lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-x-10 lg:gap-y-8 lg:items-start">
+        <div className="flex items-center justify-between gap-3 min-h-8 lg:col-span-2">
+          <p className="text-15 text-muted-foreground lg:font-signage lg:text-44 lg:font-bold lg:leading-none lg:text-foreground" suppressHydrationWarning>{greeting()}</p>
           <WeatherChip />
         </div>
 
-        <RoutineCard here={here} />
+        <div className="space-y-7">
+          <RoutineCard here={here} />
 
-        <PlannerHero />
+          <PlannerHero />
 
-        <PinnedStops />
+          <PinnedStops />
 
-        <NearbyStation
-          latitude={location.latitude}
-          longitude={location.longitude}
-          permission={location.permission}
-          locating={location.loading}
-          error={location.error}
-          onRequestLocation={location.requestLocation}
-        />
+          <NearbyStation
+            latitude={location.latitude}
+            longitude={location.longitude}
+            permission={location.permission}
+            locating={location.loading}
+            error={location.error}
+            onRequestLocation={location.requestLocation}
+          />
+        </div>
 
-        <InstallBanner />
+        <div className="space-y-7">
+          <InstallBanner />
 
-        <SaldoCard here={here} />
+          <SaldoCard here={here} />
 
-        <FavoriteRoutes />
+          <FavoriteRoutes />
 
-        <Link
-          href="/asistente"
-          className="flex items-center gap-4 rounded-2xl border border-border p-4 hover:bg-accent/60 active:scale-[0.99] transition"
-        >
-          <AssistantOrb size={48} breathe />
-          <span className="flex-1 min-w-0">
-            <span className="block font-signage text-20 font-bold leading-tight">Pregúntale al asistente</span>
-            <span className="block text-14 text-muted-foreground truncate">“¿Cómo llego al Movistar Arena antes de las 7?”</span>
-          </span>
-          <ArrowRight className="w-5 h-5 text-muted-foreground shrink-0" />
-        </Link>
+          <Link
+            href="/asistente"
+            className="flex items-center gap-4 rounded-2xl border border-border p-4 hover:bg-accent/60 active:scale-[0.99] transition"
+          >
+            <AssistantOrb size={48} breathe />
+            <span className="flex-1 min-w-0">
+              <span className="block font-signage text-20 font-bold leading-tight">Pregúntale al asistente</span>
+              <span className="block text-14 text-muted-foreground truncate">“¿Cómo llego al Movistar Arena antes de las 7?”</span>
+            </span>
+            <ArrowRight className="w-5 h-5 text-muted-foreground shrink-0" />
+          </Link>
 
-        <section aria-label="Buscar rutas">
-          <h2 className="font-signage text-22 font-bold mb-2">Buscar una ruta</h2>
-          <RouteSearchShortcut />
-        </section>
+          <section aria-label="Buscar rutas">
+            <h2 className="font-signage text-22 font-bold mb-2">Buscar una ruta</h2>
+            <RouteSearchShortcut />
+          </section>
+        </div>
       </main>
     </div>
   );

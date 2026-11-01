@@ -235,6 +235,15 @@ body {
   background: var(--system-stripe);
 }
 
+/* The same band standing up: the spine of the computer navigation rail */
+.system-stripe-vertical {
+  background: linear-gradient(180deg,
+      #26358C 0 6.66%, #80BA27 0 13.33%, #FCBD1B 0 20%, #8064A9 0 26.66%,
+      #AE6B00 0 33.33%, #DC0814 0 40%, #009CDE 0 46.66%, #F18500 0 53.33%,
+      #E1A2AC 0 60%, #D5B079 0 66.66%, #009A9D 0 73.33%, #A80F79 0 80%,
+      #808000 0 86.66%, #BD202A 0 93.33%, #26358C 0 100%);
+}
+
 @keyframes stripeSlide {
   to {
     background-position: -200% 0;
@@ -363,6 +372,20 @@ body {
 
 .nav-indicator {
   animation: navIndicator 0.25s ease-out forwards;
+}
+
+@keyframes railIndicator {
+  from {
+    height: 0;
+  }
+
+  to {
+    height: 28px;
+  }
+}
+
+.rail-indicator {
+  animation: railIndicator 0.25s ease-out forwards;
 }
 
 /* Skeleton */
@@ -557,6 +580,25 @@ body {
   background: var(--color-text-secondary);
   border-radius: 4px;
   opacity: 0.3;
+}
+
+/*
+ * Computer layout (lg, 64rem): the navigation rail takes the left edge and the
+ * bottom bar goes away. Pages offset fixed screens with var(--rail); it stays 0
+ * where the rail isn't shown (the public follow page).
+ */
+:root {
+  --rail: 0px;
+}
+
+@media (min-width: 64rem) {
+  :root {
+    --bottom-nav-height: 0px;
+  }
+
+  body:has([data-rail]) {
+    --rail: 5.5rem;
+  }
 }
 
 /* Safe areas for mobile */

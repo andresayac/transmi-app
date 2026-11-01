@@ -115,8 +115,8 @@ export default function FollowView({ trip, state = null }: { trip: SharedTrip; s
     const waitingBus = !ended && leg?.m === 'T' && currentLeg === baseLeg && !busLabel && !!state && !stale;
 
     return (
-        <div className="fixed inset-0 z-40 bg-background flex flex-col max-w-lg mx-auto">
-            <div className="relative h-[48dvh] shrink-0">
+        <div className="fixed inset-0 z-40 bg-background flex flex-col max-w-lg mx-auto lg:max-w-none lg:mx-0 lg:left-[var(--rail)] lg:flex-row-reverse">
+            <div className="relative h-[48dvh] shrink-0 lg:h-auto lg:flex-1 lg:min-w-0">
                 <ItineraryMap itinerary={itinerary} from={from} to={to} rider={rider} follow={!!rider} padding={{ top: 70, bottom: 40, left: 40, right: 40 }} />
                 <div className="absolute left-3 right-3 top-[max(env(safe-area-inset-top),12px)] flex justify-between pointer-events-none">
                     <span className="glass rounded-full px-3 py-1.5 text-13 font-semibold text-foreground inline-flex items-center gap-2">
@@ -125,8 +125,8 @@ export default function FollowView({ trip, state = null }: { trip: SharedTrip; s
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto -mt-4 relative rounded-t-[22px] bg-background border-t border-border">
-                <SystemStripe className="rounded-t-[22px]" />
+            <div className="flex-1 overflow-y-auto -mt-4 relative rounded-t-[22px] bg-background border-t border-border lg:flex-none lg:w-[440px] lg:mt-0 lg:rounded-none lg:border-t-0 lg:border-r">
+                <SystemStripe className="rounded-t-[22px] lg:rounded-none" />
                 <div className="px-5 pt-5 pb-[max(env(safe-area-inset-bottom),24px)]">
                     <p className="text-14 text-muted-foreground">
                         {arrived ? `${who} llegó a` : ended ? `${who} terminó su viaje hacia` : expired ? `${who} viajó hacia` : `${who} va hacia`}

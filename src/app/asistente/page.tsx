@@ -119,12 +119,12 @@ export default function AssistantPage() {
     return (
         <div className="flex h-dvh flex-col bg-background">
             <header className="shrink-0 bg-background/90 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
-                <div className="flex h-14 items-center gap-1 px-2">
-                    <button onClick={goBack} className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-accent active:scale-90" aria-label="Volver">
+                <div className="flex h-14 items-center gap-1 px-2 lg:mx-auto lg:h-20 lg:max-w-3xl lg:px-6">
+                    <button onClick={goBack} className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-accent active:scale-90 lg:hidden" aria-label="Volver">
                         <ChevronLeft className="h-5 w-5" />
                     </button>
                     <AssistantOrb size={28} icon={false} active={streaming} className="ml-1" />
-                    <h1 className="ml-2 flex-1 font-signage text-22 font-bold leading-none">Asistente</h1>
+                    <h1 className="ml-2 flex-1 font-signage text-22 font-bold leading-none lg:text-34">Asistente</h1>
                     {voiceAvailable && (
                         <button
                             onClick={toggleVoice}
@@ -142,12 +142,12 @@ export default function AssistantPage() {
                         </button>
                     )}
                 </div>
-                <SystemStripe />
+                <SystemStripe className="lg:hidden" />
             </header>
 
             <div ref={scroller} onScroll={onScroll} className="flex-1 overflow-y-auto overscroll-contain">
                 {notConfigured && (
-                    <div className="mx-4 mt-4 flex gap-3 rounded-2xl border border-border bg-secondary p-4" role="alert">
+                    <div className="mx-4 mt-4 flex gap-3 rounded-2xl border border-border bg-secondary p-4 lg:mx-auto lg:max-w-3xl" role="alert">
                         <KeyRound className="mt-0.5 h-5 w-5 shrink-0" />
                         <div className="text-14 leading-snug">
                             <p className="font-semibold">El asistente aún no está configurado</p>
@@ -159,14 +159,14 @@ export default function AssistantPage() {
                 )}
 
                 {empty ? (
-                    <div className="flex min-h-full flex-col px-5 pb-6 pt-10">
+                    <div className="flex min-h-full flex-col px-5 pb-6 pt-10 lg:mx-auto lg:max-w-3xl lg:px-6 lg:pt-16">
                         <AssistantOrb size={88} breathe className="self-start" />
                         <h2 className="mt-6 font-signage text-34 font-bold leading-[1.05]">Pregúntame cómo moverte por Bogotá</h2>
                         <p className="mt-2 max-w-[34ch] text-15 text-muted-foreground">
                             Consulto rutas, llegadas en vivo, el planeador y el clima para responderte.
                         </p>
 
-                        <div className="mt-8 space-y-2">
+                        <div className="mt-8 space-y-2 lg:grid lg:grid-cols-2 lg:gap-2 lg:space-y-0">
                             {hydrated && home && (
                                 <SuggestionButton icon={House} text="¿Cómo llego a casa desde aquí?" onClick={handleSend} />
                             )}
@@ -179,7 +179,7 @@ export default function AssistantPage() {
                         </div>
                     </div>
                 ) : (
-                    <div className="space-y-6 px-4 py-5">
+                    <div className="space-y-6 px-4 py-5 lg:mx-auto lg:max-w-3xl lg:px-6">
                         {messages.map((m, i) => (
                             <MessageView key={m.id} message={m} isLast={i === messages.length - 1} onRetry={retry} />
                         ))}

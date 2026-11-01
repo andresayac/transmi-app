@@ -107,9 +107,9 @@ export default function ShareTripSheet({ trip, currentLeg, eta, etaMs, bus, onCl
     };
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-end justify-center" role="dialog" aria-modal="true" aria-labelledby="share-title">
+        <div className="fixed inset-0 z-[60] flex items-end justify-center lg:items-center lg:p-6" role="dialog" aria-modal="true" aria-labelledby="share-title">
             <button type="button" className="absolute inset-0 bg-black/50 animate-fade-in" onClick={onClose} aria-label="Cerrar" />
-            <div className="relative w-full max-w-lg rounded-t-[24px] bg-background border-t border-border p-5 pb-[max(env(safe-area-inset-bottom),20px)] animate-slide-up">
+            <div className="relative w-full max-w-lg rounded-t-[24px] bg-background border-t border-border p-5 pb-[max(env(safe-area-inset-bottom),20px)] animate-slide-up lg:rounded-[24px] lg:border lg:p-6">
                 <div className="flex items-start justify-between gap-3">
                     <div>
                         <h2 id="share-title" className="font-signage text-28 font-bold leading-tight">Sigue mi viaje</h2>

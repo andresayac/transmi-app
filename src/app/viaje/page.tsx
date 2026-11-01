@@ -181,8 +181,8 @@ function TripView({ trip, demo, speed, finished, onArrived, onEnd }: TripViewPro
     };
 
     return (
-        <div className="fixed inset-0 z-40 bg-background flex flex-col max-w-lg mx-auto">
-            <div className="relative h-[45dvh] shrink-0">
+        <div className="fixed inset-0 z-40 bg-background flex flex-col max-w-lg mx-auto lg:max-w-none lg:mx-0 lg:left-[var(--rail)] lg:flex-row-reverse">
+            <div className="relative h-[45dvh] shrink-0 lg:h-auto lg:flex-1 lg:min-w-0">
                 <ItineraryMap
                     itinerary={trip.itinerary}
                     from={trip.from}
@@ -223,8 +223,8 @@ function TripView({ trip, demo, speed, finished, onArrived, onEnd }: TripViewPro
                 )}
             </div>
 
-            <div className="flex-1 overflow-y-auto overscroll-contain -mt-4 relative rounded-t-[22px] bg-background border-t border-border">
-                <div className="px-5 pt-5 pb-[max(env(safe-area-inset-bottom),20px)]">
+            <div className="flex-1 overflow-y-auto overscroll-contain -mt-4 relative rounded-t-[22px] bg-background border-t border-border lg:flex-none lg:w-[440px] lg:mt-0 lg:rounded-none lg:border-t-0 lg:border-r">
+                <div className="px-5 pt-5 pb-[max(env(safe-area-inset-bottom),20px)] lg:pt-7">
                     {finished ? (
                         <ArrivalSummary trip={trip} log={lastLog && lastLog.to === trip.to.name ? lastLog : null} onShare={share} onDone={() => router.push('/')} />
                     ) : (

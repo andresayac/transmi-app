@@ -84,9 +84,9 @@ export default function CatalogPanel({ onSelectRoutes, onClose }: CatalogPanelPr
     const pct = progress ? Math.round((progress.loaded / Math.max(progress.total, 1)) * 100) : 0;
 
     return (
-        <div className="absolute inset-0 z-50 flex flex-col justify-end bg-black/55" onClick={onClose} role="dialog" aria-modal="true" aria-label="Catálogo de rutas">
+        <div className="absolute inset-0 z-50 flex flex-col justify-end bg-black/55 lg:justify-center lg:p-8" onClick={onClose} role="dialog" aria-modal="true" aria-label="Catálogo de rutas">
             <div
-                className="w-full max-w-lg mx-auto bg-background rounded-t-[22px] border-t border-border flex flex-col overflow-hidden animate-slide-up shadow-2xl"
+                className="w-full max-w-lg mx-auto bg-background rounded-t-[22px] border-t border-border flex flex-col overflow-hidden animate-slide-up shadow-2xl lg:rounded-[22px] lg:border"
                 style={{ maxHeight: '88dvh' }}
                 onClick={(e) => e.stopPropagation()}
             >

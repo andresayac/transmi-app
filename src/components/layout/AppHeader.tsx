@@ -1,39 +1,33 @@
 'use client';
 
-import { Monitor, Moon, Sun } from 'lucide-react';
 import TransMiLogo from '@/components/ui/TransMiLogo';
 import SystemStripe from '@/components/brand/SystemStripe';
-import { ThemePref, useAppStore } from '@/stores/app';
 import { cn } from '@/lib/utils';
+import ThemeToggle from './ThemeToggle';
 
-const NEXT_THEME: Record<ThemePref, ThemePref> = { system: 'dark', dark: 'light', light: 'system' };
-const THEME_LABEL: Record<ThemePref, string> = { system: 'Tema del sistema', dark: 'Tema oscuro', light: 'Tema claro' };
+/** Content width on computers; on phones every page is one column. */
+const WIDTH = { wide: 'lg:max-w-6xl', narrow: 'lg:max-w-3xl' };
 
-export default function AppHeader({ title, right, className }: { title?: string; right?: React.ReactNode; className?: string }) {
-    const theme = useAppStore((s) => s.settings.theme);
-    const updateSettings = useAppStore((s) => s.updateSettings);
-    const ThemeIcon = theme === 'dark' ? Moon : theme === 'light' ? Sun : Monitor;
-
+export default function AppHeader({ title, right, className, width = 'wide' }: {
+    title?: string;
+    right?: React.ReactNode;
+    className?: string;
+    width?: keyof typeof WIDTH;
+}) {
     return (
-        <header className={cn('sticky top-0 z-40 bg-background/90 backdrop-blur-xl', className)}>
-            <div className="flex items-center justify-between max-w-lg mx-auto px-4 h-14">
+        // On computers the logo and the theme live in the navigation rail; a header with nothing else goes away
+        <header className={cn('sticky top-0 z-40 bg-background/90 backdrop-blur-xl', !title && !right && 'lg:hidden', className)}>
+            <div className={cn('flex items-center justify-between max-w-lg mx-auto px-4 h-14 lg:h-20 lg:px-8', WIDTH[width])}>
                 <div className="flex items-center gap-2.5 min-w-0">
-                    <TransMiLogo size={34} />
-                    {title && <h1 className="font-signage text-22 font-bold text-foreground leading-none truncate">{title}</h1>}
+                    <TransMiLogo size={34} className="lg:hidden" />
+                    {title && <h1 className="font-signage text-22 lg:text-34 font-bold text-foreground leading-none truncate">{title}</h1>}
                 </div>
                 <div className="flex items-center gap-1.5">
                     {right}
-                    <button
-                        onClick={() => updateSettings({ theme: NEXT_THEME[theme] })}
-                        className="w-9 h-9 rounded-full flex items-center justify-center transition active:scale-90 hover:bg-accent"
-                        aria-label={`${THEME_LABEL[theme]}. Cambiar tema`}
-                        title={THEME_LABEL[theme]}
-                    >
-                        <ThemeIcon className="w-[18px] h-[18px] text-foreground" />
-                    </button>
+                    <ThemeToggle className="lg:hidden" />
                 </div>
             </div>
-            <SystemStripe />
+            <SystemStripe className="lg:hidden" />
         </header>
     );
 }

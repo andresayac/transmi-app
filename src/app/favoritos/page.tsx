@@ -203,122 +203,126 @@ export default function GuardadosPage() {
         <div className="safe-bottom">
             <AppHeader title="Guardados" />
 
-            <main className="px-4 pt-5 space-y-9">
-                {/* ── Places ─────────────────────── */}
-                <section id="lugares" aria-labelledby="lugares-title" className="scroll-mt-20">
-                    <h2 id="lugares-title" className="font-signage text-24 font-bold">Tus lugares</h2>
-                    <p className="text-14 text-muted-foreground mb-2">Planea con un toque desde el inicio, y el asistente entiende “llévame a casa”.</p>
+            {/* Computers: what you saved on the left, settings on the right (the phone's order, side by side) */}
+            <main className="px-4 pt-5 space-y-9 lg:max-w-6xl lg:mx-auto lg:px-8 lg:pt-4 lg:space-y-0 lg:grid lg:grid-cols-[minmax(0,1fr)_440px] lg:gap-x-12 lg:items-start">
+                <div className="space-y-9">
+                    {/* ── Places ─────────────────────── */}
+                    <section id="lugares" aria-labelledby="lugares-title" className="scroll-mt-20">
+                        <h2 id="lugares-title" className="font-signage text-24 font-bold">Tus lugares</h2>
+                        <p className="text-14 text-muted-foreground mb-2">Planea con un toque desde el inicio, y el asistente entiende “llévame a casa”.</p>
 
-                    {editing && (
-                        <div className="my-3 space-y-2">
-                            <p className="text-14 font-semibold">
-                                {editing === 'home' ? 'Elige tu casa' : editing === 'work' ? 'Elige tu trabajo' : 'Nuevo lugar'}
-                            </p>
-                            {pendingPlace ? (
-                                <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); saveNewPlace(); }}>
-                                    <input
-                                        value={newLabel}
-                                        onChange={(e) => setNewLabel(e.target.value)}
-                                        autoFocus
-                                        aria-label="Nombre del lugar"
-                                        placeholder="Nombre: Universidad, Gimnasio…"
-                                        className="flex-1 h-11 rounded-xl bg-secondary px-3.5 text-16 outline-none focus:ring-2 focus:ring-ring"
-                                    />
-                                    <button type="submit" className="h-11 px-4 rounded-xl bg-foreground text-background font-semibold text-14">Guardar</button>
-                                    <button type="button" onClick={() => { setPendingPlace(null); setEditing(null); }} className="w-11 h-11 rounded-xl border border-border flex items-center justify-center" aria-label="Cancelar"><X className="w-4 h-4" /></button>
-                                </form>
-                            ) : (
-                                <PlacePicker onPick={pickPlace} onCancel={() => setEditing(null)} />
-                            )}
-                        </div>
-                    )}
-
-                    <div>
-                        <PlaceRow icon={House} label="Casa" place={s.home} onEdit={() => setEditing('home')} onRemove={s.home ? () => s.setHome(null) : undefined} />
-                        <PlaceRow icon={Briefcase} label="Trabajo" place={s.work} onEdit={() => setEditing('work')} onRemove={s.work ? () => s.setWork(null) : undefined} />
-                        {s.savedPlaces.map((p: SavedPlace) => (
-                            <PlaceRow key={p.id} icon={MapPin} label={p.label} place={p} onEdit={() => router.push(planHref(p))} onRemove={() => s.removePlace(p.id)} />
-                        ))}
-                    </div>
-                    {!editing && (
-                        <button onClick={() => setEditing('new')} className="mt-2 inline-flex items-center gap-2 h-10 px-4 rounded-full border border-border text-14 font-semibold hover:bg-accent">
-                            <Plus className="w-4 h-4" /> Agregar lugar
-                        </button>
-                    )}
-                </section>
-
-                {/* ── Routes ─────────────────────── */}
-                <section aria-labelledby="rutas-title">
-                    <div className="flex items-baseline justify-between">
-                        <h2 id="rutas-title" className="font-signage text-24 font-bold">Rutas guardadas</h2>
-                        {s.favorites.length > 1 && (
-                            <button onClick={viewAllOnMap} className="text-14 font-medium text-muted-foreground hover:text-foreground">Ver todas en el mapa</button>
+                        {editing && (
+                            <div className="my-3 space-y-2">
+                                <p className="text-14 font-semibold">
+                                    {editing === 'home' ? 'Elige tu casa' : editing === 'work' ? 'Elige tu trabajo' : 'Nuevo lugar'}
+                                </p>
+                                {pendingPlace ? (
+                                    <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); saveNewPlace(); }}>
+                                        <input
+                                            value={newLabel}
+                                            onChange={(e) => setNewLabel(e.target.value)}
+                                            autoFocus
+                                            aria-label="Nombre del lugar"
+                                            placeholder="Nombre: Universidad, Gimnasio…"
+                                            className="flex-1 h-11 rounded-xl bg-secondary px-3.5 text-16 outline-none focus:ring-2 focus:ring-ring"
+                                        />
+                                        <button type="submit" className="h-11 px-4 rounded-xl bg-foreground text-background font-semibold text-14">Guardar</button>
+                                        <button type="button" onClick={() => { setPendingPlace(null); setEditing(null); }} className="w-11 h-11 rounded-xl border border-border flex items-center justify-center" aria-label="Cancelar"><X className="w-4 h-4" /></button>
+                                    </form>
+                                ) : (
+                                    <PlacePicker onPick={pickPlace} onCancel={() => setEditing(null)} />
+                                )}
+                            </div>
                         )}
-                    </div>
-                    {s.favorites.length === 0 ? (
-                        <p className="text-14 text-muted-foreground mt-1">
-                            Toca la estrella en cualquier ruta para tenerla aquí. <Link href="/explorar" className="underline underline-offset-4 text-foreground">Buscar rutas</Link>
-                        </p>
-                    ) : (
-                        <div className="mt-1">
-                            {s.favorites.map((f) => (
-                                <div key={f.id} className="flex items-center gap-3 py-3 border-b border-border last:border-0">
-                                    <button
-                                        onClick={() => router.push(`/mapa?${new URLSearchParams({ id: f.id, nombre: f.nombre, codigo: f.codigo }).toString()}`)}
-                                        className="flex items-center gap-3 flex-1 min-w-0 text-left"
-                                    >
-                                        <RouteBadge code={f.codigo} color={f.color} size="md" />
-                                        <span className="min-w-0">
-                                            <span className="block font-signage text-18 font-semibold leading-tight truncate">{f.nombre}</span>
-                                            <span className="block text-12 text-muted-foreground">{f.tipo} · guardada {timeAgo(f.addedAt)}</span>
-                                        </span>
-                                    </button>
-                                    <button
-                                        onClick={async () => { const r = await shareRoute(f); if (r.success && r.method === 'clipboard') toast.show('Enlace copiado', 'success'); }}
-                                        className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-accent" aria-label={`Compartir ${f.codigo}`}
-                                    >
-                                        <Share2 className="w-[17px] h-[17px] text-muted-foreground" />
-                                    </button>
-                                    <button
-                                        onClick={() => { s.removeFavorite(f.id); toast.show(`${f.codigo} quitada de guardados`, 'info'); }}
-                                        className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-accent" aria-label={`Quitar ${f.codigo}`}
-                                    >
-                                        <Trash2 className="w-4 h-4 text-muted-foreground" />
-                                    </button>
-                                </div>
+
+                        <div>
+                            <PlaceRow icon={House} label="Casa" place={s.home} onEdit={() => setEditing('home')} onRemove={s.home ? () => s.setHome(null) : undefined} />
+                            <PlaceRow icon={Briefcase} label="Trabajo" place={s.work} onEdit={() => setEditing('work')} onRemove={s.work ? () => s.setWork(null) : undefined} />
+                            {s.savedPlaces.map((p: SavedPlace) => (
+                                <PlaceRow key={p.id} icon={MapPin} label={p.label} place={p} onEdit={() => router.push(planHref(p))} onRemove={() => s.removePlace(p.id)} />
                             ))}
                         </div>
-                    )}
-                </section>
+                        {!editing && (
+                            <button onClick={() => setEditing('new')} className="mt-2 inline-flex items-center gap-2 h-10 px-4 rounded-full border border-border text-14 font-semibold hover:bg-accent">
+                                <Plus className="w-4 h-4" /> Agregar lugar
+                            </button>
+                        )}
+                    </section>
 
-                {/* ── Mobility stats ─────────────── */}
-                <section aria-labelledby="movilidad-title">
-                    <h2 id="movilidad-title" className="font-signage text-24 font-bold">Tu movilidad</h2>
-                    {stats ? (
-                        <div className="mt-2 rounded-2xl bg-black text-white p-5 relative overflow-hidden ring-1 ring-white/10">
-                            <div className="absolute inset-x-0 top-0 system-stripe h-[4px]" aria-hidden />
-                            <p className="font-signage text-40 font-bold leading-none tabular">{stats.count} {stats.count === 1 ? 'viaje' : 'viajes'}</p>
-                            <p className="mt-2 text-15 text-white/75 tabular">
-                                {stats.minutes >= 90 ? `${(stats.minutes / 60).toFixed(1)} horas` : `${stats.minutes} minutos`} en el sistema · {stats.km.toFixed(1)} km recorridos
-                            </p>
-                            <p className="mt-1 text-14 text-white/55">
-                                ≈ {stats.co2.toFixed(1)} kg de CO₂ que no emitiste frente a ir en carro (estimado)
-                            </p>
-                            {stats.topLine && (
-                                <p className="mt-4 flex items-center gap-2 text-14 text-white/75">
-                                    Tu línea más usada <RouteBadge code={stats.topLine} size="sm" />
-                                </p>
+                    {/* ── Routes ─────────────────────── */}
+                    <section aria-labelledby="rutas-title">
+                        <div className="flex items-baseline justify-between">
+                            <h2 id="rutas-title" className="font-signage text-24 font-bold">Rutas guardadas</h2>
+                            {s.favorites.length > 1 && (
+                                <button onClick={viewAllOnMap} className="text-14 font-medium text-muted-foreground hover:text-foreground">Ver todas en el mapa</button>
                             )}
                         </div>
-                    ) : (
-                        <p className="text-14 text-muted-foreground mt-1">
-                            Cuando completes viajes con el modo viaje, aquí verás tus minutos, kilómetros y la línea que más usas. <Link href="/planear" className="underline underline-offset-4 text-foreground">Planear un viaje</Link>
-                        </p>
-                    )}
-                </section>
+                        {s.favorites.length === 0 ? (
+                            <p className="text-14 text-muted-foreground mt-1">
+                                Toca la estrella en cualquier ruta para tenerla aquí. <Link href="/explorar" className="underline underline-offset-4 text-foreground">Buscar rutas</Link>
+                            </p>
+                        ) : (
+                            <div className="mt-1">
+                                {s.favorites.map((f) => (
+                                    <div key={f.id} className="flex items-center gap-3 py-3 border-b border-border last:border-0">
+                                        <button
+                                            onClick={() => router.push(`/mapa?${new URLSearchParams({ id: f.id, nombre: f.nombre, codigo: f.codigo }).toString()}`)}
+                                            className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                                        >
+                                            <RouteBadge code={f.codigo} color={f.color} size="md" />
+                                            <span className="min-w-0">
+                                                <span className="block font-signage text-18 font-semibold leading-tight truncate">{f.nombre}</span>
+                                                <span className="block text-12 text-muted-foreground">{f.tipo} · guardada {timeAgo(f.addedAt)}</span>
+                                            </span>
+                                        </button>
+                                        <button
+                                            onClick={async () => { const r = await shareRoute(f); if (r.success && r.method === 'clipboard') toast.show('Enlace copiado', 'success'); }}
+                                            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-accent" aria-label={`Compartir ${f.codigo}`}
+                                        >
+                                            <Share2 className="w-[17px] h-[17px] text-muted-foreground" />
+                                        </button>
+                                        <button
+                                            onClick={() => { s.removeFavorite(f.id); toast.show(`${f.codigo} quitada de guardados`, 'info'); }}
+                                            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-accent" aria-label={`Quitar ${f.codigo}`}
+                                        >
+                                            <Trash2 className="w-4 h-4 text-muted-foreground" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </section>
 
-                {/* ── Settings ───────────────────── */}
-                <section aria-labelledby="ajustes-title" className="pb-4">
+                    {/* ── Mobility stats ─────────────── */}
+                    <section aria-labelledby="movilidad-title">
+                        <h2 id="movilidad-title" className="font-signage text-24 font-bold">Tu movilidad</h2>
+                        {stats ? (
+                            <div className="mt-2 rounded-2xl bg-black text-white p-5 relative overflow-hidden ring-1 ring-white/10">
+                                <div className="absolute inset-x-0 top-0 system-stripe h-[4px]" aria-hidden />
+                                <p className="font-signage text-40 font-bold leading-none tabular">{stats.count} {stats.count === 1 ? 'viaje' : 'viajes'}</p>
+                                <p className="mt-2 text-15 text-white/75 tabular">
+                                    {stats.minutes >= 90 ? `${(stats.minutes / 60).toFixed(1)} horas` : `${stats.minutes} minutos`} en el sistema · {stats.km.toFixed(1)} km recorridos
+                                </p>
+                                <p className="mt-1 text-14 text-white/55">
+                                    ≈ {stats.co2.toFixed(1)} kg de CO₂ que no emitiste frente a ir en carro (estimado)
+                                </p>
+                                {stats.topLine && (
+                                    <p className="mt-4 flex items-center gap-2 text-14 text-white/75">
+                                        Tu línea más usada <RouteBadge code={stats.topLine} size="sm" />
+                                    </p>
+                                )}
+                            </div>
+                        ) : (
+                            <p className="text-14 text-muted-foreground mt-1">
+                                Cuando completes viajes con el modo viaje, aquí verás tus minutos, kilómetros y la línea que más usas. <Link href="/planear" className="underline underline-offset-4 text-foreground">Planear un viaje</Link>
+                            </p>
+                        )}
+                    </section>
+
+                    {/* ── Settings ───────────────────── */}
+                </div>
+
+                <section aria-labelledby="ajustes-title" className="pb-4 lg:rounded-[22px] lg:border lg:border-border lg:p-6">
                     <h2 id="ajustes-title" className="font-signage text-24 font-bold mb-2">Ajustes</h2>
                     <div className="divide-y divide-border">
                         <div className="flex items-center justify-between gap-3 py-3">

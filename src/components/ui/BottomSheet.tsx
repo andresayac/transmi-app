@@ -3,6 +3,7 @@
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { animate, motion, PanInfo, useDragControls, useMotionValue } from 'motion/react';
 import { cn } from '@/lib/utils';
+import { useIsDesktop } from '@/lib/layout';
 
 interface BottomSheetProps {
     /** Snap heights: values ≤ 1 are fractions of the viewport, larger values are pixels. Ascending. */
@@ -23,7 +24,8 @@ function toPx(value: number, vh: number) {
 
 /**
  * Non-modal sheet that sits over a map. Drag the handle (or header) to move
- * between snap points; content scrolls independently.
+ * between snap points; content scrolls independently. On computers it's a
+ * panel along the left side of the map, always open.
  */
 export default function BottomSheet({
     snaps = [132, 0.5, 0.88],
@@ -38,6 +40,7 @@ export default function BottomSheet({
     const [internalSnap, setInternalSnap] = useState(controlledSnap ?? 1);
     const snapIndex = controlledSnap ?? internalSnap;
     const controls = useDragControls();
+    const desktop = useIsDesktop();
 
     useEffect(() => {
         const update = () => setVh(window.innerHeight);
@@ -71,6 +74,16 @@ export default function BottomSheet({
         setSnap(best);
         animate(y, maxH - heights[best], { type: 'spring', stiffness: 420, damping: 42 });
     };
+
+    if (desktop) {
+        return (
+            // As tall as its content; the gap at the bottom keeps the map's logo in view
+            <div className={cn('absolute left-4 top-4 z-40 w-[400px] max-h-[calc(100%-4.5rem)] flex flex-col overflow-hidden rounded-[22px] bg-background border border-border shadow-[0_8px_40px_rgba(0,0,0,0.25)]', className)}>
+                <div className="shrink-0 pt-4">{header}</div>
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</div>
+            </div>
+        );
+    }
 
     return (
         <motion.div

@@ -27,7 +27,7 @@ export default function BottomNav() {
     if (HIDDEN_ON.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return null;
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/92 backdrop-blur-xl border-t border-border pb-[env(safe-area-inset-bottom)]" aria-label="Navegación principal">
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/92 backdrop-blur-xl border-t border-border pb-[env(safe-area-inset-bottom)]" aria-label="Navegación principal">
             {hydrated && trip && (
                 <Link
                     href="/viaje"

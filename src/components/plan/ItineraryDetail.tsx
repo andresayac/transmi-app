@@ -12,6 +12,7 @@ import ItineraryMap from './ItineraryMap';
 import ItineraryTimeline from './ItineraryTimeline';
 import NextDepartureHint from './NextDepartureHint';
 import { plannerUrl, transferCount, transferText } from './utils';
+import { useIsDesktop } from '@/lib/layout';
 
 interface ItineraryDetailProps {
     itinerary: Itinerary;
@@ -23,13 +24,14 @@ interface ItineraryDetailProps {
     onStart: () => void;
 }
 
-/** Full-screen view of one option: map on top, steps and actions below. */
+/** One option: map on top, steps and actions below. On computers it takes the planner's left panel, next to its map. */
 export default function ItineraryDetail({ itinerary, from, to, departAt, live, onBack, onStart }: ItineraryDetailProps) {
     const toast = useToast();
     const setHome = useAppStore((s) => s.setHome);
     const setWork = useAppStore((s) => s.setWork);
     const savePlace = useAppStore((s) => s.savePlace);
     const [saveOpen, setSaveOpen] = useState(false);
+    const desktop = useIsDesktop();
     const firstRide = itinerary.legs.find((l) => l.mode === 'TRANSIT');
 
     const share = async () => {
@@ -56,20 +58,29 @@ export default function ItineraryDetail({ itinerary, from, to, departAt, live, o
     };
 
     return (
-        <div className="fixed inset-0 z-50 bg-background flex flex-col max-w-lg mx-auto animate-fade-in">
-            <div className="relative h-[42dvh] shrink-0">
-                <ItineraryMap itinerary={itinerary} from={from} to={to} padding={{ top: 80, bottom: 40, left: 40, right: 40 }} />
-                <button
-                    type="button"
-                    onClick={onBack}
-                    className="absolute left-3 top-[max(env(safe-area-inset-top),12px)] w-11 h-11 rounded-full glass flex items-center justify-center shadow-lg active:scale-95"
-                    aria-label="Volver a las opciones"
-                >
-                    <ArrowLeft className="w-5 h-5 text-foreground" />
-                </button>
-            </div>
+        <div className="fixed inset-0 z-50 bg-background flex flex-col max-w-lg mx-auto animate-fade-in lg:right-auto lg:left-[var(--rail)] lg:mx-0 lg:w-[440px] lg:max-w-none lg:border-r lg:border-border">
+            {desktop ? (
+                <div className="shrink-0 flex items-center gap-2 px-3 h-20 border-b border-border">
+                    <button type="button" onClick={onBack} className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-accent active:scale-95" aria-label="Volver a las opciones">
+                        <ArrowLeft className="w-5 h-5" />
+                    </button>
+                    <h2 className="font-signage text-24 font-bold truncate">A {to.name}</h2>
+                </div>
+            ) : (
+                <div className="relative h-[42dvh] shrink-0">
+                    <ItineraryMap itinerary={itinerary} from={from} to={to} padding={{ top: 80, bottom: 40, left: 40, right: 40 }} />
+                    <button
+                        type="button"
+                        onClick={onBack}
+                        className="absolute left-3 top-[max(env(safe-area-inset-top),12px)] w-11 h-11 rounded-full glass flex items-center justify-center shadow-lg active:scale-95"
+                        aria-label="Volver a las opciones"
+                    >
+                        <ArrowLeft className="w-5 h-5 text-foreground" />
+                    </button>
+                </div>
+            )}
 
-            <div className="flex-1 overflow-y-auto overscroll-contain -mt-4 relative rounded-t-[22px] bg-background border-t border-border">
+            <div className="flex-1 overflow-y-auto overscroll-contain -mt-4 relative rounded-t-[22px] bg-background border-t border-border lg:mt-0 lg:rounded-none lg:border-t-0">
                 <div className="px-5 pt-5">
                     <div className="flex items-end justify-between gap-3">
                         <div>

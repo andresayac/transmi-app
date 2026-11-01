@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Barlow, Barlow_Condensed } from 'next/font/google';
 import './globals.css';
 import BottomNav from '@/components/layout/BottomNav';
+import SideRail from '@/components/layout/SideRail';
 import ThemeSync, { themeBootScript } from '@/components/layout/ThemeSync';
 import { ToastProvider } from '@/components/ui/Toast';
 import ServiceWorkerRegistration from '@/components/pwa/ServiceWorkerRegistration';
@@ -58,7 +59,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ServiceWorkerRegistration />
         <ThemeSync />
         <ToastProvider>
-          <div className="min-h-dvh max-w-lg mx-auto relative">
+          <SideRail />
+          <div className="min-h-dvh max-w-lg mx-auto relative lg:max-w-none lg:mx-0 lg:pl-[var(--rail)]">
             {children}
           </div>
           <BottomNav />

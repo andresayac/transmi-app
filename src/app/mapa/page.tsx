@@ -117,7 +117,7 @@ function MapScreen() {
     const anyLayer = layers.recarga || layers.personalizacion;
 
     return (
-        <div className="fixed inset-0 z-30 overflow-hidden bg-background">
+        <div className="fixed inset-0 z-30 overflow-hidden bg-background lg:left-[var(--rail)]">
             {/* Inline position: mapbox-gl.css (unlayered) sets .mapboxgl-map { position: relative }, which beats Tailwind's layered `absolute` */}
             <div ref={containerRef} style={{ position: 'absolute', inset: 0 }} aria-label="Mapa" />
 
@@ -129,8 +129,8 @@ function MapScreen() {
                 </div>
             )}
 
-            {/* Back */}
-            <div className="absolute left-3 z-40" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}>
+            {/* Back (computers navigate with the rail) */}
+            <div className="absolute left-3 z-40 lg:hidden" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}>
                 <MapButton label="Volver" onClick={goBack}>
                     <ArrowLeft className="w-5 h-5" />
                 </MapButton>
@@ -209,7 +209,7 @@ function MapScreen() {
             )}
 
             {mode === 'multi' && !multiRoutes && (
-                <div className="absolute left-3 right-3 bottom-[calc(env(safe-area-inset-bottom)+16px)] z-40 rounded-2xl bg-background border border-border p-4 shadow-2xl">
+                <div className="absolute left-3 right-3 bottom-[calc(env(safe-area-inset-bottom)+16px)] z-40 rounded-2xl bg-background border border-border p-4 shadow-2xl lg:left-4 lg:top-4 lg:bottom-auto lg:right-auto lg:w-[400px]">
                     <p className="font-signage text-20 font-bold">No hay rutas para comparar</p>
                     <p className="text-14 text-muted-foreground mt-0.5">Elige varias rutas en Explorar, en una estación o en el catálogo y vuelve a abrir la comparación.</p>
                     <div className="mt-3 flex gap-2">

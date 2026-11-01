@@ -76,7 +76,7 @@ export default function PlaceSuggestions({ field, initialQuery = '', gps, gpsErr
             : field === 'from' ? '¿Desde dónde sales?' : '¿A dónde vas?';
 
     return (
-        <div className="fixed inset-0 z-[60] bg-background flex flex-col animate-fade-in" role="dialog" aria-label={field === 'from' ? 'Elegir origen' : 'Elegir destino'}>
+        <div className="fixed inset-0 z-[60] bg-background flex flex-col animate-fade-in lg:right-auto lg:left-[var(--rail)] lg:w-[440px] lg:border-r lg:border-border" role="dialog" aria-label={field === 'from' ? 'Elegir origen' : 'Elegir destino'}>
             <div className="flex items-center gap-2 px-3 pt-[max(env(safe-area-inset-top),12px)] pb-3 border-b border-border">
                 <button type="button" onClick={assign ? () => setAssign(null) : onClose} className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-accent active:scale-95" aria-label="Volver">
                     <ArrowLeft className="w-5 h-5" />

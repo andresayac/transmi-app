@@ -15,9 +15,13 @@ interface ItineraryCardProps {
     departAt: Date | null;
     live: boolean;
     onSelect: () => void;
+    /** Computers: pointing at the card shows it on the map beside the list */
+    onPreview?: () => void;
+    /** It's the one on that map */
+    onMap?: boolean;
 }
 
-export default function ItineraryCard({ itinerary, departAt, live, onSelect }: ItineraryCardProps) {
+export default function ItineraryCard({ itinerary, departAt, live, onSelect, onPreview, onMap = false }: ItineraryCardProps) {
     const firstRide = itinerary.legs.find((l) => l.mode === 'TRANSIT');
     const transfers = transferCount(itinerary);
 
@@ -25,7 +29,10 @@ export default function ItineraryCard({ itinerary, departAt, live, onSelect }: I
         <button
             type="button"
             onClick={onSelect}
-            className="route-card w-full text-left rounded-2xl border border-border bg-card p-4 hover:border-foreground/30 focus-visible:border-foreground"
+            onMouseEnter={onPreview}
+            onFocus={onPreview}
+            aria-current={onMap || undefined}
+            className={cn('route-card w-full text-left rounded-2xl border border-border bg-card p-4 hover:border-foreground/30 focus-visible:border-foreground', onMap && 'border-foreground hover:border-foreground')}
             aria-label={`Opción de ${itinerary.durationMin} minutos, ${transferText(transfers)}`}
         >
             <div className="flex items-start justify-between gap-3">

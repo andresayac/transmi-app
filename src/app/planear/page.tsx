@@ -12,9 +12,11 @@ import PlaceSuggestions from '@/components/plan/PlaceSuggestions';
 import DeparturePicker from '@/components/plan/DeparturePicker';
 import ItineraryCard, { ItineraryCardSkeleton } from '@/components/plan/ItineraryCard';
 import ItineraryDetail from '@/components/plan/ItineraryDetail';
+import PlannerMap from '@/components/plan/PlannerMap';
 import { useClock } from '@/components/plan/useClock';
 import { Departure, departureDate, hm, placeFromParams, placeParams, plannerUrl, samePlace, ymd } from '@/components/plan/utils';
 import { cn } from '@/lib/utils';
+import { useIsDesktop } from '@/lib/layout';
 
 type FromChoice = PlanPlace | 'gps';
 
@@ -166,6 +168,11 @@ function Planner() {
     const selectedId = q.get('it');
     const selected = selectedId ? itineraries.find((i) => i.id === selectedId) || null : null;
 
+    // Computers: the map beside the list shows the open option, else the one pointed at, else the first
+    const desktop = useIsDesktop();
+    const [previewId, setPreviewId] = useState<string | null>(null);
+    const shown = selected ?? itineraries.find((i) => i.id === previewId) ?? itineraries[0] ?? null;
+
     const pickPlace = (place: PlanPlace) => {
         if (editing === 'from') {
             setFromChoice(place.kind === 'gps' ? 'gps' : place);
@@ -219,162 +226,178 @@ function Planner() {
     const nowTime = nowWall ? hm(nowWall) : '';
 
     return (
-        <div className="min-h-dvh pb-[max(env(safe-area-inset-bottom),24px)]">
-            <header className="sticky top-0 z-30 bg-background/92 backdrop-blur-xl">
-                <div className="flex items-center gap-2 px-3 h-14 pt-[env(safe-area-inset-top)]">
-                    <button type="button" onClick={goBack} className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-accent active:scale-95" aria-label="Volver">
-                        <ArrowLeft className="w-5 h-5" />
-                    </button>
-                    <h1 className="font-signage text-24 font-bold">¿A dónde vas?</h1>
-                </div>
-                <SystemStripe />
-            </header>
-
-            <section className="px-4 pt-4">
-                <div className="relative rounded-2xl border border-border bg-card px-3 py-1">
-                    <FieldButton
-                        label="Desde"
-                        place={from}
-                        placeholder={gps.loading ? 'Buscando tu ubicación…' : 'Elige el punto de partida'}
-                        marker={<span className="w-3.5 h-3.5 rounded-full border-[3.5px] border-foreground bg-background" />}
-                        onClick={() => setEditing('from')}
-                    />
-                    <div className="ml-8 mr-12 border-t border-border" />
-                    <FieldButton
-                        label="Hasta"
-                        place={to}
-                        placeholder="Busca un lugar o estación"
-                        marker={<span className="w-3.5 h-3.5 rounded-[3px] bg-foreground" />}
-                        onClick={() => setEditing('to')}
-                        onClear={() => setTo(null)}
-                    />
-                    <span aria-hidden className="absolute left-[21px] top-[38px] h-[30px] border-l-2 border-dotted border-muted-foreground/60" />
-                    <button
-                        type="button"
-                        onClick={swap}
-                        disabled={!from && !to}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-secondary flex items-center justify-center active:scale-95 disabled:opacity-40"
-                        aria-label="Intercambiar origen y destino"
-                    >
-                        <ArrowDownUp className="w-[18px] h-[18px]" />
-                    </button>
-                </div>
-
-                {fromChoice === 'gps' && gps.error && !gpsPoint && (
-                    <p className="mt-2 text-13 text-muted-foreground">
-                        {gps.error}. <button type="button" onClick={gps.requestLocation} className="font-semibold text-foreground underline underline-offset-2">Reintentar</button> o elige el origen a mano.
-                    </p>
-                )}
-
-                <div className="mt-3">
-                    <DeparturePicker value={departure} today={today} nowTime={nowTime} onChange={setDeparture} />
-                </div>
-            </section>
-
-            {/* Before a destination is chosen: quick picks */}
-            {!to && (
-                <section className="px-4 pt-6">
-                    {hydrated && (home || work) && (
-                        <div className="flex gap-2 mb-5">
-                            {home && (
-                                <button type="button" onClick={() => setTo(home)} className="flex-1 flex items-center gap-2.5 rounded-2xl border border-border p-3 active:scale-[0.98]">
-                                    <House className="w-5 h-5" /><span className="font-semibold text-15">Casa</span>
-                                </button>
-                            )}
-                            {work && (
-                                <button type="button" onClick={() => setTo(work)} className="flex-1 flex items-center gap-2.5 rounded-2xl border border-border p-3 active:scale-[0.98]">
-                                    <Briefcase className="w-5 h-5" /><span className="font-semibold text-15">Trabajo</span>
-                                </button>
-                            )}
-                        </div>
-                    )}
-                    {hydrated && recent.length > 0 ? (
-                        <>
-                            <h2 className="text-14 font-semibold text-muted-foreground mb-1">Viajes recientes</h2>
-                            <ul>
-                                {recent.map((p, i) => (
-                                    <li key={`${p.lat},${p.lng},${i}`}>
-                                        <button type="button" onClick={() => setTo(p)} className="w-full flex items-center gap-3 py-3 text-left border-b border-border last:border-0">
-                                            <Clock3 className="w-4 h-4 text-muted-foreground shrink-0" />
-                                            <span className="min-w-0">
-                                                <span className="block truncate text-15 font-medium">{p.name}</span>
-                                                {p.detail && <span className="block truncate text-12 text-muted-foreground">{p.detail}</span>}
-                                            </span>
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
-                        </>
-                    ) : (
-                        <button type="button" onClick={() => setEditing('to')} className="w-full rounded-2xl border border-dashed border-border p-5 text-left active:scale-[0.99]">
-                            <MapPin className="w-5 h-5 mb-2" />
-                            <p className="font-signage text-20 font-bold">Escribe tu destino</p>
-                            <p className="text-13 text-muted-foreground mt-0.5">Una dirección, un lugar como “Movistar Arena” o una estación.</p>
+        <div className="min-h-dvh lg:fixed lg:inset-0 lg:left-[var(--rail)] lg:flex">
+            <div className="pb-[max(env(safe-area-inset-bottom),24px)] lg:w-[440px] lg:shrink-0 lg:overflow-y-auto lg:overscroll-contain lg:border-r lg:border-border">
+                <header className="sticky top-0 z-30 bg-background/92 backdrop-blur-xl">
+                    <div className="flex items-center gap-2 px-3 h-14 pt-[env(safe-area-inset-top)] lg:h-20 lg:px-5">
+                        <button type="button" onClick={goBack} className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-accent active:scale-95 lg:hidden" aria-label="Volver">
+                            <ArrowLeft className="w-5 h-5" />
                         </button>
-                    )}
-                </section>
-            )}
+                        <h1 className="font-signage text-24 font-bold lg:text-34">¿A dónde vas?</h1>
+                    </div>
+                    <SystemStripe className="lg:hidden" />
+                </header>
 
-            {to && (
-                <section className="px-4 pt-5 space-y-3" aria-live="polite" aria-busy={loading}>
-                    {samePoints && <p className="text-14 text-muted-foreground">El origen y el destino son el mismo lugar. Cambia uno de los dos.</p>}
-                    {!from && !samePoints && (
-                        <p className="text-14 text-muted-foreground">
-                            Elige desde dónde sales para ver las rutas. <button type="button" onClick={() => setEditing('from')} className="font-semibold text-foreground underline underline-offset-2">Elegir origen</button>
+                <section className="px-4 pt-4">
+                    <div className="relative rounded-2xl border border-border bg-card px-3 py-1">
+                        <FieldButton
+                            label="Desde"
+                            place={from}
+                            placeholder={gps.loading ? 'Buscando tu ubicación…' : 'Elige el punto de partida'}
+                            marker={<span className="w-3.5 h-3.5 rounded-full border-[3.5px] border-foreground bg-background" />}
+                            onClick={() => setEditing('from')}
+                        />
+                        <div className="ml-8 mr-12 border-t border-border" />
+                        <FieldButton
+                            label="Hasta"
+                            place={to}
+                            placeholder="Busca un lugar o estación"
+                            marker={<span className="w-3.5 h-3.5 rounded-[3px] bg-foreground" />}
+                            onClick={() => setEditing('to')}
+                            onClear={() => setTo(null)}
+                        />
+                        <span aria-hidden className="absolute left-[21px] top-[38px] h-[30px] border-l-2 border-dotted border-muted-foreground/60" />
+                        <button
+                            type="button"
+                            onClick={swap}
+                            disabled={!from && !to}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-secondary flex items-center justify-center active:scale-95 disabled:opacity-40"
+                            aria-label="Intercambiar origen y destino"
+                        >
+                            <ArrowDownUp className="w-[18px] h-[18px]" />
+                        </button>
+                    </div>
+
+                    {fromChoice === 'gps' && gps.error && !gpsPoint && (
+                        <p className="mt-2 text-13 text-muted-foreground">
+                            {gps.error}. <button type="button" onClick={gps.requestLocation} className="font-semibold text-foreground underline underline-offset-2">Reintentar</button> o elige el origen a mano.
                         </p>
                     )}
 
-                    {loading && (
-                        <>
-                            <p className="text-13 text-muted-foreground">Buscando las mejores opciones…</p>
-                            <ItineraryCardSkeleton />
-                            <ItineraryCardSkeleton />
-                            <ItineraryCardSkeleton />
-                        </>
-                    )}
+                    <div className="mt-3">
+                        <DeparturePicker value={departure} today={today} nowTime={nowTime} onChange={setDeparture} />
+                    </div>
+                </section>
 
-                    {current?.error && (
-                        <div className="rounded-2xl border border-border p-5">
-                            <p className="text-15 font-semibold">{current.error}</p>
-                            <button type="button" onClick={() => setNonce((n) => n + 1)} className="mt-3 inline-flex items-center gap-2 h-10 px-4 rounded-full bg-foreground text-background text-14 font-semibold">
-                                <RefreshCw className="w-4 h-4" /> Reintentar
-                            </button>
-                        </div>
-                    )}
-
-                    {current?.data && itineraries.length === 0 && (
-                        <div className="rounded-2xl border border-border p-5">
-                            <p className="font-signage text-20 font-bold">No encontramos rutas</p>
-                            <p className="mt-1 text-14 text-muted-foreground">
-                                {departure.mode === 'at'
-                                    ? 'A esa hora puede que el sistema no esté operando. Prueba con otra hora.'
-                                    : 'Prueba con un origen o destino más cerca de una estación, o con otra hora de salida.'}
-                            </p>
-                            <div className="mt-3 flex flex-wrap gap-2">
-                                {departure.mode === 'at' && (
-                                    <button type="button" onClick={() => setDeparture({ ...departure, mode: 'now' })} className="h-9 px-4 rounded-full bg-foreground text-background text-13 font-semibold">Salir ahora</button>
+                {/* Before a destination is chosen: quick picks */}
+                {!to && (
+                    <section className="px-4 pt-6">
+                        {hydrated && (home || work) && (
+                            <div className="flex gap-2 mb-5">
+                                {home && (
+                                    <button type="button" onClick={() => setTo(home)} className="flex-1 flex items-center gap-2.5 rounded-2xl border border-border p-3 active:scale-[0.98]">
+                                        <House className="w-5 h-5" /><span className="font-semibold text-15">Casa</span>
+                                    </button>
                                 )}
-                                <button type="button" onClick={() => setEditing('from')} className="h-9 px-4 rounded-full bg-secondary text-13 font-semibold">Cambiar origen</button>
+                                {work && (
+                                    <button type="button" onClick={() => setTo(work)} className="flex-1 flex items-center gap-2.5 rounded-2xl border border-border p-3 active:scale-[0.98]">
+                                        <Briefcase className="w-5 h-5" /><span className="font-semibold text-15">Trabajo</span>
+                                    </button>
+                                )}
                             </div>
-                        </div>
-                    )}
+                        )}
+                        {hydrated && recent.length > 0 ? (
+                            <>
+                                <h2 className="text-14 font-semibold text-muted-foreground mb-1">Viajes recientes</h2>
+                                <ul>
+                                    {recent.map((p, i) => (
+                                        <li key={`${p.lat},${p.lng},${i}`}>
+                                            <button type="button" onClick={() => setTo(p)} className="w-full flex items-center gap-3 py-3 text-left border-b border-border last:border-0">
+                                                <Clock3 className="w-4 h-4 text-muted-foreground shrink-0" />
+                                                <span className="min-w-0">
+                                                    <span className="block truncate text-15 font-medium">{p.name}</span>
+                                                    {p.detail && <span className="block truncate text-12 text-muted-foreground">{p.detail}</span>}
+                                                </span>
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </>
+                        ) : (
+                            <button type="button" onClick={() => setEditing('to')} className="w-full rounded-2xl border border-dashed border-border p-5 text-left active:scale-[0.99]">
+                                <MapPin className="w-5 h-5 mb-2" />
+                                <p className="font-signage text-20 font-bold">Escribe tu destino</p>
+                                <p className="text-13 text-muted-foreground mt-0.5">Una dirección, un lugar como “Movistar Arena” o una estación.</p>
+                            </button>
+                        )}
+                    </section>
+                )}
 
-                    {itineraries.length > 0 && (
-                        <>
-                            <div className="flex items-center justify-between">
-                                <p className="text-13 text-muted-foreground">
-                                    {itineraries.length === 1 ? '1 opción' : `${itineraries.length} opciones`}
-                                </p>
-                                <button type="button" onClick={() => setNonce((n) => n + 1)} className="inline-flex items-center gap-1.5 text-13 font-semibold text-foreground" aria-label="Actualizar opciones">
-                                    <RefreshCw className="w-3.5 h-3.5" /> Actualizar
+                {to && (
+                    <section className="px-4 pt-5 space-y-3" aria-live="polite" aria-busy={loading}>
+                        {samePoints && <p className="text-14 text-muted-foreground">El origen y el destino son el mismo lugar. Cambia uno de los dos.</p>}
+                        {!from && !samePoints && (
+                            <p className="text-14 text-muted-foreground">
+                                Elige desde dónde sales para ver las rutas. <button type="button" onClick={() => setEditing('from')} className="font-semibold text-foreground underline underline-offset-2">Elegir origen</button>
+                            </p>
+                        )}
+
+                        {loading && (
+                            <>
+                                <p className="text-13 text-muted-foreground">Buscando las mejores opciones…</p>
+                                <ItineraryCardSkeleton />
+                                <ItineraryCardSkeleton />
+                                <ItineraryCardSkeleton />
+                            </>
+                        )}
+
+                        {current?.error && (
+                            <div className="rounded-2xl border border-border p-5">
+                                <p className="text-15 font-semibold">{current.error}</p>
+                                <button type="button" onClick={() => setNonce((n) => n + 1)} className="mt-3 inline-flex items-center gap-2 h-10 px-4 rounded-full bg-foreground text-background text-14 font-semibold">
+                                    <RefreshCw className="w-4 h-4" /> Reintentar
                                 </button>
                             </div>
-                            {itineraries.map((it) => (
-                                <ItineraryCard key={it.id} itinerary={it} departAt={departAt} live={live} onSelect={() => openDetail(it.id)} />
-                            ))}
-                        </>
-                    )}
-                </section>
+                        )}
+
+                        {current?.data && itineraries.length === 0 && (
+                            <div className="rounded-2xl border border-border p-5">
+                                <p className="font-signage text-20 font-bold">No encontramos rutas</p>
+                                <p className="mt-1 text-14 text-muted-foreground">
+                                    {departure.mode === 'at'
+                                        ? 'A esa hora puede que el sistema no esté operando. Prueba con otra hora.'
+                                        : 'Prueba con un origen o destino más cerca de una estación, o con otra hora de salida.'}
+                                </p>
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                    {departure.mode === 'at' && (
+                                        <button type="button" onClick={() => setDeparture({ ...departure, mode: 'now' })} className="h-9 px-4 rounded-full bg-foreground text-background text-13 font-semibold">Salir ahora</button>
+                                    )}
+                                    <button type="button" onClick={() => setEditing('from')} className="h-9 px-4 rounded-full bg-secondary text-13 font-semibold">Cambiar origen</button>
+                                </div>
+                            </div>
+                        )}
+
+                        {itineraries.length > 0 && (
+                            <>
+                                <div className="flex items-center justify-between">
+                                    <p className="text-13 text-muted-foreground">
+                                        {itineraries.length === 1 ? '1 opción' : `${itineraries.length} opciones`}
+                                    </p>
+                                    <button type="button" onClick={() => setNonce((n) => n + 1)} className="inline-flex items-center gap-1.5 text-13 font-semibold text-foreground" aria-label="Actualizar opciones">
+                                        <RefreshCw className="w-3.5 h-3.5" /> Actualizar
+                                    </button>
+                                </div>
+                                {itineraries.map((it) => (
+                                    <ItineraryCard
+                                        key={it.id}
+                                        itinerary={it}
+                                        departAt={departAt}
+                                        live={live}
+                                        onSelect={() => openDetail(it.id)}
+                                        onPreview={() => setPreviewId(it.id)}
+                                        onMap={desktop && shown?.id === it.id}
+                                    />
+                                ))}
+                            </>
+                        )}
+                    </section>
+                )}
+            </div>
+
+            {desktop && (
+                <div className="relative flex-1 min-w-0">
+                    <PlannerMap itinerary={shown} from={from} to={to} />
+                </div>
             )}
 
             {editing && (

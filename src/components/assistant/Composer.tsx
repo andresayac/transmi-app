@@ -44,9 +44,9 @@ export default function Composer({ onSend, onStop, streaming, disabled }: Compos
     };
 
     return (
-        <div className="border-t border-border bg-background/95 px-3 pt-2.5 pb-[calc(env(safe-area-inset-bottom)+10px)] backdrop-blur-xl">
+        <div className="border-t border-border bg-background/95 px-3 pt-2.5 pb-[calc(env(safe-area-inset-bottom)+10px)] backdrop-blur-xl lg:px-6 lg:pb-5 lg:pt-3">
             {speech.error && <p className="px-2 pb-1.5 text-12 text-muted-foreground" role="status">{speech.error}</p>}
-            <div className={cn('flex items-end gap-2 rounded-[22px] border border-border bg-secondary py-1.5 pl-4 pr-1.5 transition-colors focus-within:border-ring', speech.listening && 'border-foreground')}>
+            <div className={cn('flex items-end gap-2 rounded-[22px] border border-border bg-secondary py-1.5 pl-4 pr-1.5 transition-colors focus-within:border-ring lg:mx-auto lg:max-w-3xl', speech.listening && 'border-foreground')}>
                 <label htmlFor="assistant-input" className="sr-only">Mensaje para el asistente</label>
                 <textarea
                     id="assistant-input"

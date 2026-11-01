@@ -71,6 +71,7 @@ La idea surgió como un **proyecto educativo** para aprender a integrar APIs de 
 - Tipografía de señalética: **Barlow** y **Barlow Condensed**
 - **Franja del sistema**: firma visual con los 15 colores oficiales de las troncales
 - Modo claro, oscuro o del sistema, sin parpadeo al cargar
+- **Versión para computadora** (desde 1024 px): barra de navegación vertical con la franja del sistema como eje; mapa con panel lateral; planeador con las opciones a la izquierda y la ruta en el mapa a la derecha (al pasar el cursor por una opción se dibuja); copiloto e inicio en dos columnas. En el celular nada cambia
 
 ### 📶 Para todos los días
 - **Ahorro de datos** (se activa solo si el teléfono lo pide): mapas planos y bajo pedido (mientras tanto, un **esquema del recorrido dibujado sin descargar nada**), datos en vivo con la mitad de consultas y avisos con la voz del teléfono. El catálogo de 7.400 paradas se guarda un mes en el teléfono
