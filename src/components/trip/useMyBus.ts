@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { haversine } from '@/lib/geo';
 import type { LiveBus } from '@/types/transit';
+import { saverInterval, useDataSaver } from '@/lib/dataSaver';
 
 const POLL_MS = 10000;
 /** A bus counts as "yours" when it's this close on two readings in a row */
@@ -22,6 +23,7 @@ export interface MyBus {
  */
 export function useMyBus(routeCode: string | null, position: { lat: number; lng: number } | null): MyBus | null {
     const [bus, setBus] = useState<MyBus | null>(null);
+    const every = saverInterval(POLL_MS, useDataSaver());
     const posRef = useRef(position);
     const state = useRef({ candidate: '', hits: 0, misses: 0, confirmed: '' });
 
@@ -79,13 +81,13 @@ export function useMyBus(routeCode: string | null, position: { lat: number; lng:
         };
 
         check();
-        const timer = setInterval(check, POLL_MS);
+        const timer = setInterval(check, every);
         return () => {
             cancelled = true;
             clearTimeout(reset);
             clearInterval(timer);
         };
-    }, [routeCode]);
+    }, [routeCode, every]);
 
     return bus;
 }

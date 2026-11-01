@@ -5,6 +5,7 @@ import { Check, Loader2, Play, Square } from 'lucide-react';
 import { speak, stopSpeaking, unlockSpeech } from '@/lib/speech';
 import { DEFAULT_TTS_VOICE, isKnownVoice, TTS_VOICES } from '@/lib/voices';
 import { useAppStore } from '@/stores/app';
+import { useDataSaver } from '@/lib/dataSaver';
 import { cn } from '@/lib/utils';
 
 const SAMPLE = (name: string) => `Hola, soy ${name}. La B13 llega en cuatro minutos. Prepárate: te bajas en la próxima parada, Calle 72.`;
@@ -14,6 +15,7 @@ export default function VoicePicker({ value, onChange }: { value: string; onChan
     const selected = isKnownVoice(value) ? value : DEFAULT_TTS_VOICE;
     const [playing, setPlaying] = useState<string | null>(null);
     const [loading, setLoading] = useState<string | null>(null);
+    const saving = useDataSaver();
 
     useEffect(() => () => stopSpeaking(), []);
 
@@ -30,7 +32,7 @@ export default function VoicePicker({ value, onChange }: { value: string; onChan
         useAppStore.getState().updateSettings({ ttsVoice: id });
         setLoading(id);
         setPlaying(id);
-        const done = speak(SAMPLE(name));
+        const done = speak(SAMPLE(name), { neural: true });
         // The first sentence starts after the audio request returns
         setTimeout(() => setLoading((l) => (l === id ? null : l)), 900);
         await done;
@@ -41,7 +43,11 @@ export default function VoicePicker({ value, onChange }: { value: string; onChan
     return (
         <div className="py-3">
             <span className="block text-[15px] font-medium">Voz</span>
-            <span className="block text-[13px] text-muted-foreground mb-2">Voces neuronales multilingües: hablan español con naturalidad</span>
+            <span className="block text-[13px] text-muted-foreground mb-2">
+                {saving
+                    ? 'Con el ahorro de datos, los avisos usan la voz del teléfono. Escuchar una muestra sí descarga el audio.'
+                    : 'Voces neuronales multilingües: hablan español con naturalidad'}
+            </span>
             <div role="radiogroup" aria-label="Voz de los avisos" className="grid grid-cols-2 gap-2">
                 {TTS_VOICES.map((v) => {
                     const active = selected === v.id;

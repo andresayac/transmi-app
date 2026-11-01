@@ -42,6 +42,8 @@ async function fetchParadas(search: string): Promise<RawParada[]> {
     }
 }
 
+const round5 = (n: number) => Math.round(n * 1e5) / 1e5;
+
 export function getStations(): Promise<StationMapEntry[]> {
     return cached('stations', 2 * 60 * 60 * 1000, async () => {
         // "a" alone returns ~6700 stops, but a few names don't contain it
@@ -54,7 +56,8 @@ export function getStations(): Promise<StationMapEntry[]> {
         for (const p of byId.values()) {
             const c = parseCoord(p.coordenada);
             if (!c) continue;
-            stations.push({ id: p.id, codigo: p.codigo, nombre: p.nombre, direccion: p.direccion, lat: c.lat, lng: c.lng, sistema: p.sistema });
+            // 5 decimals ≈ 1 m: plenty for a stop, and ~150 KB lighter than the feed's 15 digits
+            stations.push({ id: p.id, codigo: p.codigo, nombre: p.nombre, direccion: p.direccion, lat: round5(c.lat), lng: round5(c.lng), sistema: p.sistema });
         }
         if (!stations.length) throw new Error('No stations returned');
         return stations;

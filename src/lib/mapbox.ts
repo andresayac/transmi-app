@@ -4,6 +4,7 @@
 import type { Map as MapboxMap, MapOptions } from 'mapbox-gl';
 import { dayPeriod } from '@/lib/schedule';
 import { MAPBOX_TOKEN, BOGOTA_CENTER } from '@/utils/constants';
+import { isDataSaver } from '@/lib/dataSaver';
 
 export type MapboxGL = typeof import('mapbox-gl').default;
 export type LightPreset = 'dawn' | 'day' | 'dusk' | 'night';
@@ -121,7 +122,7 @@ function swapToOpenFreeMap(map: MapboxMap, preset: LightPreset) {
 
     map.setStyle(OFM_STYLE(preset), { diff: false } as Parameters<MapboxMap['setStyle']>[1]);
     map.once('style.load', () => {
-        addOpenFreeMap3D(map, preset);
+        if (!isDataSaver()) addOpenFreeMap3D(map, preset);
         for (const [id, source] of ownSources) {
             try { if (!map.getSource(id)) map.addSource(id, source as Parameters<MapboxMap['addSource']>[1]); } catch { /* ignore */ }
         }
@@ -163,6 +164,8 @@ export async function createMap({ container, center = BOGOTA_CENTER, zoom = 12, 
     const mapboxgl = await loadMapbox();
     const basemap = resolveProvider();
     const preset = lightPresetFor(light);
+    // Data saver: flat map (tilting loads tiles up to the horizon) and no 3D models
+    const flat = isDataSaver();
 
     const styleOptions: Partial<MapOptions> = basemap === 'mapbox'
         ? {
@@ -173,7 +176,7 @@ export async function createMap({ container, center = BOGOTA_CENTER, zoom = 12, 
                     lightPreset: preset,
                     showPointOfInterestLabels: false,
                     showTransitLabels: false,
-                    show3dObjects: true,
+                    show3dObjects: !flat,
                 },
             },
         }
@@ -184,17 +187,18 @@ export async function createMap({ container, center = BOGOTA_CENTER, zoom = 12, 
         ...styleOptions,
         center,
         zoom,
-        pitch,
+        pitch: flat ? 0 : pitch,
         bearing,
         interactive,
         attributionControl: false,
-        antialias: true,
+        antialias: !flat,
+        ...(flat ? { maxPitch: 0 } : {}),
         ...extra,
     } as MapOptions);
     map.addControl(new mapboxgl.AttributionControl({ compact: true }), 'bottom-left');
     presets.set(map, preset);
-    if (basemap === 'openfreemap') map.once('style.load', () => addOpenFreeMap3D(map, preset));
-    else watchTileDenials(map, () => presets.get(map) || preset);
+    if (basemap === 'mapbox') watchTileDenials(map, () => presets.get(map) || preset);
+    else if (!flat) map.once('style.load', () => addOpenFreeMap3D(map, preset));
     return map;
 }
 

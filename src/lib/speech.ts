@@ -2,6 +2,7 @@
 
 import { useAppStore } from '@/stores/app';
 import { DEFAULT_TTS_VOICE, isKnownVoice, TTS_MAX_CHARS } from '@/lib/voices';
+import { isDataSaver } from '@/lib/dataSaver';
 
 /**
  * App-wide speech output with Edge's neural voices (served by /api/voz).
@@ -11,6 +12,7 @@ import { DEFAULT_TTS_VOICE, isKnownVoice, TTS_MAX_CHARS } from '@/lib/voices';
  * - Long text is split into sentences: the first one starts sooner and the next
  *   is fetched while the current one plays.
  * - If the voice service can't be reached, the browser's own voice reads the rest.
+ * - Under data saver the phone's own voice is used from the start (no audio downloads).
  */
 
 let player: HTMLAudioElement | null = null;
@@ -89,7 +91,7 @@ function voiceUrl(text: string, voice: string): string {
 /** Warm the server and HTTP caches so a known upcoming phrase plays instantly. */
 export function prefetchSpeech(text: string) {
     const clean = speakable(text);
-    if (!clean) return;
+    if (!clean || isDataSaver()) return;
     const voice = currentVoice();
     for (const c of chunks(clean).slice(0, 2)) warm(voiceUrl(c, voice));
 }
@@ -118,24 +120,43 @@ function playUrl(el: HTMLAudioElement, url: string, gen: number): Promise<void> 
     });
 }
 
-function browserSpeak(text: string) {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+function browserUtterance(text: string): SpeechSynthesisUtterance {
     const synth = window.speechSynthesis;
-    synth.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'es-CO';
     const voices = synth.getVoices();
     const v = voices.find((x) => x.lang === 'es-CO') || voices.find((x) => x.lang === 'es-US' || x.lang === 'es-MX') || voices.find((x) => x.lang.startsWith('es'));
     if (v) u.voice = v;
-    synth.speak(u);
+    return u;
 }
 
-/** Speak `text` with the user's chosen voice. Interrupts anything already playing. */
-export async function speak(text: string): Promise<void> {
+function browserSpeak(text: string) {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(browserUtterance(text));
+}
+
+/** The phone's voice, resolving when it finishes (or is interrupted). */
+function browserSpeakUntilDone(text: string): Promise<void> {
+    return new Promise((resolve) => {
+        const u = browserUtterance(text);
+        u.onend = () => resolve();
+        u.onerror = () => resolve();
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(u);
+    });
+}
+
+/**
+ * Speak `text` with the user's chosen voice. Interrupts anything already playing.
+ * `neural` forces the downloaded voice even under data saver (voice previews).
+ */
+export async function speak(text: string, { neural = false }: { neural?: boolean } = {}): Promise<void> {
     const el = audio();
     const clean = speakable(text);
     if (!el || !clean) return;
     stopSpeaking();
+    if (!neural && isDataSaver() && 'speechSynthesis' in window) return browserSpeakUntilDone(clean);
     const gen = generation;
     const voice = currentVoice();
     const parts = chunks(clean);

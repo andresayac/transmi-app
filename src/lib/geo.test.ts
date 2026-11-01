@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatDistance, haversine, orderAlongLine, parseCoord, projectOnPath, simplify, type LngLat } from './geo';
+import { fitToBox, formatDistance, haversine, orderAlongLine, parseCoord, projectOnPath, simplify, type LngLat } from './geo';
 import { colorForRouteCode, readableOn, visibleOnMap } from './color';
 import { conventionAppliesTo, formatClock, parseClock } from './schedule';
 
@@ -43,6 +43,18 @@ describe('geo', () => {
             { name: 'Calle 146', lat: 4.731, lng: -74.050 },
         ];
         expect(orderAlongLine(stations, (s) => s).map((s) => s.name)).toEqual(['Portal Norte', 'Calle 146', 'Calle 127', 'Calle 100', 'Calle 85']);
+    });
+
+    it('fits a route into a box with north up, centered inside the padding', () => {
+        // A north-south line: it should span the full inner height, centered horizontally
+        const line: LngLat[] = [[-74.06, 4.60], [-74.06, 4.70]];
+        const project = fitToBox(line, 300, 400, { top: 50, right: 20, bottom: 50, left: 20 });
+        const [x1, y1] = project(line[0]);
+        const [x2, y2] = project(line[1]);
+        expect(y1).toBeCloseTo(350); // south at the bottom
+        expect(y2).toBeCloseTo(50);
+        expect(x1).toBeCloseTo(150);
+        expect(x2).toBeCloseTo(150);
     });
 });
 

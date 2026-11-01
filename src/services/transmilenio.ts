@@ -4,6 +4,7 @@ import { Troncal, Estacion, ZonaOperacional, Parada, BusETA } from '@/types/expl
 import { RouteCatalogEntry, RouteCatalog, CatalogProgress } from '@/types/catalog';
 import { StationMapEntry, StationCache } from '@/types/station';
 import { CACHE_TTL, BUS_CACHE_TTL } from '@/utils/constants';
+import { isDataSaver } from '@/lib/dataSaver';
 
 interface CacheEntry<T> {
     data: T;
@@ -375,7 +376,12 @@ class TransMilenioService {
     // ─── Station Explorer ─────────────────────────────────
 
     private static STATIONS_KEY = 'tm_stations_cache';
-    private static STATIONS_TTL = 2 * 60 * 60 * 1000; // 2 hours (matches server)
+    // The catalog (~7,400 stops, over 1 MB) barely changes: keep it a month and
+    // refresh it quietly once a day (once a week under data saver)
+    private static STATIONS_MAX_AGE = 30 * 24 * 60 * 60 * 1000;
+    private static STATIONS_FRESH = 24 * 60 * 60 * 1000;
+    private static STATIONS_FRESH_SAVER = 7 * 24 * 60 * 60 * 1000;
+    private refreshingStations = false;
 
     getStationCache(): StationCache | null {
         if (typeof window === 'undefined') return null;
@@ -384,7 +390,7 @@ class TransMilenioService {
             if (!raw) return null;
             const cache: StationCache = JSON.parse(raw);
             // Reject empty or expired caches
-            if (!cache.stations?.length || Date.now() - cache.timestamp >= TransMilenioService.STATIONS_TTL) {
+            if (!cache.stations?.length || Date.now() - cache.timestamp >= TransMilenioService.STATIONS_MAX_AGE) {
                 localStorage.removeItem(TransMilenioService.STATIONS_KEY);
                 return null;
             }
@@ -403,14 +409,24 @@ class TransMilenioService {
     /**
      * Fetch all stations from server-side cache.
      * Server does the heavy lifting (bulk fetch + 2h cache).
-     * Client also caches in localStorage for instant loads.
+     * Client keeps a copy in localStorage: served instantly, refreshed in the background when old.
      */
     async getAllEstaciones(forceRefresh = false): Promise<StationMapEntry[]> {
         if (!forceRefresh) {
             const cached = this.getStationCache();
-            if (cached) return cached.stations;
+            if (cached) {
+                const fresh = isDataSaver() ? TransMilenioService.STATIONS_FRESH_SAVER : TransMilenioService.STATIONS_FRESH;
+                if (Date.now() - cached.timestamp > fresh && !this.refreshingStations) {
+                    this.refreshingStations = true;
+                    this.fetchStations().catch(() => undefined).finally(() => { this.refreshingStations = false; });
+                }
+                return cached.stations;
+            }
         }
+        return this.fetchStations();
+    }
 
+    private async fetchStations(): Promise<StationMapEntry[]> {
         const response = await fetch('/api/stations');
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 

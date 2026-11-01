@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { saverInterval, useDataSaver } from '@/lib/dataSaver';
 
 interface LiveState<T> {
     data: T | null;
@@ -10,7 +11,7 @@ interface LiveState<T> {
 }
 
 /**
- * Fetch JSON from `url` and optionally re-poll every `intervalMs`.
+ * Fetch JSON from `url` and optionally re-poll every `intervalMs` (half as often under data saver).
  * Polling pauses while the tab is hidden and resumes (with an immediate refresh) when visible.
  * Pass `null` as url to stay idle.
  */
@@ -37,6 +38,9 @@ export function useLiveData<T>(url: string | null, intervalMs = 0) {
         }
     }, []);
 
+    // Data saver slows polling down; switching it only re-times, it doesn't reload
+    const every = saverInterval(intervalMs, useDataSaver());
+
     useEffect(() => {
         urlRef.current = url;
         if (!url) {
@@ -45,25 +49,27 @@ export function useLiveData<T>(url: string | null, intervalMs = 0) {
         }
         setState((s) => ({ ...s, data: null, error: null }));
         load();
-        if (!intervalMs) return () => controller.current?.abort();
+        return () => controller.current?.abort();
+    }, [url, load]);
 
-        let timer: ReturnType<typeof setInterval> | null = setInterval(load, intervalMs);
+    useEffect(() => {
+        if (!url || !every) return;
+        let timer: ReturnType<typeof setInterval> | null = setInterval(load, every);
         const onVisibility = () => {
             if (document.hidden) {
                 if (timer) clearInterval(timer);
                 timer = null;
             } else if (!timer) {
                 load();
-                timer = setInterval(load, intervalMs);
+                timer = setInterval(load, every);
             }
         };
         document.addEventListener('visibilitychange', onVisibility);
         return () => {
             if (timer) clearInterval(timer);
             document.removeEventListener('visibilitychange', onVisibility);
-            controller.current?.abort();
         };
-    }, [url, intervalMs, load]);
+    }, [url, every, load]);
 
     return { ...state, refresh: load };
 }

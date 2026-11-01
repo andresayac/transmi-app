@@ -50,6 +50,8 @@ export interface PinnedStop {
 }
 
 export type ThemePref = 'system' | 'light' | 'dark';
+/** "auto" follows the phone's own data saver (see lib/dataSaver.ts) */
+export type DataSaverPref = 'auto' | 'on' | 'off';
 
 export interface Settings {
     theme: ThemePref;
@@ -62,6 +64,7 @@ export interface Settings {
     ttsVoice: string;
     /** Name shown on shared trips (optional) */
     shareName: string;
+    dataSaver: DataSaverPref;
 }
 
 interface AppState {
@@ -126,7 +129,7 @@ export const useAppStore = create<AppState>()(
             pinnedStops: [],
             cardNumber: '',
             lastBalance: null,
-            settings: { theme: 'system', voice: true, alarmStops: 2, mapLight: 'auto', ttsVoice: DEFAULT_TTS_VOICE, shareName: '' },
+            settings: { theme: 'system', voice: true, alarmStops: 2, mapLight: 'auto', ttsVoice: DEFAULT_TTS_VOICE, shareName: '', dataSaver: 'auto' },
 
             addFavorite: (route) => {
                 if (get().favorites.some((f) => f.id === route.id)) return;

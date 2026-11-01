@@ -15,6 +15,7 @@ import { shareRoute } from '@/utils/share';
 import { ROUTE_COLORS } from '@/utils/constants';
 import type { PlanPlace } from '@/types/transit';
 import { cn } from '@/lib/utils';
+import { phoneAsksToSaveData, useDataSaver } from '@/lib/dataSaver';
 
 function timeAgo(dateStr: string): string {
     const d = new Date(dateStr);
@@ -42,6 +43,20 @@ function Segmented<T extends string>({ value, options, onChange, label }: { valu
                 </button>
             ))}
         </div>
+    );
+}
+
+function Switch({ checked, onChange, label }: { checked: boolean; onChange: (on: boolean) => void; label: string }) {
+    return (
+        <button
+            role="switch"
+            aria-checked={checked}
+            onClick={() => onChange(!checked)}
+            className={cn('relative w-12 h-7 rounded-full transition shrink-0', checked ? 'bg-foreground' : 'bg-secondary ring-1 ring-border')}
+        >
+            <span className={cn('absolute top-1 w-5 h-5 rounded-full transition-all', checked ? 'left-6 bg-background' : 'left-1 bg-muted-foreground')} />
+            <span className="sr-only">{label}</span>
+        </button>
     );
 }
 
@@ -85,6 +100,7 @@ export default function GuardadosPage() {
     const toast = useToast();
     const hydrated = useHydrated();
     const s = useAppStore();
+    const saving = useDataSaver();
 
     const [editing, setEditing] = useState<Editing>(null);
     const [pendingPlace, setPendingPlace] = useState<PlanPlace | null>(null);
@@ -280,18 +296,21 @@ export default function GuardadosPage() {
                         </div>
                         <div className="flex items-center justify-between gap-3 py-3">
                             <span>
+                                <span className="block text-[15px] font-medium">Ahorro de datos</span>
+                                <span className="block text-[13px] text-muted-foreground">
+                                    {s.settings.dataSaver === 'auto' && saving && phoneAsksToSaveData()
+                                        ? 'Encendido porque tu teléfono pidió ahorrar datos'
+                                        : 'Mapa solo cuando lo pidas, menos actualizaciones y la voz del teléfono'}
+                                </span>
+                            </span>
+                            <Switch checked={saving} onChange={(on) => s.updateSettings({ dataSaver: on ? 'on' : 'off' })} label="Ahorro de datos" />
+                        </div>
+                        <div className="flex items-center justify-between gap-3 py-3">
+                            <span>
                                 <span className="block text-[15px] font-medium">Avisos por voz en viaje</span>
                                 <span className="block text-[13px] text-muted-foreground">Te anuncia la próxima parada y cuándo bajarte</span>
                             </span>
-                            <button
-                                role="switch"
-                                aria-checked={s.settings.voice}
-                                onClick={() => s.updateSettings({ voice: !s.settings.voice })}
-                                className={cn('relative w-12 h-7 rounded-full transition shrink-0', s.settings.voice ? 'bg-foreground' : 'bg-secondary ring-1 ring-border')}
-                            >
-                                <span className={cn('absolute top-1 w-5 h-5 rounded-full transition-all', s.settings.voice ? 'left-6 bg-background' : 'left-1 bg-muted-foreground')} />
-                                <span className="sr-only">Avisos por voz</span>
-                            </button>
+                            <Switch checked={s.settings.voice} onChange={(voice) => s.updateSettings({ voice })} label="Avisos por voz" />
                         </div>
                         <VoicePicker value={s.settings.ttsVoice} onChange={(ttsVoice) => s.updateSettings({ ttsVoice })} />
                         <div className="flex items-center justify-between gap-3 py-3">

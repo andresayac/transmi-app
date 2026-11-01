@@ -108,6 +108,25 @@ export function boundsOf(coords: LngLat[]): [LngLat, LngLat] | null {
     return [[minX, minY], [maxX, maxY]];
 }
 
+/**
+ * Project coordinates into a width×height box, centered inside the padding.
+ * Longitude is scaled by cos(latitude) so shapes keep their real proportions.
+ */
+export function fitToBox(coords: LngLat[], width: number, height: number, pad = { top: 0, right: 0, bottom: 0, left: 0 }): (c: LngLat) => [number, number] {
+    const b = boundsOf(coords);
+    if (!b) return () => [width / 2, height / 2];
+    const [[minX, minY], [maxX, maxY]] = b;
+    const k = Math.cos((((minY + maxY) / 2) * Math.PI) / 180);
+    const spanX = Math.max((maxX - minX) * k, 1e-9);
+    const spanY = Math.max(maxY - minY, 1e-9);
+    const innerW = Math.max(width - pad.left - pad.right, 1);
+    const innerH = Math.max(height - pad.top - pad.bottom, 1);
+    const scale = Math.min(innerW / spanX, innerH / spanY);
+    const offX = pad.left + (innerW - spanX * scale) / 2;
+    const offY = pad.top + (innerH - spanY * scale) / 2;
+    return ([x, y]) => [offX + (x - minX) * k * scale, offY + (maxY - y) * scale];
+}
+
 /** Linear interpolation between two coordinates. */
 export function lerpLngLat(a: LngLat, b: LngLat, t: number): LngLat {
     return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];

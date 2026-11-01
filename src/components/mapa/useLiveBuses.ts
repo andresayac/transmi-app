@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import type { LiveBus } from '@/types/transit';
+import { saverInterval, useDataSaver } from '@/lib/dataSaver';
 
 export interface LiveBusRequest {
     key: string;
@@ -10,10 +11,11 @@ export interface LiveBusRequest {
 }
 
 /**
- * Polls /api/live for every requested route (default every 8s) and returns the
+ * Polls /api/live for every requested route (default every 8s, 20s under data saver) and returns the
  * buses keyed by route. Pauses while the tab is hidden; refreshes on return.
  */
-export function useLiveBuses(requests: LiveBusRequest[], intervalMs = 8000) {
+export function useLiveBuses(requests: LiveBusRequest[], baseIntervalMs = 8000) {
+    const intervalMs = saverInterval(baseIntervalMs, useDataSaver());
     const [byRoute, setByRoute] = useState<Record<string, LiveBus[]>>({});
     const [updatedAt, setUpdatedAt] = useState<number | null>(null);
 

@@ -5,7 +5,9 @@ import type { Map as MapboxMap, Marker } from 'mapbox-gl';
 import type { Itinerary, PlanPlace } from '@/types/transit';
 import { createMap, isDarkPreset, lightPresetFor, loadMapbox, removeLayers, setMapLight } from '@/lib/mapbox';
 import { visibleOnMap } from '@/lib/color';
-import { useAppStore } from '@/stores/app';
+import { useAppStore, useHydrated } from '@/stores/app';
+import { useDataSaver } from '@/lib/dataSaver';
+import RouteSketch from './RouteSketch';
 import { cn } from '@/lib/utils';
 
 export interface RiderPoint {
@@ -14,7 +16,7 @@ export interface RiderPoint {
     heading: number | null;
 }
 
-interface ItineraryMapProps {
+export interface ItineraryMapProps {
     itinerary: Itinerary;
     from: PlanPlace;
     to: PlanPlace;
@@ -58,7 +60,7 @@ function riderEl(): HTMLElement {
  * The itinerary on the monochrome map: walking as dotted neutral tracks,
  * rides as solid lines in their own color with a dark casing.
  */
-export default function ItineraryMap({ itinerary, from, to, rider = null, follow = false, onUserMove, recenterKey = 0, padding, className }: ItineraryMapProps) {
+function LiveMap({ itinerary, from, to, rider = null, follow = false, onUserMove, recenterKey = 0, padding, className }: ItineraryMapProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const mapRef = useRef<MapboxMap | null>(null);
     const markersRef = useRef<Marker[]>([]);
@@ -156,7 +158,7 @@ export default function ItineraryMap({ itinerary, from, to, rider = null, follow
             source: 'plan-walk',
             slot: 'middle',
             layout: { 'line-cap': 'round', 'line-join': 'round' },
-            paint: { 'line-color': dark ? '#e5e5e5' : '#262626', 'line-width': 4.5, 'line-dasharray': [0.1, 1.9] },
+            paint: { 'line-color': dark ? '#e5e5e5' : '#262626', 'line-width': 4.5, 'line-dasharray': [0.1, 1.9], 'line-emissive-strength': 1 },
         });
         map.addLayer({
             id: 'plan-ride-casing',
@@ -172,7 +174,8 @@ export default function ItineraryMap({ itinerary, from, to, rider = null, follow
             source: 'plan-ride',
             slot: 'middle',
             layout: { 'line-cap': 'round', 'line-join': 'round' },
-            paint: { 'line-color': ['get', 'color'], 'line-width': 6 },
+            // Emissive: route colors stay true under the night light preset
+            paint: { 'line-color': ['get', 'color'], 'line-width': 6, 'line-emissive-strength': 1 },
         });
         map.addLayer({
             id: 'plan-stops',
@@ -184,6 +187,7 @@ export default function ItineraryMap({ itinerary, from, to, rider = null, follow
                 'circle-color': ['case', ['==', ['get', 'kind'], 'end'], '#ffffff', ['get', 'color']],
                 'circle-stroke-color': ['case', ['==', ['get', 'kind'], 'end'], ['get', 'color'], '#ffffff'],
                 'circle-stroke-width': ['case', ['==', ['get', 'kind'], 'end'], 3.5, 1.2],
+                'circle-emissive-strength': 1,
             },
         });
 
@@ -246,4 +250,18 @@ export default function ItineraryMap({ itinerary, from, to, rider = null, follow
     }, [ready, riderLat, riderLng, riderHeading, follow]);
 
     return <div ref={containerRef} className={cn('relative w-full h-full bg-secondary', className)} aria-label="Mapa del recorrido" role="img" />;
+}
+
+/**
+ * The itinerary map. Under data saver it starts as a sketch drawn from the
+ * itinerary itself, which downloads nothing, and loads the real map on request.
+ */
+export default function ItineraryMap(props: ItineraryMapProps) {
+    const hydrated = useHydrated();
+    const saving = useDataSaver();
+    const [wantMap, setWantMap] = useState(false);
+    // Wait for saved settings, so a map isn't started only to be swapped for the sketch
+    if (!hydrated) return <div className={cn('relative w-full h-full bg-secondary', props.className)} />;
+    if (saving && !wantMap) return <RouteSketch {...props} onShowMap={() => setWantMap(true)} />;
+    return <LiveMap {...props} />;
 }
