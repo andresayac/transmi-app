@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Briefcase, House, MapPin, Navigation, Pencil, Plus, Share2, Trash2, X } from 'lucide-react';
 import AppHeader from '@/components/layout/AppHeader';
 import PlacePicker from '@/components/places/PlacePicker';
+import VoicePicker from '@/components/places/VoicePicker';
 import RouteBadge from '@/components/transit/RouteBadge';
 import { planHref } from '@/components/home/PlannerHero';
 import { useToast } from '@/components/ui/Toast';
@@ -292,6 +293,7 @@ export default function GuardadosPage() {
                                 <span className="sr-only">Avisos por voz</span>
                             </button>
                         </div>
+                        <VoicePicker value={s.settings.ttsVoice} onChange={(ttsVoice) => s.updateSettings({ ttsVoice })} />
                         <div className="flex items-center justify-between gap-3 py-3">
                             <span>
                                 <span className="block text-[15px] font-medium">Despiértame</span>

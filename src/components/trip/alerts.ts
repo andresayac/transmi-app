@@ -1,5 +1,7 @@
 'use client';
 
+import { speak as speakNeural, unlockSpeech } from '@/lib/speech';
+
 let audioCtx: AudioContext | null = null;
 
 function ctx(): AudioContext | null {
@@ -14,7 +16,7 @@ function ctx(): AudioContext | null {
 export function unlockAudio() {
     const c = ctx();
     if (c?.state === 'suspended') c.resume().catch(() => { /* not allowed yet */ });
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) window.speechSynthesis.getVoices();
+    unlockSpeech();
 }
 
 /** Two rising tones, like a station chime. Synthesized: no audio files. */
@@ -44,24 +46,9 @@ export function vibrate(pattern: number[] = [220, 90, 220, 90, 420]) {
     } catch { /* unsupported */ }
 }
 
-function pickVoice(): SpeechSynthesisVoice | null {
-    const voices = window.speechSynthesis.getVoices();
-    return voices.find((v) => v.lang === 'es-CO')
-        || voices.find((v) => v.lang?.startsWith('es-4') || v.lang === 'es-MX' || v.lang === 'es-US')
-        || voices.find((v) => v.lang?.startsWith('es'))
-        || null;
-}
-
+/** Announcements use the chosen Edge neural voice (falls back to the browser voice offline). */
 export function speak(text: string) {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    const synth = window.speechSynthesis;
-    synth.cancel();
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = 'es-CO';
-    const voice = pickVoice();
-    if (voice) utter.voice = voice;
-    utter.rate = 1;
-    synth.speak(utter);
+    void speakNeural(text);
 }
 
 export async function notify(title: string, body: string) {

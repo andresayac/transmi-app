@@ -43,7 +43,7 @@ La idea surgió como un **proyecto educativo** para aprender a integrar APIs de 
 
 ### 🛰️ Modo viaje (`/viaje`)
 - Progreso en vivo sobre el **diagrama de la línea**, próxima parada y hora estimada de llegada
-- **Despiértame**: vibración, sonido, voz y notificación N paradas antes de bajarte
+- **Despiértame**: vibración, sonido, voz y notificación N paradas antes de bajarte (las frases se sintetizan por adelantado para sonar al instante)
 - Pantalla siempre encendida (Wake Lock) y modo simulación (`/viaje?demo=1`) para probar sin moverse
 
 ### 🗺️ Mapa en vivo (`/mapa`)
@@ -55,11 +55,11 @@ La idea surgió como un **proyecto educativo** para aprender a integrar APIs de 
 ### ✨ Asistente con IA (`/asistente`)
 - Conversación en español con **cualquier proveedor compatible con el estándar de chat completions** (Groq, Xiaomi MiMo, OpenRouter, DeepSeek, Ollama…) y herramientas sobre los datos reales: buscar lugares, planear viajes, rutas, llegadas, buses en vivo, recargas, clima y tarifa
 - Respuestas con **tarjetas interactivas** (itinerarios que se inician con un toque, tableros de llegadas, rutas)
-- **Dictado por voz** (es-CO) y lectura en voz alta
+- **Dictado por voz** (es-CO) y lectura en voz alta con voces neuronales
 
 ### 🔍 Explorar y ⭐ Guardados
 - Búsqueda de rutas con comparación en el mapa, troncales como diagrama de línea, zonas y paradas con llegadas en vivo
-- Casa, Trabajo y lugares propios; rutas guardadas; estadísticas de **tu movilidad** (viajes, horas, km, CO₂ evitado estimado); ajustes de tema, luz del mapa, voz y alarma
+- Casa, Trabajo y lugares propios; rutas guardadas; estadísticas de **tu movilidad** (viajes, horas, km, CO₂ evitado estimado); ajustes de tema, luz del mapa, alarma y **voz** (Ava, Emma, Andrew o Brian, con muestra)
 
 ### 🎨 Diseño
 - **Monocromo + color con significado**: la interfaz es negra y blanca; el único color viene de los datos (colores de troncales y rutas, ocupación)
@@ -82,6 +82,7 @@ La idea surgió como un **proyecto educativo** para aprender a integrar APIs de 
 | **Zustand** | Estado persistente (favoritos, lugares, viajes, ajustes) con migración desde v2 |
 | **Motion** | Paneles inferiores arrastrables |
 | **Open-Meteo / Photon** | Clima y búsqueda de lugares sin clave |
+| **@andresaya/edge-tts** | Voces neuronales de Microsoft Edge (multilingües, en español de Colombia) servidas por `/api/voz` con caché |
 
 ---
 

@@ -21,7 +21,7 @@ import SystemStripe from '@/components/brand/SystemStripe';
 import Composer from '@/components/assistant/Composer';
 import MessageView from '@/components/assistant/MessageView';
 import { useAssistantChat } from '@/components/assistant/useAssistantChat';
-import { canSpeak, speak, stopSpeaking, useBrowserSupport } from '@/components/assistant/useSpeech';
+import { canSpeak, speak, stopSpeaking, unlockSpeech, useBrowserSupport } from '@/components/assistant/useSpeech';
 import type { AssistantContext } from '@/components/assistant/types';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { useAppStore, useHydrated } from '@/stores/app';
@@ -69,7 +69,8 @@ export default function AssistantPage() {
     useEffect(() => () => stopSpeaking(), []);
     const toggleVoice = () => {
         const next = !voiceOut;
-        if (!next) stopSpeaking();
+        if (next) unlockSpeech();
+        else stopSpeaking();
         writeVoice(next);
     };
 
@@ -97,6 +98,8 @@ export default function AssistantPage() {
     const handleSend = (text: string) => {
         pinned.current = true;
         stopSpeaking();
+        // A tap: lets the reply be read aloud when it arrives (iOS autoplay rules)
+        if (voiceOut) unlockSpeech();
         send(text);
     };
 

@@ -107,33 +107,5 @@ export function useSpeechRecognition(onFinal: (text: string) => void) {
     return { supported, listening, interim, error, start, stop };
 }
 
-/** Plain text for speech: drop markdown marks and list bullets. */
-function forSpeech(text: string) {
-    return text
-        .replace(/\*\*(.+?)\*\*/g, '$1')
-        .replace(/^\s*[-*•]\s+/gm, '')
-        .replace(/^\s*\d+\.\s+/gm, '')
-        .replace(/\s+/g, ' ')
-        .trim();
-}
-
-export function speak(text: string) {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    const synth = window.speechSynthesis;
-    synth.cancel();
-    const utterance = new SpeechSynthesisUtterance(forSpeech(text));
-    const voices = synth.getVoices();
-    const voice = voices.find((v) => v.lang === 'es-CO') || voices.find((v) => v.lang === 'es-US') || voices.find((v) => v.lang.startsWith('es'));
-    if (voice) utterance.voice = voice;
-    utterance.lang = voice?.lang || 'es-CO';
-    utterance.rate = 1.03;
-    synth.speak(utterance);
-}
-
-export function stopSpeaking() {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) window.speechSynthesis.cancel();
-}
-
-export function canSpeak() {
-    return typeof window !== 'undefined' && 'speechSynthesis' in window;
-}
+// Speech output lives in lib/speech (Edge neural voices via /api/voz); re-exported for the chat UI.
+export { speak, stopSpeaking, canSpeak, unlockSpeech } from '@/lib/speech';

@@ -18,6 +18,7 @@ import { useDemoPosition } from '@/components/trip/useDemoPosition';
 import { useWakeLock } from '@/components/trip/useWakeLock';
 import { INITIAL_TRACK, TrackState, advance, buildTripModel, legRemainingM, remainingMinutes, speakableCode } from '@/components/trip/tracking';
 import { chime, notificationsState, notify, speak, unlockAudio, vibrate } from '@/components/trip/alerts';
+import { prefetchSpeech } from '@/lib/speech';
 import { cn } from '@/lib/utils';
 
 interface TripViewProps {
@@ -78,6 +79,13 @@ function TripView({ trip, demo, speed, finished, onArrived, onEnd }: TripViewPro
 
         if (a.leg !== track.legIndex) {
             a.leg = track.legIndex;
+            if (settings.voice && leg.mode === 'TRANSIT') {
+                // Synthesize the alarm phrases now so they play instantly when the moment comes
+                const alarmWhen = settings.alarmStops === 1 ? 'la próxima parada' : `${settings.alarmStops} paradas`;
+                prefetchSpeech(`Prepárate. Te bajas en ${alarmWhen}: ${exit}.`);
+                prefetchSpeech(`Bájate aquí: ${exit}.`);
+                if (isLastLeg) prefetchSpeech(`Llegaste a ${trip.to.name}.`);
+            }
             if (settings.voice) {
                 if (leg.mode === 'TRANSIT' && leg.line) {
                     speak(`Toma el ${speakableCode(leg.line.code)}, dirección ${leg.line.longName || leg.line.name}. Te bajas en ${exit}.`);

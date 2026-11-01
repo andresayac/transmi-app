@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { useEffect, useSyncExternalStore } from 'react';
 import type { Itinerary, PlanPlace } from '@/types/transit';
+import { DEFAULT_TTS_VOICE } from '@/lib/voices';
 
 export interface FavoriteRoute {
     id: string;
@@ -46,6 +47,8 @@ export interface Settings {
     /** Stops before the destination at which the wake-up alarm fires */
     alarmStops: number;
     mapLight: 'auto' | 'day' | 'night';
+    /** Edge neural voice for announcements and read-aloud (see lib/voices.ts) */
+    ttsVoice: string;
 }
 
 interface AppState {
@@ -106,7 +109,7 @@ export const useAppStore = create<AppState>()(
             activeTrip: null,
             cardNumber: '',
             lastBalance: null,
-            settings: { theme: 'system', voice: true, alarmStops: 2, mapLight: 'auto' },
+            settings: { theme: 'system', voice: true, alarmStops: 2, mapLight: 'auto', ttsVoice: DEFAULT_TTS_VOICE },
 
             addFavorite: (route) => {
                 if (get().favorites.some((f) => f.id === route.id)) return;
@@ -189,6 +192,14 @@ export const useAppStore = create<AppState>()(
         },
     ),
 );
+
+// Keep open tabs in sync: when another tab saves, reload that data here, so this
+// tab's older in-memory state can't overwrite it on its next save.
+if (typeof window !== 'undefined') {
+    window.addEventListener('storage', (event) => {
+        if (event.key === STORAGE_KEY && event.newValue && useAppStore.persist.hasHydrated()) void useAppStore.persist.rehydrate();
+    });
+}
 
 /** True once persisted state has been loaded (avoids SSR/client mismatches). */
 export function useHydrated(): boolean {
