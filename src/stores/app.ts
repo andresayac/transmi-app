@@ -29,6 +29,8 @@ export interface TripLog {
     durationMin: number;
     distanceM: number;
     lines: string[];
+    /** Where the trip went (used to learn routines); missing on trips logged before v3.1 */
+    toPlace?: PlanPlace;
 }
 
 export interface ActiveTrip {
@@ -36,6 +38,15 @@ export interface ActiveTrip {
     from: PlanPlace;
     to: PlanPlace;
     startedAt: string;
+}
+
+/** A station or stop the rider checks every day, shown with live arrivals on the home screen. */
+export interface PinnedStop {
+    codigo: string;
+    nombre: string;
+    lat: number;
+    lng: number;
+    sistema: string;
 }
 
 export type ThemePref = 'system' | 'light' | 'dark';
@@ -49,6 +60,8 @@ export interface Settings {
     mapLight: 'auto' | 'day' | 'night';
     /** Edge neural voice for announcements and read-aloud (see lib/voices.ts) */
     ttsVoice: string;
+    /** Name shown on shared trips (optional) */
+    shareName: string;
 }
 
 interface AppState {
@@ -60,6 +73,7 @@ interface AppState {
     recentPlaces: PlanPlace[];
     trips: TripLog[];
     activeTrip: ActiveTrip | null;
+    pinnedStops: PinnedStop[];
     cardNumber: string;
     lastBalance: { value: number; at: string } | null;
     settings: Settings;
@@ -77,6 +91,8 @@ interface AppState {
     pushRecentPlace: (place: PlanPlace) => void;
     startTrip: (trip: Omit<ActiveTrip, 'startedAt'>) => void;
     endTrip: (completed: boolean) => void;
+    pinStop: (stop: PinnedStop) => void;
+    unpinStop: (codigo: string) => void;
     setCard: (number: string, balance?: number) => void;
     updateSettings: (patch: Partial<Settings>) => void;
 }
@@ -107,9 +123,10 @@ export const useAppStore = create<AppState>()(
             recentPlaces: [],
             trips: [],
             activeTrip: null,
+            pinnedStops: [],
             cardNumber: '',
             lastBalance: null,
-            settings: { theme: 'system', voice: true, alarmStops: 2, mapLight: 'auto', ttsVoice: DEFAULT_TTS_VOICE },
+            settings: { theme: 'system', voice: true, alarmStops: 2, mapLight: 'auto', ttsVoice: DEFAULT_TTS_VOICE, shareName: '' },
 
             addFavorite: (route) => {
                 if (get().favorites.some((f) => f.id === route.id)) return;
@@ -161,11 +178,18 @@ export const useAppStore = create<AppState>()(
                         durationMin: Math.max(1, Math.round((Date.now() - started.getTime()) / 60000)),
                         distanceM: trip.itinerary.legs.reduce((s, l) => s + l.distanceM, 0),
                         lines: trip.itinerary.legs.filter((l) => l.line).map((l) => l.line!.code),
+                        toPlace: { name: trip.to.name, lat: trip.to.lat, lng: trip.to.lng, detail: trip.to.detail },
                     };
                     set((s) => ({ trips: [log, ...s.trips].slice(0, 500) }));
                 }
                 set({ activeTrip: null });
             },
+
+            pinStop: (stop) => {
+                if (get().pinnedStops.some((p) => p.codigo === stop.codigo)) return;
+                set((s) => ({ pinnedStops: [...s.pinnedStops, stop].slice(-4) }));
+            },
+            unpinStop: (codigo) => set((s) => ({ pinnedStops: s.pinnedStops.filter((p) => p.codigo !== codigo) })),
 
             setCard: (number, balance) =>
                 set({ cardNumber: number, ...(balance !== undefined ? { lastBalance: { value: balance, at: new Date().toISOString() } } : {}) }),

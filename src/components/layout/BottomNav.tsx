@@ -16,7 +16,7 @@ const tabs = [
 ];
 
 /** Full-screen experiences bring their own navigation. */
-const HIDDEN_ON = ['/mapa', '/viaje', '/asistente', '/planear'];
+const HIDDEN_ON = ['/mapa', '/viaje', '/asistente', '/planear', '/sigue'];
 
 export default function BottomNav() {
     const pathname = usePathname();

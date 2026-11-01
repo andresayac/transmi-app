@@ -1,5 +1,6 @@
 'use client';
 
+import { visibleOnMap } from '@/lib/color';
 import { useEffect, useMemo, useRef } from 'react';
 import type { Map as MapboxMap, MapMouseEvent } from 'mapbox-gl';
 import { removeLayers } from '@/lib/mapbox';
@@ -84,7 +85,7 @@ export function useRouteLayers(map: MapboxMap | null, ready: boolean, routes: Ma
                 slot: 'middle',
                 layout: { 'line-join': 'round', 'line-cap': 'round' },
                 paint: {
-                    'line-color': route.color,
+                    'line-color': visibleOnMap(route.color, darkPreset),
                     'line-width': ['interpolate', ['linear'], ['zoom'], 10, 2.5, 14, 5, 17, 9],
                     'line-emissive-strength': 1,
                 },

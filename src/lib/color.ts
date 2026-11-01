@@ -49,6 +49,19 @@ export function routeColor(color?: string | null, fallback = '#525252'): string 
     return color!.startsWith('#') ? color! : `#${color}`;
 }
 
+/**
+ * A line color that stays visible on the map: near-black routes (e.g. numbered
+ * "rutas fáciles") turn mid grey on dark maps, near-white ones darken on light maps.
+ */
+export function visibleOnMap(hex: string, darkMap: boolean): string {
+    const rgb = hexToRgb(hex);
+    if (!rgb) return hex;
+    const l = luminance(rgb);
+    if (darkMap && l < 0.06) return '#9a9a9a';
+    if (!darkMap && l > 0.8) return '#5a5a5a';
+    return hex;
+}
+
 /** Hex color with alpha (0–1). */
 export function withAlpha(hex: string, alpha: number): string {
     const rgb = hexToRgb(hex);

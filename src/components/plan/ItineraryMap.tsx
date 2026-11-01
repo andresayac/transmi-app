@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Map as MapboxMap, Marker } from 'mapbox-gl';
 import type { Itinerary, PlanPlace } from '@/types/transit';
 import { createMap, isDarkPreset, lightPresetFor, loadMapbox, removeLayers, setMapLight } from '@/lib/mapbox';
+import { visibleOnMap } from '@/lib/color';
 import { useAppStore } from '@/stores/app';
 import { cn } from '@/lib/utils';
 
@@ -131,7 +132,7 @@ export default function ItineraryMap({ itinerary, from, to, rider = null, follow
             type: 'geojson',
             data: {
                 type: 'FeatureCollection',
-                features: rides.map((l) => ({ type: 'Feature', properties: { color: l.line?.color || '#525252' }, geometry: { type: 'LineString', coordinates: l.geometry } })),
+                features: rides.map((l) => ({ type: 'Feature', properties: { color: visibleOnMap(l.line?.color || '#525252', dark) }, geometry: { type: 'LineString', coordinates: l.geometry } })),
             },
         });
         map.addSource('plan-stops', {

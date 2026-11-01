@@ -19,6 +19,8 @@ import { useWakeLock } from '@/components/trip/useWakeLock';
 import { INITIAL_TRACK, TrackState, advance, buildTripModel, legRemainingM, remainingMinutes, speakableCode } from '@/components/trip/tracking';
 import { chime, notificationsState, notify, speak, unlockAudio, vibrate } from '@/components/trip/alerts';
 import { prefetchSpeech } from '@/lib/speech';
+import { useMyBus } from '@/components/trip/useMyBus';
+import ShareTripSheet from '@/components/trip/ShareTripSheet';
 import { cn } from '@/lib/utils';
 
 interface TripViewProps {
@@ -151,6 +153,11 @@ function TripView({ trip, demo, speed, finished, onArrived, onEnd }: TripViewPro
 
     const rider = hasFix ? { lat: pos.latitude!, lng: pos.longitude!, heading: pos.heading } : null;
 
+    // Which bus is the rider on (lets shared links follow that bus live)
+    const here = useMemo(() => (pos.latitude !== null && pos.longitude !== null ? { lat: pos.latitude, lng: pos.longitude } : null), [pos.latitude, pos.longitude]);
+    const myBus = useMyBus(leg.mode === 'TRANSIT' && !finished ? leg.line?.code ?? null : null, here);
+    const [shareOpen, setShareOpen] = useState(false);
+
     return (
         <div className="fixed inset-0 z-40 bg-background flex flex-col max-w-lg mx-auto">
             <div className="relative h-[45dvh] shrink-0">
@@ -212,6 +219,11 @@ function TripView({ trip, demo, speed, finished, onArrived, onEnd }: TripViewPro
                             <div className="mt-3 h-1.5 rounded-full bg-secondary overflow-hidden" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(elapsedFrac * 100)} aria-label="Avance del viaje">
                                 <div className="h-full bg-foreground rounded-full transition-[width] duration-1000" style={{ width: `${elapsedFrac * 100}%` }} />
                             </div>
+                            {myBus && (
+                                <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-secondary pl-2.5 pr-3 h-8 text-[13px] font-medium">
+                                    <span className="live-dot" /> Vas en el bus {myBus.label}
+                                </p>
+                            )}
 
                             {!hasFix && (
                                 <div className="mt-5 rounded-2xl border border-border p-4">
@@ -288,8 +300,12 @@ function TripView({ trip, demo, speed, finished, onArrived, onEnd }: TripViewPro
                                         </button>
                                     ))}
                                 </div>
-                                <button type="button" onClick={share} className="w-11 h-11 rounded-full bg-secondary flex items-center justify-center active:scale-95" aria-label="Compartir mi viaje">
-                                    <Share2 className="w-4 h-4" />
+                                <button
+                                    type="button"
+                                    onClick={() => setShareOpen(true)}
+                                    className="h-11 px-4 rounded-full bg-foreground text-background inline-flex items-center gap-2 text-[14px] font-semibold active:scale-95"
+                                >
+                                    <Share2 className="w-4 h-4" /> Compartir
                                 </button>
                             </div>
                             <p className="mt-2 text-[12px] text-muted-foreground">
@@ -320,6 +336,10 @@ function TripView({ trip, demo, speed, finished, onArrived, onEnd }: TripViewPro
                     )}
                 </div>
             </div>
+
+            {shareOpen && !finished && (
+                <ShareTripSheet trip={trip} currentLeg={track.legIndex} eta={eta} bus={myBus} onClose={() => setShareOpen(false)} />
+            )}
         </div>
     );
 }
