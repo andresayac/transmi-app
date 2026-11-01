@@ -4,6 +4,7 @@ import { useLiveData } from '@/hooks/useLiveData';
 import type { ArrivalsResponse, PlanLeg } from '@/types/transit';
 import type { StationMapEntry } from '@/types/station';
 import { cn } from '@/lib/utils';
+import { nextArrivalFor } from '@/lib/direction';
 
 interface NearbyResponse {
     stations: (StationMapEntry & { distanceM: number })[];
@@ -22,7 +23,7 @@ export default function NextDepartureHint({ leg, className }: { leg: PlanLeg; cl
     const usable = station && station.distanceM <= 250 ? station : null;
     const { data } = useLiveData<ArrivalsResponse>(usable ? `/api/llegadas?paradero=${encodeURIComponent(usable.codigo)}` : null, 30000);
 
-    const match = data?.arrivals.find((a) => a.code.toUpperCase() === code.toUpperCase());
+    const match = data ? nextArrivalFor(data.arrivals, code, leg.line?.longName || leg.line?.name || '') : null;
     if (!match || match.minutes === null) return null;
 
     return (

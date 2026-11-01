@@ -8,6 +8,10 @@ import AppHeader from '@/components/layout/AppHeader';
 import PlannerHero from '@/components/home/PlannerHero';
 import NearbyStation from '@/components/home/NearbyStation';
 import SaldoCard from '@/components/home/SaldoCard';
+import RoutineCard from '@/components/home/RoutineCard';
+import PinnedStops from '@/components/home/PinnedStops';
+import InstallBanner from '@/components/pwa/InstallBanner';
+import { useKnownLocation } from '@/hooks/useKnownLocation';
 import WeatherChip from '@/components/home/WeatherChip';
 import AssistantOrb from '@/components/brand/AssistantOrb';
 import RouteBadge from '@/components/transit/RouteBadge';
@@ -112,6 +116,10 @@ function RouteSearchShortcut() {
 }
 
 export default function HomePage() {
+  // Shared by the routine card and the nearest-station board; never prompts on load
+  const location = useKnownLocation();
+  const here = location.latitude !== null && location.longitude !== null ? { lat: location.latitude, lng: location.longitude } : null;
+
   return (
     <div className="safe-bottom">
       <Suspense fallback={null}>
@@ -125,9 +133,22 @@ export default function HomePage() {
           <WeatherChip />
         </div>
 
+        <RoutineCard here={here} />
+
         <PlannerHero />
 
-        <NearbyStation />
+        <PinnedStops />
+
+        <NearbyStation
+          latitude={location.latitude}
+          longitude={location.longitude}
+          permission={location.permission}
+          locating={location.loading}
+          error={location.error}
+          onRequestLocation={location.requestLocation}
+        />
+
+        <InstallBanner />
 
         <SaldoCard />
 

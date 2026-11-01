@@ -9,6 +9,7 @@ import { transmilenioApi } from '@/services/transmilenio';
 import { useToast } from '@/components/ui/Toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import ArrivalBoard from '@/components/transit/ArrivalBoard';
+import PinStopButton from '@/components/transit/PinStopButton';
 import LineDiagram from '@/components/transit/LineDiagram';
 import RouteRow from '@/components/transit/RouteRow';
 import { useRouteSearch } from '@/hooks/useRouteSearch';
@@ -438,6 +439,12 @@ function ExplorarContent() {
                                     >
                                         <Navigation className="w-4 h-4" /> Cómo llegar
                                     </Link>
+                                )}
+                                {c && (
+                                    <PinStopButton
+                                        className="w-11 h-11 rounded-xl"
+                                        stop={{ codigo: drill.stop.codigo, nombre: drill.stop.nombre, lat: c.lat, lng: c.lng, sistema: 'sistema' in drill.stop ? String((drill.stop as { sistema?: string }).sistema || '') : '' }}
+                                    />
                                 )}
                             </div>
                             <ArrivalBoard paradero={drill.stop.codigo} title="Próximas llegadas" limit={8} />

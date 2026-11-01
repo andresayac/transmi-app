@@ -1,36 +1,28 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import { LocateFixed, Map, Navigation } from 'lucide-react';
-import { useGeolocation } from '@/hooks/useGeolocation';
 import { useLiveData } from '@/hooks/useLiveData';
 import ArrivalBoard from '@/components/transit/ArrivalBoard';
+import PinStopButton from '@/components/transit/PinStopButton';
+import { useAppStore } from '@/stores/app';
 import { formatDistance, walkMinutes } from '@/lib/geo';
 import type { StationMapEntry } from '@/types/station';
 
 type Nearby = StationMapEntry & { distanceM: number };
 
-/**
- * The closest TransMilenio station with its live departures board.
- * Only asks for location on its own if the permission was already granted.
- */
-export default function NearbyStation() {
-    const [permission, setPermission] = useState<PermissionState | 'unknown'>('unknown');
-    const geo = useGeolocation({ auto: false });
-    const { latitude, longitude, requestLocation, loading: locating, error: geoError } = geo;
+interface NearbyStationProps {
+    latitude: number | null;
+    longitude: number | null;
+    permission: PermissionState | 'unknown';
+    locating: boolean;
+    error: string | null;
+    onRequestLocation: () => void;
+}
 
-    useEffect(() => {
-        let cancelled = false;
-        navigator.permissions?.query({ name: 'geolocation' as PermissionName }).then((status) => {
-            if (cancelled) return;
-            setPermission(status.state);
-            if (status.state === 'granted') requestLocation();
-            status.onchange = () => setPermission(status.state);
-        }).catch(() => setPermission('prompt'));
-        return () => { cancelled = true; };
-    }, [requestLocation]);
-
+/** The closest TransMilenio station with its live departures board. */
+export default function NearbyStation({ latitude, longitude, permission, locating, error, onRequestLocation }: NearbyStationProps) {
+    const pinned = useAppStore((s) => s.pinnedStops);
     const url = latitude && longitude
         ? `/api/stations/nearby?lat=${latitude.toFixed(5)}&lng=${longitude.toFixed(5)}&limit=2&sistema=TransMilenio`
         : null;
@@ -42,13 +34,13 @@ export default function NearbyStation() {
             <section className="rounded-2xl border border-border p-4" aria-label="Estación cercana">
                 <h2 className="font-signage text-[22px] font-bold leading-tight">Llegadas cerca de ti</h2>
                 <p className="text-[14px] text-muted-foreground mt-1 mb-3">
-                    {geoError || (permission === 'denied'
+                    {error || (permission === 'denied'
                         ? 'La ubicación está bloqueada. Actívala en los permisos del navegador para ver tu estación más cercana.'
                         : 'Usa tu ubicación para ver qué buses llegan a la estación más cercana.')}
                 </p>
                 {permission !== 'denied' && (
                     <button
-                        onClick={requestLocation}
+                        onClick={onRequestLocation}
                         disabled={locating}
                         className="inline-flex items-center gap-2 h-10 px-4 rounded-full bg-foreground text-background text-[14px] font-semibold active:scale-95 transition disabled:opacity-60"
                     >
@@ -60,11 +52,9 @@ export default function NearbyStation() {
         );
     }
 
-    if (loading && !station) {
-        return <div className="h-64 rounded-2xl bg-secondary animate-pulse" />;
-    }
-
-    if (!station) return null;
+    if (loading && !station) return <div className="h-64 rounded-2xl skeleton" />;
+    // Already on the home screen as a pinned stop: don't show the same board twice
+    if (!station || pinned.some((p) => p.codigo === station.codigo)) return null;
 
     const planQuery = new URLSearchParams({ toLat: String(station.lat), toLng: String(station.lng), toName: `Estación ${station.nombre}` });
 
@@ -79,6 +69,7 @@ export default function NearbyStation() {
                     </p>
                 </div>
                 <div className="flex gap-1.5 shrink-0">
+                    <PinStopButton stop={{ codigo: station.codigo, nombre: station.nombre, lat: station.lat, lng: station.lng, sistema: station.sistema }} />
                     <Link href={`/planear?${planQuery.toString()}`} className="w-10 h-10 rounded-full border border-border flex items-center justify-center hover:bg-accent active:scale-90 transition" aria-label={`Cómo llegar a ${station.nombre}`}>
                         <Navigation className="w-[18px] h-[18px]" />
                     </Link>

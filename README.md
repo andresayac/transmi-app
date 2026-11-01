@@ -30,6 +30,9 @@ La idea surgió como un **proyecto educativo** para aprender a integrar APIs de 
 ## ✨ Funcionalidades
 
 ### 🏠 Inicio
+- **Tu rutina**: aprende tus viajes frecuentes (y usa Casa/Trabajo) para decirte **"Sal en 6 min"**, sumando la caminata y el próximo bus en la dirección correcta
+- **Mis paradas**: fija las estaciones que usas a diario y mira sus llegadas en vivo apenas abres la app
+- **Instalar TransMi**: aviso para agregarla a la pantalla de inicio (Android e iPhone)
 - **¿A dónde vas?**: un toque para planear, con accesos a Casa, Trabajo, lugares guardados y recientes
 - **Estación más cercana** con un **tablero de llegadas en vivo** (animación tipo split-flap) para todas las rutas que paran ahí
 - **Clima** de Bogotá con aviso de **"lluvia en ~N min"**
@@ -44,6 +47,7 @@ La idea surgió como un **proyecto educativo** para aprender a integrar APIs de 
 ### 🛰️ Modo viaje (`/viaje`)
 - Progreso en vivo sobre el **diagrama de la línea**, próxima parada y hora estimada de llegada
 - **Despiértame**: vibración, sonido, voz y notificación N paradas antes de bajarte (las frases se sintetizan por adelantado para sonar al instante)
+- **Sigue mi viaje**: comparte un enlace por la app que quieras; quien lo abre ve **tu bus moviéndose en vivo** y tu hora de llegada. Se sigue al bus (datos en vivo de TransMilenio), no tu celular, y el enlace no pasa por ningún servidor
 - Pantalla siempre encendida (Wake Lock) y modo simulación (`/viaje?demo=1`) para probar sin moverse
 
 ### 🗺️ Mapa en vivo (`/mapa`)
@@ -129,6 +133,7 @@ src/
 pnpm install
 cp .env.example .env.local   # completa las variables
 pnpm dev                     # http://localhost:3000
+pnpm test                    # pruebas de la lógica (Vitest)
 ```
 
 ### Variables de entorno

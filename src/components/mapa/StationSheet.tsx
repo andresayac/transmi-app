@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Check, ChevronRight, Navigation, X } from 'lucide-react';
 import BottomSheet from '@/components/ui/BottomSheet';
+import PinStopButton from '@/components/transit/PinStopButton';
 import ArrivalBoard from '@/components/transit/ArrivalBoard';
 import RouteBadge from '@/components/transit/RouteBadge';
 import { transmilenioApi } from '@/services/transmilenio';
@@ -88,6 +89,7 @@ export default function StationSheet({ station, onClose, onOpenRoute, onViewMany
                             <Navigation className="w-4 h-4" />
                             Cómo llegar
                         </Link>
+                        <PinStopButton stop={{ codigo: station.codigo, nombre: station.nombre, lat: station.lat, lng: station.lng, sistema: station.sistema }} />
                         <span className="h-10 px-3 rounded-full border border-border flex items-center text-[13px] text-muted-foreground tabular">{station.codigo}</span>
                     </div>
                 </div>
