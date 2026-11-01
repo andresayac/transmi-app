@@ -5,6 +5,7 @@ import { buildContextBlock } from './prompt';
 import { createTools } from './tools';
 import { configuredEndpoints } from './providers';
 import { runOpenAICompatible, TruncatedOutput } from './openaiCompatible';
+import { looksLikeCode, OUT_OF_SCOPE_REPLY, OutOfScopeOutput } from './scope';
 import type { AssistantContext, AssistantEvent, ChatTurn } from '@/components/assistant/types';
 
 export const MAX_TURNS = 20;
@@ -50,7 +51,13 @@ export async function runAssistant({ turns, context = {}, emit, signal }: RunOpt
 
     for (const endpoint of endpoints) {
         let emitted = false;
+        let text = '';
         const guardedEmit = (event: AssistantEvent) => {
+            if (event.type === 'text') {
+                text += event.delta;
+                // Off-topic output (e.g. code) stops the model; the reply is replaced below
+                if (looksLikeCode(text)) throw new OutOfScopeOutput();
+            }
             emitted = true;
             emit(event);
         };
@@ -65,6 +72,11 @@ export async function runAssistant({ turns, context = {}, emit, signal }: RunOpt
             if (!emittedText) emit({ type: 'text', delta: 'Listo, aquí tienes la información.' });
             return;
         } catch (err) {
+            if (err instanceof OutOfScopeOutput) {
+                console.warn('[asistente] respuesta fuera de tema reemplazada');
+                emit({ type: 'replace', text: OUT_OF_SCOPE_REPLY });
+                return;
+            }
             lastError = err;
             if (emitted || signal.aborted) throw err;
             console.warn(`[asistente] ${endpoint.label} (${endpoint.model}) falló: ${err instanceof Error ? err.message : err}`);

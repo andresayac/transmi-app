@@ -26,6 +26,8 @@ export type AssistantEvent =
     | { type: 'text'; delta: string }
     | { type: 'tool'; id: string; name: string; status: 'start' | 'done' | 'error'; label: string }
     | { type: 'card'; card: AssistantCard }
+    /** Replaces the reply's text so far (the server stopped an off-topic answer) */
+    | { type: 'replace'; text: string }
     | { type: 'done' }
     | { type: 'error'; message: string; code?: 'not_configured' | 'rate_limited' | 'refusal' | 'upstream' };
 

@@ -40,6 +40,9 @@ function applyEvent(message: UiMessage, event: AssistantEvent): UiMessage {
         case 'card':
             parts.push({ type: 'card', card: event.card });
             return { ...message, parts };
+        case 'replace':
+            // Drop what was shown so far, so it neither stays on screen nor goes back to the model
+            return { ...message, parts: [...parts.filter((p) => p.type !== 'text'), { type: 'text', text: event.text }], content: event.text };
         case 'error':
             return { ...message, status: 'error', error: { message: event.message, code: event.code } };
         case 'done':
