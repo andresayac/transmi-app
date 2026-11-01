@@ -51,9 +51,10 @@ export function speak(text: string) {
     void speakNeural(text);
 }
 
-export async function notify(title: string, body: string) {
+/** The tag matches the server's push for the same alert (see lib/tripAlerts.ts), so only one shows. */
+export async function notify(title: string, body: string, tag = 'transmi-trip') {
     if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
-    const options: NotificationOptions = { body, tag: 'transmi-trip', icon: '/icon-192.png', badge: '/icon-192.png' };
+    const options: NotificationOptions = { body, tag, icon: '/icon-192.png', badge: '/icon-192.png' };
     try {
         const reg = await navigator.serviceWorker?.getRegistration();
         if (reg) {

@@ -4,7 +4,7 @@
  * - Live APIs (buses, arrivals, ETAs, planner, assistant): network only
  * - Pages: network first, cached copy when offline, then the offline shell
  */
-const VERSION = 'transmi-v3.0.0';
+const VERSION = 'transmi-v3.1.0';
 const STATIC_CACHE = `${VERSION}-static`;
 const DATA_CACHE = `${VERSION}-data`;
 const PAGE_CACHE = `${VERSION}-pages`;
@@ -91,6 +91,28 @@ self.addEventListener('message', (event) => {
             data: { url: data.url || '/viaje' },
         });
     }
+});
+
+// Trip alerts from TransMi's server while the app is closed (see src/lib/tripAlerts.ts)
+self.addEventListener('push', (event) => {
+    let data = {};
+    try {
+        data = event.data ? event.data.json() : {};
+    } catch {
+        data = { body: event.data ? event.data.text() : '' };
+    }
+    event.waitUntil(
+        self.registration.showNotification(data.title || 'TransMi', {
+            body: data.body || '',
+            icon: '/icon-192.png',
+            badge: '/icon-192.png',
+            tag: data.tag || 'transmi',
+            // Same tag as the alert the phone may have given itself: replace it without ringing twice
+            renotify: false,
+            vibrate: [200, 100, 200, 100, 400],
+            data: { url: data.url || '/viaje' },
+        })
+    );
 });
 
 self.addEventListener('notificationclick', (event) => {

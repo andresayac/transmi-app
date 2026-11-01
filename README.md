@@ -47,6 +47,7 @@ La idea surgió como un **proyecto educativo** para aprender a integrar APIs de 
 ### 🛰️ Modo viaje (`/viaje`)
 - Progreso en vivo sobre el **diagrama de la línea**, próxima parada y hora estimada de llegada
 - **Despiértame**: vibración, sonido, voz y notificación N paradas antes de bajarte (las frases se sintetizan por adelantado para sonar al instante)
+- **Avisos con la app cerrada**: el teléfono congela las apps web en segundo plano, así que el servidor sigue **el bus en que vas** (datos en vivo de TransMilenio, nunca tu ubicación) y te envía una **notificación push** antes de tu parada y al llegar, con el siguiente paso si haces transbordo. Basta con tener TransMi abierta hasta que reconozca tu bus; si no lo reconoce, avisa una vez según el tiempo estimado. En iPhone requiere TransMi instalada en la pantalla de inicio (iOS 16.4+)
 - **Sigue mi viaje**: comparte un **enlace corto** (`/sigue/Xk3a9Qz2Lp`) por la app que quieras; quien lo abre ve **tu bus moviéndose en vivo**, tu hora de llegada y **el siguiente bus si haces transbordo**. Se sigue al bus (datos en vivo de TransMilenio), nunca la ubicación de tu celular: el teléfono solo informa en qué tramo y en qué bus vas. Los viajes se guardan como archivos en `.data/` (configurable con `DATA_DIR`) y se borran a los 3 días
 - Pantalla siempre encendida (Wake Lock) y modo simulación (`/viaje?demo=1`) para probar sin moverse
 
@@ -117,6 +118,8 @@ src/
 │       ├── stations/         # Estaciones (+ /nearby)
 │       ├── puntos/           # Puntos de recarga y personalización
 │       ├── clima/  info/     # Clima y tarifa
+│       ├── sigue/            # Enlaces cortos de "Sigue mi viaje"
+│       ├── avisos/           # Avisos push con la app cerrada
 │       └── asistente/        # Asistente (streaming NDJSON)
 ├── components/
 │   ├── transit/              # RouteBadge, LineDiagram, ArrivalBoard, SegmentBar…
@@ -124,7 +127,7 @@ src/
 │   ├── assistant/            # Chat, tarjetas, voz
 │   └── home/  places/  brand/  layout/  ui/
 ├── lib/
-│   ├── server/               # Clientes upstream, normalizadores, asistente
+│   ├── server/               # Clientes upstream, normalizadores, asistente, avisos (tripAlerts/)
 │   ├── geo.ts  schedule.ts  color.ts  mapbox.ts
 ├── stores/app.ts             # Estado persistente
 └── hooks/                    # useLiveData, useGeolocation…
@@ -153,9 +156,12 @@ pnpm test                    # pruebas de la lógica (Vitest)
 | `AI_MODEL` | ❌ Opcional | Modelo con soporte de *tools* (p. ej. `openai/gpt-oss-120b` en Groq, `mimo-v2.6-flash` en MiMo) |
 | `AI_FALLBACK_BASE_URL` · `_API_KEY` · `_MODEL` | ❌ Opcional | Segundo proveedor que responde si el principal falla |
 | `AI_REASONING_EFFORT` · `AI_MAX_TOKENS` | ❌ Opcional | Parámetros estándar, solo se envían si los defines |
+| `NEXT_PUBLIC_MAP_PROVIDER` | ❌ Opcional | `mapbox` o `openfreemap`. Sin definir: Mapbox, con cambio automático a OpenFreeMap si Mapbox rechaza las teselas |
+| `DATA_DIR` | ❌ Opcional | Carpeta de los viajes compartidos y de los avisos (por defecto `./.data`) |
+| `VAPID_PUBLIC_KEY` · `VAPID_PRIVATE_KEY` | ❌ Opcional | Llaves de las notificaciones push. Sin definir, se generan solas la primera vez y se guardan en `DATA_DIR/vapid.json` |
+| `VAPID_SUBJECT` | ❌ Opcional | Contacto para los servicios push (`mailto:…` o `https://…`). Por defecto, la dirección https del sitio |
 
 Para verificar la conexión y que el modelo llame herramientas: `GET /api/asistente?probar=1`.
-| `NEXT_PUBLIC_MAP_PROVIDER` | ❌ Opcional | `mapbox` o `openfreemap`. Sin definir: Mapbox, con cambio automático a OpenFreeMap si Mapbox rechaza las teselas |
 
 #### Sobre `PROXY_BASE`
 

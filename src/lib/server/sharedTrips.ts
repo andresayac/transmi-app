@@ -1,10 +1,10 @@
 import 'server-only';
 
 import { promises as fs } from 'node:fs';
-import path from 'node:path';
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { z } from 'zod/v4';
 import type { ShareState, ShareUpdate, SharedTrip } from '@/lib/tripShare';
+import { dataPath, readJson, removeOld, writeJson } from './dataDir';
 
 /**
  * Short "Sigue mi viaje" links. Each shared trip is one small JSON file
@@ -71,35 +71,20 @@ export function parseTrip(input: unknown): SharedTrip | null {
 
 // ─── Storage ────────────────────────────────────────────
 
-const dir = () => path.join(process.env.DATA_DIR || path.join(process.cwd(), '.data'), 'sigue');
-const file = (id: string) => path.join(dir(), `${id}.json`);
+const file = (id: string) => dataPath('sigue', `${id}.json`);
 const hashKey = (key: string) => createHash('sha256').update(key).digest('hex');
 
 // Survives dev hot reloads; one Node process serves the app, so memory is a valid cache
 const g = globalThis as typeof globalThis & { __sharedTrips?: Map<string, StoredTrip>; __sharedTripsSweep?: number };
 const cache = (g.__sharedTrips ??= new Map<string, StoredTrip>());
 
-async function save(record: StoredTrip) {
-    await fs.mkdir(dir(), { recursive: true });
-    const target = file(record.id);
-    const temp = `${target}.${process.pid}.tmp`;
-    await fs.writeFile(temp, JSON.stringify(record));
-    await fs.rename(temp, target);
-}
+const save = (record: StoredTrip) => writeJson(file(record.id), record);
 
 async function sweep(now: number) {
     if (g.__sharedTripsSweep && now - g.__sharedTripsSweep < SWEEP_EVERY_MS) return;
     g.__sharedTripsSweep = now;
     for (const [id, record] of cache) if (now - record.createdAt > KEEP_MS) cache.delete(id);
-    let names: string[] = [];
-    try { names = await fs.readdir(dir()); } catch { return; }
-    await Promise.all(names.map(async (name) => {
-        const full = path.join(dir(), name);
-        try {
-            const { mtimeMs } = await fs.stat(full);
-            if (now - mtimeMs > KEEP_MS) await fs.unlink(full);
-        } catch { /* already gone */ }
-    }));
+    await removeOld(dataPath('sigue'), KEEP_MS, now);
 }
 
 /** Store a trip and return its short id plus the secret key its sender uses to report progress. */
@@ -127,14 +112,10 @@ async function load(id: string): Promise<StoredTrip | null> {
     if (!SHARE_ID.test(id)) return null;
     const cached = cache.get(id);
     if (cached) return cached;
-    try {
-        const record = JSON.parse(await fs.readFile(file(id), 'utf8')) as StoredTrip;
-        if (Date.now() - record.createdAt > KEEP_MS) return null;
-        cache.set(id, record);
-        return record;
-    } catch {
-        return null;
-    }
+    const record = await readJson<StoredTrip>(file(id));
+    if (!record || Date.now() - record.createdAt > KEEP_MS) return null;
+    cache.set(id, record);
+    return record;
 }
 
 export async function getSharedTrip(id: string): Promise<{ trip: SharedTrip; state: ShareState } | null> {

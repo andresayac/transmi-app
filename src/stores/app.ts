@@ -40,6 +40,8 @@ export interface ActiveTrip {
     startedAt: string;
     /** Short "Sigue mi viaje" link, once shared: the key lets this phone report progress */
     share?: { id: string; key: string };
+    /** Trip registered for alerts with TransMi closed (see lib/tripAlerts.ts) */
+    alerts?: { id: string; key: string };
 }
 
 /** A station or stop the rider checks every day, shown with live arrivals on the home screen. */
@@ -74,6 +76,8 @@ export interface Settings {
     textSize: TextSize;
     highContrast: boolean;
     nearbySystem: NearbySystem;
+    /** Alerts by push notification while TransMi is closed or in the background */
+    lockAlerts: boolean;
 }
 
 interface AppState {
@@ -104,6 +108,7 @@ interface AppState {
     startTrip: (trip: Omit<ActiveTrip, 'startedAt'>) => void;
     endTrip: (completed: boolean) => void;
     setTripShare: (share: { id: string; key: string }) => void;
+    setTripAlerts: (alerts: { id: string; key: string } | undefined) => void;
     pinStop: (stop: PinnedStop) => void;
     unpinStop: (codigo: string) => void;
     setCard: (number: string, balance?: number) => void;
@@ -139,7 +144,7 @@ export const useAppStore = create<AppState>()(
             pinnedStops: [],
             cardNumber: '',
             lastBalance: null,
-            settings: { theme: 'system', voice: true, alarmStops: 2, mapLight: 'auto', ttsVoice: DEFAULT_TTS_VOICE, shareName: '', dataSaver: 'auto', textSize: 'normal', highContrast: false, nearbySystem: 'auto' },
+            settings: { theme: 'system', voice: true, alarmStops: 2, mapLight: 'auto', ttsVoice: DEFAULT_TTS_VOICE, shareName: '', dataSaver: 'auto', textSize: 'normal', highContrast: false, nearbySystem: 'auto', lockAlerts: false },
 
             addFavorite: (route) => {
                 if (get().favorites.some((f) => f.id === route.id)) return;
@@ -199,6 +204,7 @@ export const useAppStore = create<AppState>()(
             },
 
             setTripShare: (share) => set((s) => (s.activeTrip ? { activeTrip: { ...s.activeTrip, share } } : {})),
+            setTripAlerts: (alerts) => set((s) => (s.activeTrip ? { activeTrip: { ...s.activeTrip, alerts } } : {})),
 
             pinStop: (stop) => {
                 if (get().pinnedStops.some((p) => p.codigo === stop.codigo)) return;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Briefcase, House, MapPin, Navigation, Pencil, Plus, Share2, Trash2, X } from 'lucide-react';
@@ -16,6 +16,7 @@ import { ROUTE_COLORS } from '@/utils/constants';
 import type { PlanPlace } from '@/types/transit';
 import { cn } from '@/lib/utils';
 import { phoneAsksToSaveData, useDataSaver } from '@/lib/dataSaver';
+import { pushSubscription, pushSupport } from '@/lib/pwa';
 
 function timeAgo(dateStr: string): string {
     const d = new Date(dateStr);
@@ -57,6 +58,50 @@ function Switch({ checked, onChange, label }: { checked: boolean; onChange: (on:
             <span className={cn('absolute top-1 w-5 h-5 rounded-full transition-all', checked ? 'left-6 bg-background' : 'left-1 bg-muted-foreground')} />
             <span className="sr-only">{label}</span>
         </button>
+    );
+}
+
+const noopSubscribe = () => () => undefined;
+
+/** Alerts with TransMi closed: needs notification permission (asked on the tap) and, on iPhone, the installed app. */
+function LockAlertsRow() {
+    const on = useAppStore((s) => s.settings.lockAlerts);
+    const updateSettings = useAppStore((s) => s.updateSettings);
+    const support = useSyncExternalStore(noopSubscribe, pushSupport, () => 'unsupported' as const);
+    const [blocked, setBlocked] = useState(false);
+    const denied = support === 'ok' && (blocked || Notification.permission === 'denied');
+
+    const toggle = async (next: boolean) => {
+        if (!next) {
+            updateSettings({ lockAlerts: false });
+            return;
+        }
+        if (support !== 'ok') return;
+        const permission = Notification.permission === 'default' ? await Notification.requestPermission().catch(() => 'denied' as const) : Notification.permission;
+        if (permission !== 'granted') {
+            setBlocked(true);
+            return;
+        }
+        await pushSubscription().catch(() => undefined);
+        updateSettings({ lockAlerts: true });
+    };
+
+    const hint = support === 'install'
+        ? 'En iPhone, primero instala TransMi en tu pantalla de inicio'
+        : support === 'unsupported'
+            ? 'Este navegador no los permite'
+            : denied
+                ? 'Las notificaciones están bloqueadas: actívalas en los ajustes del teléfono'
+                : 'Te avisamos antes de bajarte aunque uses otra app';
+
+    return (
+        <div className="flex items-center justify-between gap-3 py-3">
+            <span>
+                <span className="block text-15 font-medium">Avisos con la app cerrada</span>
+                <span className="block text-13 text-muted-foreground">{hint}</span>
+            </span>
+            <Switch checked={on && support === 'ok' && !denied} onChange={toggle} label="Avisos con la app cerrada" />
+        </div>
     );
 }
 
@@ -341,6 +386,7 @@ export default function GuardadosPage() {
                                 options={[{ value: '1', label: '1' }, { value: '2', label: '2' }, { value: '3', label: '3' }]}
                             />
                         </div>
+                        <LockAlertsRow />
                         <div className="flex flex-wrap gap-2 pt-4">
                             {s.searchHistory.length > 0 && (
                                 <button onClick={() => { s.clearSearches(); toast.show('Historial borrado', 'info'); }} className="h-9 px-3.5 rounded-full border border-border text-13 font-medium hover:bg-accent">

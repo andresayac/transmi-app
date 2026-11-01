@@ -3,6 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { Download, Share, SquarePlus, X } from 'lucide-react';
 import TransMiLogo from '@/components/ui/TransMiLogo';
+import { isIOS, isStandalone } from '@/lib/pwa';
 
 interface BeforeInstallPromptEvent extends Event {
     prompt: () => Promise<void>;
@@ -13,14 +14,6 @@ const DISMISS_KEY = 'transmi-install-dismissed';
 const SNOOZE_MS = 14 * 24 * 60 * 60 * 1000;
 
 const noopSubscribe = () => () => undefined;
-
-function isStandalone() {
-    return window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
-}
-
-function isIOS() {
-    return /iPhone|iPad|iPod/i.test(navigator.userAgent) && !/CriOS|FxiOS|EdgiOS/i.test(navigator.userAgent);
-}
 
 function recentlyDismissed() {
     try {

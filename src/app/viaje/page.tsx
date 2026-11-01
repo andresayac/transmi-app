@@ -22,6 +22,9 @@ import { prefetchSpeech } from '@/lib/speech';
 import { useMyBus } from '@/components/trip/useMyBus';
 import ShareTripSheet from '@/components/trip/ShareTripSheet';
 import { reportShare, useShareRelay } from '@/components/trip/useShareRelay';
+import { useLockAlerts } from '@/components/trip/useLockAlerts';
+import LockAlertsCard from '@/components/trip/LockAlertsCard';
+import { alertTag } from '@/lib/tripAlerts';
 import { cn } from '@/lib/utils';
 
 interface TripViewProps {
@@ -74,8 +77,18 @@ function TripView({ trip, demo, speed, finished, onArrived, onEnd }: TripViewPro
     const passedStop = Math.min(lastStop, Math.floor(track.stopProgress));
     const stopsLeft = leg.mode === 'TRANSIT' ? Math.max(0, lastStop - passedStop) : -1;
 
-    // Announcements: once per leg for the instruction, the wake-up alarm and "get off here"
-    const announced = useRef({ leg: -1, alarm: new Set<number>(), alight: new Set<number>() });
+    // Which bus is the rider on (lets shared links and the server's alerts follow that bus)
+    const here = useMemo(() => (pos.latitude !== null && pos.longitude !== null ? { lat: pos.latitude, lng: pos.longitude } : null), [pos.latitude, pos.longitude]);
+    const myBus = useMyBus(leg.mode === 'TRANSIT' && !finished ? leg.line?.code ?? null : null, here);
+    const sharedBus = leg.mode === 'TRANSIT' ? myBus?.label ?? null : null;
+
+    // Alerts with TransMi closed: the server follows that bus while the phone is in the background
+    const lockAlerts = useLockAlerts(trip, !finished && !demo, { leg: track.legIndex, bus: sharedBus, alarmStops: settings.alarmStops });
+    const { given, give, stop: stopLockAlerts } = lockAlerts;
+
+    // Announcements: the instruction once per leg; the wake-up alarm and "get off here" once per
+    // leg, given here or by the server's push
+    const announced = useRef({ leg: -1 });
     useEffect(() => {
         if (!hasFix || finished) return;
         const a = announced.current;
@@ -100,22 +113,24 @@ function TripView({ trip, demo, speed, finished, onArrived, onEnd }: TripViewPro
         }
 
         if (leg.mode !== 'TRANSIT') return;
-        if (stopsLeft > 0 && stopsLeft <= settings.alarmStops && !a.alarm.has(track.legIndex)) {
-            a.alarm.add(track.legIndex);
+        const alarmKey = `alarm:${track.legIndex}`;
+        const alightKey = `alight:${track.legIndex}`;
+        if (stopsLeft > 0 && stopsLeft <= settings.alarmStops && !given(alarmKey)) {
+            give(alarmKey);
             const when = stopsLeft === 1 ? 'la próxima parada' : `${stopsLeft} paradas`;
             vibrate();
             chime();
             if (settings.voice) speak(`Prepárate. Te bajas en ${when}: ${exit}.`);
-            notify('Prepárate para bajarte', `Te bajas en ${when}: ${exit}`);
+            notify('Prepárate para bajarte', `Te bajas en ${when}: ${exit}`, alertTag('alarm', track.legIndex));
         }
-        if (stopsLeft === 0 && !a.alight.has(track.legIndex)) {
-            a.alight.add(track.legIndex);
+        if (stopsLeft === 0 && !given(alightKey)) {
+            give(alightKey);
             vibrate([500, 120, 500]);
             chime();
             if (settings.voice) speak(`Bájate aquí: ${exit}.`);
-            notify('Bájate aquí', exit);
+            notify('Bájate aquí', exit, alertTag('alight', track.legIndex));
         }
-    }, [hasFix, finished, track.legIndex, stopsLeft, leg, isLastLeg, trip.to.name, settings.voice, settings.alarmStops]);
+    }, [hasFix, finished, track.legIndex, stopsLeft, leg, isLastLeg, trip.to.name, settings.voice, settings.alarmStops, given, give]);
 
     // Arrival
     const arrivedFired = useRef(false);
@@ -125,9 +140,10 @@ function TripView({ trip, demo, speed, finished, onArrived, onEnd }: TripViewPro
             vibrate([300, 100, 300]);
             chime();
             if (settings.voice) speak(`Llegaste a ${trip.to.name}.`);
+            stopLockAlerts();
             onArrived();
         }
-    }, [track.arrived, finished, onArrived, settings.voice, trip.to.name]);
+    }, [track.arrived, finished, onArrived, settings.voice, trip.to.name, stopLockAlerts]);
 
     const enableAlerts = async () => {
         unlockAudio();
@@ -154,17 +170,13 @@ function TripView({ trip, demo, speed, finished, onArrived, onEnd }: TripViewPro
     };
 
     const rider = hasFix ? { lat: pos.latitude!, lng: pos.longitude!, heading: pos.heading } : null;
-
-    // Which bus is the rider on (lets shared links follow that bus live)
-    const here = useMemo(() => (pos.latitude !== null && pos.longitude !== null ? { lat: pos.latitude, lng: pos.longitude } : null), [pos.latitude, pos.longitude]);
-    const myBus = useMyBus(leg.mode === 'TRANSIT' && !finished ? leg.line?.code ?? null : null, here);
     const [shareOpen, setShareOpen] = useState(false);
 
     // Shared trip: tell the follower's page about transfers, the bus and the end of the trip
-    const sharedBus = leg.mode === 'TRANSIT' ? myBus?.label ?? null : null;
     useShareRelay(trip.share, { leg: track.legIndex, bus: sharedBus, eta: etaMs, ended: finished });
     const endTrip = () => {
         if (trip.share) reportShare(trip.share.id, { key: trip.share.key, leg: track.legIndex, bus: null, eta: null, ended: true }, true);
+        stopLockAlerts();
         onEnd();
     };
 
@@ -322,7 +334,18 @@ function TripView({ trip, demo, speed, finished, onArrived, onEnd }: TripViewPro
                                 Te avisamos {settings.alarmStops === 1 ? '1 parada' : `${settings.alarmStops} paradas`} antes de bajarte, con vibración{settings.voice ? ', sonido y voz' : ' y sonido'}.
                             </p>
 
-                            {notifState === 'default' && (
+                            {!demo && lockAlerts.hasRides && lockAlerts.status !== 'unsupported' ? (
+                                <LockAlertsCard
+                                    status={lockAlerts.status}
+                                    riding={leg.mode === 'TRANSIT'}
+                                    busLabel={sharedBus}
+                                    onEnable={() => {
+                                        unlockAudio();
+                                        void lockAlerts.enable().then(() => setNotifState(notificationsState()));
+                                    }}
+                                    onRetry={lockAlerts.retry}
+                                />
+                            ) : notifState === 'default' && (
                                 <button type="button" onClick={enableAlerts} className="mt-3 w-full h-11 rounded-full border border-border inline-flex items-center justify-center gap-2 text-14 font-semibold active:scale-[0.99]">
                                     <Bell className="w-4 h-4" /> Activar avisos con la pantalla bloqueada
                                 </button>
