@@ -21,6 +21,7 @@ import { chime, notificationsState, notify, speak, unlockAudio, vibrate } from '
 import { prefetchSpeech } from '@/lib/speech';
 import { useMyBus } from '@/components/trip/useMyBus';
 import ShareTripSheet from '@/components/trip/ShareTripSheet';
+import { reportShare, useShareRelay } from '@/components/trip/useShareRelay';
 import { cn } from '@/lib/utils';
 
 interface TripViewProps {
@@ -63,6 +64,7 @@ function TripView({ trip, demo, speed, finished, onArrived, onEnd }: TripViewPro
     const isLastLeg = track.legIndex === legs.length - 1;
     const remainingMin = remainingMinutes(model, track);
     const eta = clock ? addMinutes(bogotaNow(new Date(clock)), remainingMin) : null;
+    const etaMs = clock ? clock + remainingMin * 60000 : null;
     const elapsedFrac = model.totalMin ? Math.min(1, Math.max(0, 1 - remainingMin / model.totalMin)) : 0;
     const hasFix = posKey !== '';
 
@@ -157,6 +159,14 @@ function TripView({ trip, demo, speed, finished, onArrived, onEnd }: TripViewPro
     const here = useMemo(() => (pos.latitude !== null && pos.longitude !== null ? { lat: pos.latitude, lng: pos.longitude } : null), [pos.latitude, pos.longitude]);
     const myBus = useMyBus(leg.mode === 'TRANSIT' && !finished ? leg.line?.code ?? null : null, here);
     const [shareOpen, setShareOpen] = useState(false);
+
+    // Shared trip: tell the follower's page about transfers, the bus and the end of the trip
+    const sharedBus = leg.mode === 'TRANSIT' ? myBus?.label ?? null : null;
+    useShareRelay(trip.share, { leg: track.legIndex, bus: sharedBus, eta: etaMs, ended: finished });
+    const endTrip = () => {
+        if (trip.share) reportShare(trip.share.id, { key: trip.share.key, leg: track.legIndex, bus: null, eta: null, ended: true }, true);
+        onEnd();
+    };
 
     return (
         <div className="fixed inset-0 z-40 bg-background flex flex-col max-w-lg mx-auto">
@@ -323,7 +333,7 @@ function TripView({ trip, demo, speed, finished, onArrived, onEnd }: TripViewPro
                                     <p className="text-15 font-semibold">¿Terminar el viaje?</p>
                                     <p className="text-13 text-muted-foreground">Dejaremos de seguir tu ubicación y de avisarte.</p>
                                     <div className="mt-3 flex gap-2">
-                                        <button type="button" onClick={onEnd} className="h-10 px-4 rounded-full bg-foreground text-background text-14 font-semibold">Sí, terminar</button>
+                                        <button type="button" onClick={endTrip} className="h-10 px-4 rounded-full bg-foreground text-background text-14 font-semibold">Sí, terminar</button>
                                         <button type="button" onClick={() => setConfirmEnd(false)} className="h-10 px-4 rounded-full bg-secondary text-14 font-semibold">Seguir</button>
                                     </div>
                                 </div>
@@ -338,7 +348,7 @@ function TripView({ trip, demo, speed, finished, onArrived, onEnd }: TripViewPro
             </div>
 
             {shareOpen && !finished && (
-                <ShareTripSheet trip={trip} currentLeg={track.legIndex} eta={eta} bus={myBus} onClose={() => setShareOpen(false)} />
+                <ShareTripSheet trip={trip} currentLeg={track.legIndex} eta={eta} etaMs={etaMs} bus={myBus} onClose={() => setShareOpen(false)} />
             )}
         </div>
     );

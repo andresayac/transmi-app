@@ -4,10 +4,13 @@ import type { ActiveTrip } from '@/stores/app';
 import type { Itinerary, PlanLeg, PlanPlace } from '@/types/transit';
 
 /**
- * "Sigue mi viaje": a trip packed into a link. No server stores anything — the
- * data travels in the URL fragment (after #), which browsers never send to a
- * server. Whoever opens it follows the *bus* the sender is on, using
- * TransMilenio's live bus positions, never the sender's own phone location.
+ * "Sigue mi viaje": whoever opens the link follows the *bus* the sender is on,
+ * using TransMilenio's live bus positions, never the sender's phone location.
+ *
+ * The trip is stored by TransMi under a short id (/sigue/Xk3a9Qz2Lp), and while
+ * the trip is open the sender's phone reports which leg it is on and which bus
+ * it took (ShareState), so transfers are followed too. If the short link can't
+ * be created, the whole trip travels in the URL fragment instead (/sigue#…).
  */
 
 type Point = [name: string, lat: number, lng: number];
@@ -42,6 +45,31 @@ export interface SharedTrip {
     /** Label of the bus the sender is on (e.g. "A10072"), when detected */
     bus?: string;
     legs: SharedLeg[];
+}
+
+/** What the sender's phone reports while the trip is open (short links only). */
+export interface ShareState {
+    /** Leg in progress */
+    leg: number;
+    /** Bus the sender is on, when detected */
+    bus: string | null;
+    /** Expected arrival (epoch ms) */
+    eta: number | null;
+    /** When the leg or the bus last changed (epoch ms) */
+    since: number;
+    /** Last report (epoch ms) */
+    at: number;
+    ended: boolean;
+}
+
+/** Report sent by the sender's phone (the key proves it's the phone that created the link). */
+export interface ShareUpdate {
+    key: string;
+    leg: number;
+    bus: string | null;
+    eta: number | null;
+    ended?: boolean;
+    by?: string;
 }
 
 // ─── Polyline (Google encoded polyline algorithm, precision 5) ──
@@ -107,8 +135,15 @@ const point = (name: string, lat: number, lng: number): Point => [name.slice(0, 
 
 // ─── Build / read ────────────────────────────────────────
 
-export function packTrip(trip: ActiveTrip, opts: { currentLeg: number; etaMs: number; bus?: string | null; by?: string }): string {
-    const payload: SharedTrip = {
+export interface ShareSnapshot {
+    currentLeg: number;
+    etaMs: number;
+    bus?: string | null;
+    by?: string;
+}
+
+export function buildSharedTrip(trip: ActiveTrip, opts: ShareSnapshot): SharedTrip {
+    return {
         v: 1,
         ...(opts.by?.trim() ? { by: opts.by.trim().slice(0, 40) } : {}),
         to: point(trip.to.name, trip.to.lat, trip.to.lng),
@@ -127,11 +162,19 @@ export function packTrip(trip: ActiveTrip, opts: { currentLeg: number; etaMs: nu
             g: encodePolyline(simplify(l.geometry, 0.00025)),
         })),
     };
-    return toBase64Url(JSON.stringify(payload));
+}
+
+/** The whole trip in a link fragment: works without TransMi storing anything, but can't follow transfers. */
+export function packTrip(trip: ActiveTrip, opts: ShareSnapshot): string {
+    return toBase64Url(JSON.stringify(buildSharedTrip(trip, opts)));
 }
 
 export function shareUrl(packed: string): string {
     return `${window.location.origin}/sigue#${packed}`;
+}
+
+export function shortShareUrl(id: string): string {
+    return `${window.location.origin}/sigue/${id}`;
 }
 
 export function unpackTrip(data: string): SharedTrip | null {

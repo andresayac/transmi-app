@@ -47,7 +47,7 @@ La idea surgió como un **proyecto educativo** para aprender a integrar APIs de 
 ### 🛰️ Modo viaje (`/viaje`)
 - Progreso en vivo sobre el **diagrama de la línea**, próxima parada y hora estimada de llegada
 - **Despiértame**: vibración, sonido, voz y notificación N paradas antes de bajarte (las frases se sintetizan por adelantado para sonar al instante)
-- **Sigue mi viaje**: comparte un enlace por la app que quieras; quien lo abre ve **tu bus moviéndose en vivo** y tu hora de llegada. Se sigue al bus (datos en vivo de TransMilenio), no tu celular, y el enlace no pasa por ningún servidor
+- **Sigue mi viaje**: comparte un **enlace corto** (`/sigue/Xk3a9Qz2Lp`) por la app que quieras; quien lo abre ve **tu bus moviéndose en vivo**, tu hora de llegada y **el siguiente bus si haces transbordo**. Se sigue al bus (datos en vivo de TransMilenio), nunca la ubicación de tu celular: el teléfono solo informa en qué tramo y en qué bus vas. Los viajes se guardan como archivos en `.data/` (configurable con `DATA_DIR`) y se borran a los 3 días
 - Pantalla siempre encendida (Wake Lock) y modo simulación (`/viaje?demo=1`) para probar sin moverse
 
 ### 🗺️ Mapa en vivo (`/mapa`)

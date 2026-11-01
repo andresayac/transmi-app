@@ -43,3 +43,6 @@ next-env.d.ts
 
 # Browser QA artifacts
 .playwright-mcp/
+
+# Shared trips (short links for "Sigue mi viaje")
+.data/

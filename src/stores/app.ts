@@ -38,6 +38,8 @@ export interface ActiveTrip {
     from: PlanPlace;
     to: PlanPlace;
     startedAt: string;
+    /** Short "Sigue mi viaje" link, once shared: the key lets this phone report progress */
+    share?: { id: string; key: string };
 }
 
 /** A station or stop the rider checks every day, shown with live arrivals on the home screen. */
@@ -101,6 +103,7 @@ interface AppState {
     pushRecentPlace: (place: PlanPlace) => void;
     startTrip: (trip: Omit<ActiveTrip, 'startedAt'>) => void;
     endTrip: (completed: boolean) => void;
+    setTripShare: (share: { id: string; key: string }) => void;
     pinStop: (stop: PinnedStop) => void;
     unpinStop: (codigo: string) => void;
     setCard: (number: string, balance?: number) => void;
@@ -194,6 +197,8 @@ export const useAppStore = create<AppState>()(
                 }
                 set({ activeTrip: null });
             },
+
+            setTripShare: (share) => set((s) => (s.activeTrip ? { activeTrip: { ...s.activeTrip, share } } : {})),
 
             pinStop: (stop) => {
                 if (get().pinnedStops.some((p) => p.codigo === stop.codigo)) return;
