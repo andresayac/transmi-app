@@ -198,8 +198,8 @@ export default function RoutesMode({ map, ready, darkPreset, multi, initial }: P
                             <div className="flex items-center gap-3">
                                 <RouteBadge code={route.codigo} color={route.originalColor} size="lg" inactive={active === false} />
                                 <div className="flex-1 min-w-0">
-                                    <h2 className="font-signage text-[22px] font-bold leading-tight truncate">{route.detail?.name || route.nombre}</h2>
-                                    <p className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
+                                    <h2 className="font-signage text-22 font-bold leading-tight truncate">{route.detail?.name || route.nombre}</h2>
+                                    <p className="flex items-center gap-1.5 text-13 text-muted-foreground">
                                         {active === true && <><span className="live-dot" /> Operando ahora</>}
                                         {active === false && <>Fuera de horario</>}
                                         {active === null && route.status === 'ready' && <>Sin horario publicado</>}
@@ -256,16 +256,16 @@ export default function RoutesMode({ map, ready, darkPreset, multi, initial }: P
                             <span key={r.key} className="w-5 h-5 rounded-full ring-2 ring-background" style={{ backgroundColor: r.color, opacity: r.visible ? 1 : 0.3 }} />
                         ))}
                     </span>
-                    <span className="text-[14px] font-semibold tabular">{visibleCount}/{routes.length} rutas</span>
+                    <span className="text-14 font-semibold tabular">{visibleCount}/{routes.length} rutas</span>
                     <ChevronDown className={cn('w-4 h-4 transition-transform', panelOpen && 'rotate-180')} />
                 </button>
                 {panelOpen && (
                     <div className="mt-2 w-[270px] max-h-[50dvh] overflow-y-auto rounded-2xl bg-background border border-border shadow-2xl p-2 animate-slide-up">
                         <div className="flex items-center justify-between px-2 py-1.5">
-                            <span className="text-[13px] text-muted-foreground">Mostrar en el mapa</span>
+                            <span className="text-13 text-muted-foreground">Mostrar en el mapa</span>
                             <div className="flex gap-1">
-                                <button onClick={() => setAllVisible(true)} className="px-2.5 h-7 rounded-full text-[12px] font-semibold hover:bg-accent">Todas</button>
-                                <button onClick={() => setAllVisible(false)} className="px-2.5 h-7 rounded-full text-[12px] font-semibold hover:bg-accent">Ninguna</button>
+                                <button onClick={() => setAllVisible(true)} className="px-2.5 h-7 rounded-full text-12 font-semibold hover:bg-accent">Todas</button>
+                                <button onClick={() => setAllVisible(false)} className="px-2.5 h-7 rounded-full text-12 font-semibold hover:bg-accent">Ninguna</button>
                             </div>
                         </div>
                         {routes.map((r) => (
@@ -277,7 +277,7 @@ export default function RoutesMode({ map, ready, darkPreset, multi, initial }: P
                             >
                                 <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: r.color }} />
                                 <RouteBadge code={r.codigo} color={r.originalColor} size="xs" />
-                                <span className="flex-1 min-w-0 text-left text-[13px] truncate">{r.nombre}</span>
+                                <span className="flex-1 min-w-0 text-left text-13 truncate">{r.nombre}</span>
                                 {r.visible ? <Eye className="w-4 h-4 text-muted-foreground" /> : <EyeOff className="w-4 h-4 text-muted-foreground" />}
                             </button>
                         ))}
@@ -292,8 +292,8 @@ export default function RoutesMode({ map, ready, darkPreset, multi, initial }: P
                 onSnapChange={setSnap}
                 header={
                     <div className="px-4 pb-3">
-                        <h2 className="font-signage text-[22px] font-bold leading-tight">Comparando {routes.length} rutas</h2>
-                        <p className="text-[13px] text-muted-foreground tabular">
+                        <h2 className="font-signage text-22 font-bold leading-tight">Comparando {routes.length} rutas</h2>
+                        <p className="text-13 text-muted-foreground tabular">
                             {visibleCount} visibles · {totalBuses} {totalBuses === 1 ? 'bus' : 'buses'} en vivo · toca una ruta para ver su recorrido
                         </p>
                     </div>
@@ -316,8 +316,8 @@ export default function RoutesMode({ map, ready, darkPreset, multi, initial }: P
                                         <span className="w-1.5 self-stretch rounded-full shrink-0" style={{ backgroundColor: r.color }} aria-hidden />
                                         <RouteBadge code={r.codigo} color={r.originalColor} size="md" inactive={active === false} />
                                         <span className="flex-1 min-w-0">
-                                            <span className="block font-signage text-[17px] font-semibold truncate">{r.nombre}</span>
-                                            <span className="block text-[12px] text-muted-foreground tabular">
+                                            <span className="block font-signage text-17 font-semibold truncate">{r.nombre}</span>
+                                            <span className="block text-12 text-muted-foreground tabular">
                                                 {r.status === 'loading' && 'Cargando…'}
                                                 {r.status === 'error' && 'No se pudo cargar'}
                                                 {r.status === 'ready' && `${r.detail?.stops.length ?? 0} paradas · ${buses.length} en vivo${active === false ? ' · fuera de horario' : ''}`}
@@ -364,7 +364,7 @@ function Tabs({ tab, onChange }: { tab: 'recorrido' | 'horarios'; onChange: (t: 
                     role="tab"
                     aria-selected={tab === t}
                     onClick={() => onChange(t)}
-                    className={cn('h-8 rounded-full text-[14px] font-semibold transition', tab === t ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground')}
+                    className={cn('h-8 rounded-full text-14 font-semibold transition', tab === t ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground')}
                 >
                     {t === 'recorrido' ? 'Recorrido' : 'Horarios'}
                 </button>
@@ -377,7 +377,7 @@ export function LoadingPill({ text }: { text: string }) {
     return (
         <div className="absolute left-1/2 -translate-x-1/2 z-40 glass rounded-full px-4 h-10 flex items-center gap-2 shadow-lg" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 66px)' }} role="status">
             <Loader2 className="w-4 h-4 animate-spin" />
-            <span className="text-[13px] font-medium">{text}</span>
+            <span className="text-13 font-medium">{text}</span>
         </div>
     );
 }
@@ -398,11 +398,11 @@ function DiagramSkeleton() {
 function LoadError({ onRetry }: { onRetry: () => void }) {
     return (
         <div className="rounded-2xl bg-secondary p-4">
-            <p className="text-[14px] font-semibold">No pudimos cargar la ruta</p>
-            <p className="text-[13px] text-muted-foreground mt-0.5">Revisa tu conexión e inténtalo de nuevo. Si sigue fallando, búscala otra vez desde Explorar.</p>
+            <p className="text-14 font-semibold">No pudimos cargar la ruta</p>
+            <p className="text-13 text-muted-foreground mt-0.5">Revisa tu conexión e inténtalo de nuevo. Si sigue fallando, búscala otra vez desde Explorar.</p>
             <div className="mt-3 flex gap-2">
-                <button onClick={onRetry} className="h-10 px-4 rounded-full bg-foreground text-background text-[14px] font-semibold">Reintentar</button>
-                <Link href="/explorar" className="h-10 px-4 rounded-full border border-border flex items-center text-[14px] font-semibold">Ir a Explorar</Link>
+                <button onClick={onRetry} className="h-10 px-4 rounded-full bg-foreground text-background text-14 font-semibold">Reintentar</button>
+                <Link href="/explorar" className="h-10 px-4 rounded-full border border-border flex items-center text-14 font-semibold">Ir a Explorar</Link>
             </div>
         </div>
     );

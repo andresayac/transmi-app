@@ -93,8 +93,8 @@ export default function CatalogPanel({ onSelectRoutes, onClose }: CatalogPanelPr
                 <div className="shrink-0 px-4 pt-4 pb-3">
                     <div className="flex items-start justify-between gap-3">
                         <div>
-                            <h2 className="font-signage text-[24px] font-bold leading-tight">Catálogo de rutas</h2>
-                            <p className="text-[13px] text-muted-foreground tabular">
+                            <h2 className="font-signage text-24 font-bold leading-tight">Catálogo de rutas</h2>
+                            <p className="text-13 text-muted-foreground tabular">
                                 {catalog
                                     ? `${catalog.entries.length} rutas · ${catalog.troncalCount} troncales · ${catalog.estacionCount} estaciones`
                                     : 'Todas las rutas troncales en un solo lugar'}
@@ -119,11 +119,11 @@ export default function CatalogPanel({ onSelectRoutes, onClose }: CatalogPanelPr
                         <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-secondary flex items-center justify-center">
                             <Library className="w-7 h-7" />
                         </div>
-                        <p className="text-[14px] text-muted-foreground mb-5 max-w-xs mx-auto">
+                        <p className="text-14 text-muted-foreground mb-5 max-w-xs mx-auto">
                             Descarga una vez todas las rutas de todas las troncales para buscarlas y compararlas sin esperar. Toma alrededor de un minuto.
                         </p>
-                        {failed && <p className="text-[13px] text-destructive mb-3">No se pudo descargar el catálogo. Revisa tu conexión e inténtalo de nuevo.</p>}
-                        <button onClick={() => loadCatalog()} className="w-full h-12 rounded-full bg-foreground text-background text-[15px] font-semibold active:scale-[0.98] transition">
+                        {failed && <p className="text-13 text-destructive mb-3">No se pudo descargar el catálogo. Revisa tu conexión e inténtalo de nuevo.</p>}
+                        <button onClick={() => loadCatalog()} className="w-full h-12 rounded-full bg-foreground text-background text-15 font-semibold active:scale-[0.98] transition">
                             Descargar catálogo
                         </button>
                     </div>
@@ -133,14 +133,14 @@ export default function CatalogPanel({ onSelectRoutes, onClose }: CatalogPanelPr
                 {loading && (
                     <div className="px-4 pb-[calc(env(safe-area-inset-bottom)+24px)] text-center" role="status">
                         <Loader2 className="w-8 h-8 mx-auto mb-3 animate-spin" />
-                        <p className="text-[15px] font-semibold">Descargando catálogo…</p>
+                        <p className="text-15 font-semibold">Descargando catálogo…</p>
                         {progress && (
                             <>
-                                <p className="text-[13px] text-muted-foreground mt-1 truncate">{progress.label}</p>
+                                <p className="text-13 text-muted-foreground mt-1 truncate">{progress.label}</p>
                                 <div className="mt-3 h-2 w-full rounded-full bg-secondary overflow-hidden">
                                     <div className="h-full rounded-full system-stripe transition-[width] duration-300" style={{ width: `${pct}%` }} />
                                 </div>
-                                <p className="text-[12px] text-muted-foreground mt-1.5 tabular">
+                                <p className="text-12 text-muted-foreground mt-1.5 tabular">
                                     {progress.phase === 'troncales' && 'Leyendo troncales'}
                                     {progress.phase === 'estaciones' && `Estaciones de ${progress.loaded} de ${progress.total} troncales`}
                                     {progress.phase === 'rutas' && `${progress.loaded} de ${progress.total} estaciones revisadas`}
@@ -162,13 +162,13 @@ export default function CatalogPanel({ onSelectRoutes, onClose }: CatalogPanelPr
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     placeholder="Código o destino, ej. E44 o Portal Norte"
-                                    className="w-full h-11 pl-10 pr-3 rounded-full bg-secondary text-[15px] placeholder:text-muted-foreground border border-transparent focus:border-ring focus:outline-none"
+                                    className="w-full h-11 pl-10 pr-3 rounded-full bg-secondary text-15 placeholder:text-muted-foreground border border-transparent focus:border-ring focus:outline-none"
                                 />
                             </label>
                             <div className="flex gap-1.5 overflow-x-auto scrollbar-hidden -mx-4 px-4">
                                 <button
                                     onClick={() => setFilterTroncal(null)}
-                                    className={cn('h-8 px-3.5 rounded-full text-[13px] font-semibold shrink-0', !filterTroncal ? 'bg-foreground text-background' : 'bg-secondary text-muted-foreground')}
+                                    className={cn('h-8 px-3.5 rounded-full text-13 font-semibold shrink-0', !filterTroncal ? 'bg-foreground text-background' : 'bg-secondary text-muted-foreground')}
                                 >
                                     Todas
                                 </button>
@@ -180,7 +180,7 @@ export default function CatalogPanel({ onSelectRoutes, onClose }: CatalogPanelPr
                                             onClick={() => setFilterTroncal(active ? null : t.id)}
                                             title={t.nombre}
                                             aria-pressed={active}
-                                            className={cn('h-8 min-w-8 px-2.5 rounded-full text-[14px] font-bold font-signage shrink-0 flex items-center gap-1.5', !active && 'bg-secondary text-foreground')}
+                                            className={cn('h-8 min-w-8 px-2.5 rounded-full text-14 font-bold font-signage shrink-0 flex items-center gap-1.5', !active && 'bg-secondary text-foreground')}
                                             style={active ? { backgroundColor: t.color, color: readableOn(t.color) } : undefined}
                                         >
                                             {!active && <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: t.color }} />}
@@ -189,7 +189,7 @@ export default function CatalogPanel({ onSelectRoutes, onClose }: CatalogPanelPr
                                     );
                                 })}
                             </div>
-                            <p className="text-[12px] text-muted-foreground tabular">{filtered.length} rutas</p>
+                            <p className="text-12 text-muted-foreground tabular">{filtered.length} rutas</p>
                         </div>
 
                         <ul className="flex-1 overflow-y-auto px-2 pb-4">
@@ -208,8 +208,8 @@ export default function CatalogPanel({ onSelectRoutes, onClose }: CatalogPanelPr
                                             </span>
                                             <RouteBadge code={e.codigo} color={e.color} size="md" />
                                             <span className="flex-1 min-w-0">
-                                                <span className="block font-signage text-[17px] font-semibold truncate">{e.nombre}</span>
-                                                <span className="block text-[12px] text-muted-foreground truncate">Troncal {e.troncalLetra} · {e.troncalNombre}</span>
+                                                <span className="block font-signage text-17 font-semibold truncate">{e.nombre}</span>
+                                                <span className="block text-12 text-muted-foreground truncate">Troncal {e.troncalLetra} · {e.troncalNombre}</span>
                                             </span>
                                         </button>
                                     </li>
@@ -219,10 +219,10 @@ export default function CatalogPanel({ onSelectRoutes, onClose }: CatalogPanelPr
 
                         {selected.size > 0 && (
                             <div className="shrink-0 px-4 pt-2 pb-[calc(env(safe-area-inset-bottom)+12px)] border-t border-border flex items-center gap-3">
-                                <button onClick={() => setSelected(new Set())} className="h-12 px-4 rounded-full text-[14px] font-semibold hover:bg-accent">
+                                <button onClick={() => setSelected(new Set())} className="h-12 px-4 rounded-full text-14 font-semibold hover:bg-accent">
                                     Limpiar
                                 </button>
-                                <button onClick={viewSelected} className="flex-1 h-12 rounded-full bg-foreground text-background text-[15px] font-semibold active:scale-[0.98] transition">
+                                <button onClick={viewSelected} className="flex-1 h-12 rounded-full bg-foreground text-background text-15 font-semibold active:scale-[0.98] transition">
                                     Ver {selected.size} en el mapa
                                 </button>
                             </div>

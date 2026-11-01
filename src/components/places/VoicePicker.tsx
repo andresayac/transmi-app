@@ -42,8 +42,8 @@ export default function VoicePicker({ value, onChange }: { value: string; onChan
 
     return (
         <div className="py-3">
-            <span className="block text-[15px] font-medium">Voz</span>
-            <span className="block text-[13px] text-muted-foreground mb-2">
+            <span className="block text-15 font-medium">Voz</span>
+            <span className="block text-13 text-muted-foreground mb-2">
                 {saving
                     ? 'Con el ahorro de datos, los avisos usan la voz del teléfono. Escuchar una muestra sí descarga el audio.'
                     : 'Voces neuronales multilingües: hablan español con naturalidad'}
@@ -64,10 +64,10 @@ export default function VoicePicker({ value, onChange }: { value: string; onChan
                                 className="flex-1 min-w-0 text-left"
                             >
                                 <span className="flex items-center gap-1.5">
-                                    <span className="font-signage text-[19px] font-bold leading-none">{v.name}</span>
+                                    <span className="font-signage text-19 font-bold leading-none">{v.name}</span>
                                     {active && <Check className="w-3.5 h-3.5" />}
                                 </span>
-                                <span className="block text-[12px] text-muted-foreground truncate mt-0.5">{v.gender} · {v.style}</span>
+                                <span className="block text-12 text-muted-foreground truncate mt-0.5">{v.gender} · {v.style}</span>
                             </button>
                             <button
                                 onClick={() => preview(v.id, v.name)}

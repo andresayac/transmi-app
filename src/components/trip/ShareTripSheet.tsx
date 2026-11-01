@@ -80,8 +80,8 @@ export default function ShareTripSheet({ trip, currentLeg, eta, bus, onClose }: 
             <div className="relative w-full max-w-lg rounded-t-[24px] bg-background border-t border-border p-5 pb-[max(env(safe-area-inset-bottom),20px)] animate-slide-up">
                 <div className="flex items-start justify-between gap-3">
                     <div>
-                        <h2 id="share-title" className="font-signage text-[28px] font-bold leading-tight">Sigue mi viaje</h2>
-                        <p className="text-[14px] text-muted-foreground">Envía un enlace para que vean tu bus y a qué hora llegas.</p>
+                        <h2 id="share-title" className="font-signage text-28 font-bold leading-tight">Sigue mi viaje</h2>
+                        <p className="text-14 text-muted-foreground">Envía un enlace para que vean tu bus y a qué hora llegas.</p>
                     </div>
                     <button type="button" onClick={onClose} className="w-10 h-10 -mr-2 rounded-full flex items-center justify-center hover:bg-accent" aria-label="Cerrar">
                         <X className="w-5 h-5" />
@@ -97,8 +97,8 @@ export default function ShareTripSheet({ trip, currentLeg, eta, bus, onClose }: 
                                 <span className="absolute -right-0.5 -top-0.5 live-dot" />
                             </span>
                             <div className="min-w-0">
-                                <p className="text-[15px] font-semibold flex items-center gap-2">Vas en el bus {bus.label} <RouteBadge code={leg.line!.code} color={leg.line!.color} size="xs" /></p>
-                                <p className="text-[13px] text-muted-foreground">Quien abra el enlace verá este bus moverse en vivo.</p>
+                                <p className="text-15 font-semibold flex items-center gap-2">Vas en el bus {bus.label} <RouteBadge code={leg.line!.code} color={leg.line!.color} size="xs" /></p>
+                                <p className="text-13 text-muted-foreground">Quien abra el enlace verá este bus moverse en vivo.</p>
                             </div>
                         </div>
                     ) : (
@@ -106,7 +106,7 @@ export default function ShareTripSheet({ trip, currentLeg, eta, bus, onClose }: 
                             <span className="w-10 h-10 rounded-full flex items-center justify-center bg-secondary">
                                 <BusFront className="w-5 h-5 text-muted-foreground" />
                             </span>
-                            <p className="text-[13px] text-muted-foreground">
+                            <p className="text-13 text-muted-foreground">
                                 {riding
                                     ? 'Aún no identificamos tu bus. Verán tu ruta y la hora estimada; si compartes en un par de minutos, verán el bus en vivo.'
                                     : 'Verán tu ruta y la hora estimada de llegada. Cuando vayas en el bus, comparte de nuevo para que lo vean en vivo.'}
@@ -116,18 +116,18 @@ export default function ShareTripSheet({ trip, currentLeg, eta, bus, onClose }: 
                 </div>
 
                 <label className="mt-4 block">
-                    <span className="text-[13px] text-muted-foreground">Tu nombre (opcional)</span>
+                    <span className="text-13 text-muted-foreground">Tu nombre (opcional)</span>
                     <input
                         value={name}
                         onChange={(e) => setName(e.target.value.slice(0, 40))}
                         onBlur={remember}
                         placeholder="Para que sepan quién comparte"
                         autoComplete="given-name"
-                        className="mt-1 w-full h-11 rounded-xl bg-secondary px-3.5 text-[16px] outline-none focus:ring-2 focus:ring-ring"
+                        className="mt-1 w-full h-11 rounded-xl bg-secondary px-3.5 text-16 outline-none focus:ring-2 focus:ring-ring"
                     />
                 </label>
 
-                <p className="mt-4 rounded-xl bg-secondary px-3.5 py-3 text-[14px] leading-snug">
+                <p className="mt-4 rounded-xl bg-secondary px-3.5 py-3 text-14 leading-snug">
                     {message} <span className="text-muted-foreground break-all">{host}/sigue#…</span>
                 </p>
 
@@ -135,21 +135,21 @@ export default function ShareTripSheet({ trip, currentLeg, eta, bus, onClose }: 
                     <button
                         type="button"
                         onClick={share}
-                        className="flex-1 h-12 rounded-full bg-foreground text-background font-signage text-[20px] font-bold inline-flex items-center justify-center gap-2 active:scale-[0.98]"
+                        className="flex-1 h-12 rounded-full bg-foreground text-background font-signage text-20 font-bold inline-flex items-center justify-center gap-2 active:scale-[0.98]"
                     >
                         <Share2 className="w-5 h-5" /> Compartir
                     </button>
                     <button
                         type="button"
                         onClick={copy}
-                        className="h-12 px-4 rounded-full border border-border inline-flex items-center gap-2 text-[14px] font-semibold active:scale-[0.98]"
+                        className="h-12 px-4 rounded-full border border-border inline-flex items-center gap-2 text-14 font-semibold active:scale-[0.98]"
                     >
                         {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                         {copied ? 'Copiado' : 'Copiar'}
                     </button>
                 </div>
 
-                <p className="mt-3 flex items-start gap-1.5 text-[12px] text-muted-foreground">
+                <p className="mt-3 flex items-start gap-1.5 text-12 text-muted-foreground">
                     <ShieldCheck className="w-3.5 h-3.5 mt-px shrink-0" />
                     El enlace muestra el bus y tu destino, no la ubicación de tu celular. No se guarda en ningún servidor.
                 </p>

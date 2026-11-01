@@ -30,10 +30,10 @@ export default function RouteRow({ route, onOpen, isFavorite, onToggleFavorite, 
                 <RouteBadge code={route.codigo} color={route.color} size="md" inactive={active === false} />
                 <span className="flex-1 min-w-0">
                     <span className="flex items-center gap-1.5">
-                        <span className="font-signage text-[18px] font-semibold leading-tight truncate">{route.nombre}</span>
+                        <span className="font-signage text-18 font-semibold leading-tight truncate">{route.nombre}</span>
                         {active === true && <span className="w-1.5 h-1.5 rounded-full bg-success shrink-0" title="Operando ahora" />}
                     </span>
-                    <span className="block text-[12px] text-muted-foreground truncate">
+                    <span className="block text-12 text-muted-foreground truncate">
                         {route.tipoServicio}
                         {showSchedule && schedules.length > 0 && (
                             <> · {schedules.map((h) => `${h.convencion} ${formatClock(h.hora_inicio)}–${formatClock(h.hora_fin)}`).join(' · ')}</>

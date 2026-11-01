@@ -80,16 +80,16 @@ export default function InstallBanner() {
                     <TransMiLogo size={32} />
                 </span>
                 <div className="min-w-0">
-                    <p className="font-signage text-[20px] font-bold leading-tight">Ten TransMi a un toque</p>
-                    <p className="text-[13px] text-muted-foreground leading-snug">Instálala en tu pantalla de inicio: abre al instante y funciona como una app.</p>
+                    <p className="font-signage text-20 font-bold leading-tight">Ten TransMi a un toque</p>
+                    <p className="text-13 text-muted-foreground leading-snug">Instálala en tu pantalla de inicio: abre al instante y funciona como una app.</p>
                 </div>
             </div>
             {deferred ? (
-                <button type="button" onClick={install} className="mt-3 h-10 px-4 rounded-full bg-foreground text-background text-[14px] font-semibold inline-flex items-center gap-2 active:scale-95">
+                <button type="button" onClick={install} className="mt-3 h-10 px-4 rounded-full bg-foreground text-background text-14 font-semibold inline-flex items-center gap-2 active:scale-95">
                     <Download className="w-4 h-4" /> Instalar
                 </button>
             ) : (
-                <p className="mt-3 text-[13px] leading-relaxed">
+                <p className="mt-3 text-13 leading-relaxed">
                     Toca <Share className="inline w-4 h-4 -mt-0.5" aria-label="Compartir" /> <b>Compartir</b> y luego <SquarePlus className="inline w-4 h-4 -mt-0.5" aria-hidden /> <b>Agregar a inicio</b>.
                 </p>
             )}

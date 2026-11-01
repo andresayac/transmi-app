@@ -27,7 +27,7 @@ export default function NextDepartureHint({ leg, className }: { leg: PlanLeg; cl
     if (!match || match.minutes === null) return null;
 
     return (
-        <span className={cn('inline-flex items-center gap-1.5 text-[13px] font-medium text-foreground', className)}>
+        <span className={cn('inline-flex items-center gap-1.5 text-13 font-medium text-foreground', className)}>
             <span className="live-dot" />
             {match.minutes === 0 ? `${code} está llegando` : `Próximo ${code}: ${match.minutes} min`}
         </span>

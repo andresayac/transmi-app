@@ -181,9 +181,9 @@ function TripView({ trip, demo, speed, finished, onArrived, onEnd }: TripViewPro
                         <ArrowLeft className="w-5 h-5 text-foreground" />
                     </button>
                     <div className="flex flex-col items-end gap-1.5">
-                        {demo && <span className="pointer-events-auto glass rounded-full px-3 py-1 text-[12px] font-semibold text-foreground">Simulación ×{speed}</span>}
+                        {demo && <span className="pointer-events-auto glass rounded-full px-3 py-1 text-12 font-semibold text-foreground">Simulación ×{speed}</span>}
                         {wakeLock && (
-                            <span className="glass rounded-full px-3 py-1 text-[12px] font-medium text-foreground inline-flex items-center gap-1.5">
+                            <span className="glass rounded-full px-3 py-1 text-12 font-medium text-foreground inline-flex items-center gap-1.5">
                                 <Smartphone className="w-3.5 h-3.5" /> Pantalla activa
                             </span>
                         )}
@@ -209,18 +209,18 @@ function TripView({ trip, demo, speed, finished, onArrived, onEnd }: TripViewPro
                         <>
                             <div className="flex items-end justify-between">
                                 <div>
-                                    <p className="text-[13px] text-muted-foreground">Llegada estimada</p>
-                                    <p className="font-signage tabular text-[30px] font-bold leading-none">{eta ? formatTime(eta) : '—'}</p>
+                                    <p className="text-13 text-muted-foreground">Llegada estimada</p>
+                                    <p className="font-signage tabular text-30 font-bold leading-none">{eta ? formatTime(eta) : '—'}</p>
                                 </div>
-                                <p className="font-signage tabular text-[30px] font-bold leading-none">
-                                    {remainingMin}<span className="text-[18px] font-semibold ml-1">min</span>
+                                <p className="font-signage tabular text-30 font-bold leading-none">
+                                    {remainingMin}<span className="text-18 font-semibold ml-1">min</span>
                                 </p>
                             </div>
                             <div className="mt-3 h-1.5 rounded-full bg-secondary overflow-hidden" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(elapsedFrac * 100)} aria-label="Avance del viaje">
                                 <div className="h-full bg-foreground rounded-full transition-[width] duration-1000" style={{ width: `${elapsedFrac * 100}%` }} />
                             </div>
                             {myBus && (
-                                <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-secondary pl-2.5 pr-3 h-8 text-[13px] font-medium">
+                                <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-secondary pl-2.5 pr-3 h-8 text-13 font-medium">
                                     <span className="live-dot" /> Vas en el bus {myBus.label}
                                 </p>
                             )}
@@ -229,15 +229,15 @@ function TripView({ trip, demo, speed, finished, onArrived, onEnd }: TripViewPro
                                 <div className="mt-5 rounded-2xl border border-border p-4">
                                     {gps.error && !demo ? (
                                         <>
-                                            <p className="text-[15px] font-semibold">{gps.error}</p>
-                                            <p className="mt-1 text-[13px] text-muted-foreground">Sin tu ubicación no podemos avisarte cuándo bajarte.</p>
+                                            <p className="text-15 font-semibold">{gps.error}</p>
+                                            <p className="mt-1 text-13 text-muted-foreground">Sin tu ubicación no podemos avisarte cuándo bajarte.</p>
                                             <div className="mt-3 flex flex-wrap gap-2">
-                                                <button type="button" onClick={gps.requestLocation} className="h-9 px-4 rounded-full bg-foreground text-background text-[13px] font-semibold">Reintentar</button>
-                                                <button type="button" onClick={() => router.replace('/viaje?demo=1')} className="h-9 px-4 rounded-full bg-secondary text-[13px] font-semibold">Ver simulación</button>
+                                                <button type="button" onClick={gps.requestLocation} className="h-9 px-4 rounded-full bg-foreground text-background text-13 font-semibold">Reintentar</button>
+                                                <button type="button" onClick={() => router.replace('/viaje?demo=1')} className="h-9 px-4 rounded-full bg-secondary text-13 font-semibold">Ver simulación</button>
                                             </div>
                                         </>
                                     ) : (
-                                        <p className="text-[14px] text-muted-foreground">Buscando tu ubicación…</p>
+                                        <p className="text-14 text-muted-foreground">Buscando tu ubicación…</p>
                                     )}
                                 </div>
                             )}
@@ -255,7 +255,7 @@ function TripView({ trip, demo, speed, finished, onArrived, onEnd }: TripViewPro
 
                             {legs.length > track.legIndex + 1 && (
                                 <div className="mt-6">
-                                    <h2 className="text-[13px] font-semibold text-muted-foreground mb-1">Después</h2>
+                                    <h2 className="text-13 font-semibold text-muted-foreground mb-1">Después</h2>
                                     <ol>
                                         {legs.slice(track.legIndex + 1).map((l, i) => (
                                             <li key={i} className="flex items-center gap-3 py-2.5 border-b border-border last:border-0">
@@ -264,10 +264,10 @@ function TripView({ trip, demo, speed, finished, onArrived, onEnd }: TripViewPro
                                                 ) : (
                                                     <span className="w-9 flex justify-center"><Footprints className="w-4 h-4 text-muted-foreground" /></span>
                                                 )}
-                                                <span className="flex-1 min-w-0 truncate text-[14px]">
+                                                <span className="flex-1 min-w-0 truncate text-14">
                                                     {l.mode === 'TRANSIT' ? `Hasta ${stopLabel(l.to.name).station}` : `Camina hasta ${track.legIndex + 1 + i === legs.length - 1 ? 'tu destino' : stopLabel(l.to.name).station}`}
                                                 </span>
-                                                <span className="text-[13px] text-muted-foreground tabular">{l.durationMin} min</span>
+                                                <span className="text-13 text-muted-foreground tabular">{l.durationMin} min</span>
                                             </li>
                                         ))}
                                     </ol>
@@ -278,7 +278,7 @@ function TripView({ trip, demo, speed, finished, onArrived, onEnd }: TripViewPro
                                 <button
                                     type="button"
                                     onClick={() => { unlockAudio(); updateSettings({ voice: !settings.voice }); }}
-                                    className="h-11 px-4 rounded-full bg-secondary inline-flex items-center gap-2 text-[14px] font-semibold active:scale-95"
+                                    className="h-11 px-4 rounded-full bg-secondary inline-flex items-center gap-2 text-14 font-semibold active:scale-95"
                                     aria-pressed={settings.voice}
                                 >
                                     {settings.voice ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
@@ -294,7 +294,7 @@ function TripView({ trip, demo, speed, finished, onArrived, onEnd }: TripViewPro
                                             aria-checked={settings.alarmStops === n}
                                             aria-label={n === 1 ? 'Avisar 1 parada antes' : `Avisar ${n} paradas antes`}
                                             onClick={() => { unlockAudio(); updateSettings({ alarmStops: n }); }}
-                                            className={cn('w-9 h-9 rounded-full text-[14px] font-bold tabular', settings.alarmStops === n ? 'bg-foreground text-background' : 'text-muted-foreground')}
+                                            className={cn('w-9 h-9 rounded-full text-14 font-bold tabular', settings.alarmStops === n ? 'bg-foreground text-background' : 'text-muted-foreground')}
                                         >
                                             {n}
                                         </button>
@@ -303,32 +303,32 @@ function TripView({ trip, demo, speed, finished, onArrived, onEnd }: TripViewPro
                                 <button
                                     type="button"
                                     onClick={() => setShareOpen(true)}
-                                    className="h-11 px-4 rounded-full bg-foreground text-background inline-flex items-center gap-2 text-[14px] font-semibold active:scale-95"
+                                    className="h-11 px-4 rounded-full bg-foreground text-background inline-flex items-center gap-2 text-14 font-semibold active:scale-95"
                                 >
                                     <Share2 className="w-4 h-4" /> Compartir
                                 </button>
                             </div>
-                            <p className="mt-2 text-[12px] text-muted-foreground">
+                            <p className="mt-2 text-12 text-muted-foreground">
                                 Te avisamos {settings.alarmStops === 1 ? '1 parada' : `${settings.alarmStops} paradas`} antes de bajarte, con vibración{settings.voice ? ', sonido y voz' : ' y sonido'}.
                             </p>
 
                             {notifState === 'default' && (
-                                <button type="button" onClick={enableAlerts} className="mt-3 w-full h-11 rounded-full border border-border inline-flex items-center justify-center gap-2 text-[14px] font-semibold active:scale-[0.99]">
+                                <button type="button" onClick={enableAlerts} className="mt-3 w-full h-11 rounded-full border border-border inline-flex items-center justify-center gap-2 text-14 font-semibold active:scale-[0.99]">
                                     <Bell className="w-4 h-4" /> Activar avisos con la pantalla bloqueada
                                 </button>
                             )}
 
                             {confirmEnd ? (
                                 <div className="mt-4 rounded-2xl border border-border p-4">
-                                    <p className="text-[15px] font-semibold">¿Terminar el viaje?</p>
-                                    <p className="text-[13px] text-muted-foreground">Dejaremos de seguir tu ubicación y de avisarte.</p>
+                                    <p className="text-15 font-semibold">¿Terminar el viaje?</p>
+                                    <p className="text-13 text-muted-foreground">Dejaremos de seguir tu ubicación y de avisarte.</p>
                                     <div className="mt-3 flex gap-2">
-                                        <button type="button" onClick={onEnd} className="h-10 px-4 rounded-full bg-foreground text-background text-[14px] font-semibold">Sí, terminar</button>
-                                        <button type="button" onClick={() => setConfirmEnd(false)} className="h-10 px-4 rounded-full bg-secondary text-[14px] font-semibold">Seguir</button>
+                                        <button type="button" onClick={onEnd} className="h-10 px-4 rounded-full bg-foreground text-background text-14 font-semibold">Sí, terminar</button>
+                                        <button type="button" onClick={() => setConfirmEnd(false)} className="h-10 px-4 rounded-full bg-secondary text-14 font-semibold">Seguir</button>
                                     </div>
                                 </div>
                             ) : (
-                                <button type="button" onClick={() => setConfirmEnd(true)} className="mt-4 w-full h-11 rounded-full text-[14px] font-semibold text-destructive inline-flex items-center justify-center gap-2 hover:bg-destructive/10">
+                                <button type="button" onClick={() => setConfirmEnd(true)} className="mt-4 w-full h-11 rounded-full text-14 font-semibold text-destructive inline-flex items-center justify-center gap-2 hover:bg-destructive/10">
                                     <Square className="w-4 h-4" /> Terminar viaje
                                 </button>
                             )}
@@ -372,14 +372,14 @@ function Trip() {
         return (
             <div className="min-h-dvh flex flex-col items-center justify-center px-8 text-center">
                 <MapPin className="w-10 h-10 mb-4" />
-                <h1 className="font-signage text-[30px] font-bold leading-tight">No tienes un viaje en curso</h1>
-                <p className="mt-2 text-[15px] text-muted-foreground max-w-xs">
+                <h1 className="font-signage text-30 font-bold leading-tight">No tienes un viaje en curso</h1>
+                <p className="mt-2 text-15 text-muted-foreground max-w-xs">
                     Planea una ruta y toca “Iniciar viaje”: te guiamos parada por parada y te avisamos antes de bajarte.
                 </p>
-                <Link href="/planear" className="mt-6 h-12 px-6 rounded-full bg-foreground text-background font-signage text-[20px] font-bold inline-flex items-center">
+                <Link href="/planear" className="mt-6 h-12 px-6 rounded-full bg-foreground text-background font-signage text-20 font-bold inline-flex items-center">
                     Planear un viaje
                 </Link>
-                <Link href="/" className="mt-3 text-[14px] font-semibold text-muted-foreground">Volver al inicio</Link>
+                <Link href="/" className="mt-3 text-14 font-semibold text-muted-foreground">Volver al inicio</Link>
             </div>
         );
     }

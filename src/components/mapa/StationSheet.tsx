@@ -75,8 +75,8 @@ export default function StationSheet({ station, onClose, onOpenRoute, onViewMany
                             aria-hidden
                         />
                         <div className="flex-1 min-w-0">
-                            <h2 className="font-signage text-[24px] font-bold leading-tight truncate">{station.nombre}</h2>
-                            <p className="text-[13px] text-muted-foreground truncate">
+                            <h2 className="font-signage text-24 font-bold leading-tight truncate">{station.nombre}</h2>
+                            <p className="text-13 text-muted-foreground truncate">
                                 {isTroncal ? 'Estación TransMilenio' : 'Paradero zonal'} · {station.direccion}
                             </p>
                         </div>
@@ -85,12 +85,12 @@ export default function StationSheet({ station, onClose, onOpenRoute, onViewMany
                         </button>
                     </div>
                     <div className="mt-3 flex gap-2" onPointerDown={(e) => e.stopPropagation()}>
-                        <Link href={planHref} className="h-10 px-4 rounded-full bg-foreground text-background flex items-center gap-2 text-[14px] font-semibold active:scale-95 transition">
+                        <Link href={planHref} className="h-10 px-4 rounded-full bg-foreground text-background flex items-center gap-2 text-14 font-semibold active:scale-95 transition">
                             <Navigation className="w-4 h-4" />
                             Cómo llegar
                         </Link>
                         <PinStopButton stop={{ codigo: station.codigo, nombre: station.nombre, lat: station.lat, lng: station.lng, sistema: station.sistema }} />
-                        <span className="h-10 px-3 rounded-full border border-border flex items-center text-[13px] text-muted-foreground tabular">{station.codigo}</span>
+                        <span className="h-10 px-3 rounded-full border border-border flex items-center text-13 text-muted-foreground tabular">{station.codigo}</span>
                     </div>
                 </div>
             }
@@ -104,17 +104,17 @@ export default function StationSheet({ station, onClose, onOpenRoute, onViewMany
                 />
 
                 <section>
-                    <h3 className="font-signage text-[19px] font-bold mb-1">Rutas que paran aquí</h3>
-                    <p className="text-[12px] text-muted-foreground mb-2">Marca varias para comparar sus buses en vivo, o toca una para ver su recorrido.</p>
+                    <h3 className="font-signage text-19 font-bold mb-1">Rutas que paran aquí</h3>
+                    <p className="text-12 text-muted-foreground mb-2">Marca varias para comparar sus buses en vivo, o toca una para ver su recorrido.</p>
 
                     {status === 'loading' && (
                         <div className="space-y-2" aria-hidden>
                             {[0, 1, 2].map((i) => <div key={i} className="h-14 rounded-xl bg-secondary animate-pulse" />)}
                         </div>
                     )}
-                    {status === 'error' && <p className="text-[14px] text-muted-foreground">No pudimos cargar las rutas de esta estación. Cierra y vuelve a abrirla para reintentar.</p>}
+                    {status === 'error' && <p className="text-14 text-muted-foreground">No pudimos cargar las rutas de esta estación. Cierra y vuelve a abrirla para reintentar.</p>}
                     {status === 'ready' && sorted.length === 0 && (
-                        <p className="text-[14px] text-muted-foreground">
+                        <p className="text-14 text-muted-foreground">
                             {isTroncal ? 'Esta estación no tiene rutas publicadas.' : 'Las rutas de los paraderos zonales aparecen en el tablero de llegadas de arriba.'}
                         </p>
                     )}
@@ -140,10 +140,10 @@ export default function StationSheet({ station, onClose, onOpenRoute, onViewMany
                                         <RouteBadge code={r.codigo} color={r.color} size="md" inactive={active === false} />
                                         <span className="flex-1 min-w-0">
                                             <span className="flex items-center gap-1.5">
-                                                <span className="font-signage text-[17px] font-semibold truncate">{r.nombre}</span>
+                                                <span className="font-signage text-17 font-semibold truncate">{r.nombre}</span>
                                                 {active === true && <span className="live-dot shrink-0" aria-label="Operando ahora" />}
                                             </span>
-                                            <span className="block text-[12px] text-muted-foreground truncate">
+                                            <span className="block text-12 text-muted-foreground truncate">
                                                 {active === false ? 'Fuera de horario · ' : ''}
                                                 {(r.horarios?.data || []).map((h) => `${h.convencion} ${formatClock(h.hora_inicio)}–${formatClock(h.hora_fin)}`).join(' · ') || r.tipoServicio}
                                             </span>
@@ -161,7 +161,7 @@ export default function StationSheet({ station, onClose, onOpenRoute, onViewMany
                 <div className="sticky bottom-0 px-4 pt-2 pb-[calc(env(safe-area-inset-bottom)+12px)] bg-gradient-to-t from-background via-background to-transparent">
                     <button
                         onClick={() => onViewMany(rutas.filter((r) => selected.has(r.id)))}
-                        className="w-full h-12 rounded-full bg-foreground text-background text-[15px] font-semibold active:scale-[0.98] transition"
+                        className="w-full h-12 rounded-full bg-foreground text-background text-15 font-semibold active:scale-[0.98] transition"
                     >
                         Ver buses de {selected.size} {selected.size === 1 ? 'ruta' : 'rutas'}
                     </button>

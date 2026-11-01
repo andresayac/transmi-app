@@ -74,7 +74,7 @@ function ItinerariesCard({ card }: { card: Extract<AssistantCard, { kind: 'itine
 
     return (
         <div className={shell}>
-            <div className="flex items-center gap-2 px-4 pt-3.5 text-[13px] text-muted-foreground">
+            <div className="flex items-center gap-2 px-4 pt-3.5 text-13 text-muted-foreground">
                 <span className="truncate">{card.from.name}</span>
                 <ArrowRight className="h-3.5 w-3.5 shrink-0" />
                 <span className="truncate font-medium text-foreground">{card.to.name}</span>
@@ -82,17 +82,17 @@ function ItinerariesCard({ card }: { card: Extract<AssistantCard, { kind: 'itine
 
             <div className="px-4 pt-2 pb-4">
                 <div className="flex items-end justify-between gap-3">
-                    <p className="font-signage tabular text-[40px] font-bold leading-none">
-                        {it.durationMin}<span className="ml-1 text-[20px] font-semibold text-muted-foreground">min</span>
+                    <p className="font-signage tabular text-40 font-bold leading-none">
+                        {it.durationMin}<span className="ml-1 text-20 font-semibold text-muted-foreground">min</span>
                     </p>
-                    <p className="pb-0.5 text-right text-[13px] tabular text-muted-foreground">
+                    <p className="pb-0.5 text-right text-13 tabular text-muted-foreground">
                         {formatTime(now)} → <span className="font-semibold text-foreground">{formatTime(addMinutes(now, it.durationMin))}</span>
                     </p>
                 </div>
                 {it.tags.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1.5">
                         {it.tags.map((t) => (
-                            <span key={t} className={cn('rounded-full px-2 py-0.5 text-[11px] font-semibold', t === 'fastest' ? 'bg-foreground text-background' : 'bg-secondary text-secondary-foreground')}>
+                            <span key={t} className={cn('rounded-full px-2 py-0.5 text-11 font-semibold', t === 'fastest' ? 'bg-foreground text-background' : 'bg-secondary text-secondary-foreground')}>
                                 {TAG_LABEL[t] || t}
                             </span>
                         ))}
@@ -109,7 +109,7 @@ function ItinerariesCard({ card }: { card: Extract<AssistantCard, { kind: 'itine
                             return (
                                 <li key={i} className="flex items-start gap-2.5">
                                     <RouteBadge code={leg.line?.code || ''} color={leg.line?.color} size="sm" className="mt-px" />
-                                    <span className="min-w-0 text-[13px] leading-snug text-foreground/85">
+                                    <span className="min-w-0 text-13 leading-snug text-foreground/85">
                                         Sube en <span className="font-semibold text-foreground">{board.station}</span>
                                         {' '}y bájate en <span className="font-semibold text-foreground">{alight.station}</span>
                                         <span className="text-muted-foreground"> · {(leg.stops?.length || 0) + 1} paradas</span>
@@ -120,7 +120,7 @@ function ItinerariesCard({ card }: { card: Extract<AssistantCard, { kind: 'itine
                     </ol>
                 )}
 
-                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-muted-foreground">
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-12 text-muted-foreground">
                     <span className="inline-flex items-center gap-1"><Footprints className="h-3.5 w-3.5" />{formatDistance(it.walkMeters)} a pie</span>
                     <span className="inline-flex items-center gap-1"><Repeat className="h-3.5 w-3.5" />{transferText(transfers)}</span>
                 </div>
@@ -130,14 +130,14 @@ function ItinerariesCard({ card }: { card: Extract<AssistantCard, { kind: 'itine
                     <button
                         type="button"
                         onClick={start}
-                        className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-foreground text-[14px] font-semibold text-background transition active:scale-[0.98]"
+                        className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-foreground text-14 font-semibold text-background transition active:scale-[0.98]"
                     >
                         <Navigation className="h-4 w-4" />
                         Iniciar viaje
                     </button>
                     <Link
                         href={planHref(card.from, card.to)}
-                        className="inline-flex h-11 items-center justify-center rounded-full border border-border px-4 text-[14px] font-semibold hover:bg-accent"
+                        className="inline-flex h-11 items-center justify-center rounded-full border border-border px-4 text-14 font-semibold hover:bg-accent"
                     >
                         Ver detalles
                     </Link>
@@ -146,7 +146,7 @@ function ItinerariesCard({ card }: { card: Extract<AssistantCard, { kind: 'itine
 
             {options.length > 1 && (
                 <div className="border-t border-border pb-1">
-                    <p className="px-4 pt-2.5 pb-1 text-[12px] text-muted-foreground">Otras opciones</p>
+                    <p className="px-4 pt-2.5 pb-1 text-12 text-muted-foreground">Otras opciones</p>
                     {options.map((o, i) =>
                         i === selected ? null : (
                             <button
@@ -156,8 +156,8 @@ function ItinerariesCard({ card }: { card: Extract<AssistantCard, { kind: 'itine
                                 className="flex w-full items-center gap-3 px-4 py-2 text-left hover:bg-accent active:bg-accent"
                                 aria-label={`Ver opción de ${o.durationMin} minutos`}
                             >
-                                <span className="w-[58px] shrink-0 font-signage tabular text-[20px] font-bold leading-none">
-                                    {o.durationMin}<span className="ml-0.5 text-[13px] font-semibold text-muted-foreground">min</span>
+                                <span className="w-[58px] shrink-0 font-signage tabular text-20 font-bold leading-none">
+                                    {o.durationMin}<span className="ml-0.5 text-13 font-semibold text-muted-foreground">min</span>
                                 </span>
                                 <SegmentBar legs={o.legs} className="h-6 min-w-0 flex-1" />
                                 <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -177,11 +177,11 @@ function RouteCard({ card }: { card: Extract<AssistantCard, { kind: 'route' }> }
             <div className="flex items-start gap-3 px-4 pt-4">
                 <RouteBadge code={card.codigo} color={card.color} size="md" inactive={card.activeNow === false} />
                 <div className="min-w-0 flex-1">
-                    <p className="font-signage text-[19px] font-bold leading-tight">{card.nombre}</p>
+                    <p className="font-signage text-19 font-bold leading-tight">{card.nombre}</p>
                     {card.firstStop && card.lastStop && (
-                        <p className="mt-0.5 truncate text-[12px] text-muted-foreground">{card.firstStop} → {card.lastStop}</p>
+                        <p className="mt-0.5 truncate text-12 text-muted-foreground">{card.firstStop} → {card.lastStop}</p>
                     )}
-                    <p className="mt-1 flex items-center gap-1.5 text-[12px]">
+                    <p className="mt-1 flex items-center gap-1.5 text-12">
                         {card.activeNow ? (
                             <><span className="live-dot" /> <span className="text-foreground">Opera ahora</span></>
                         ) : card.activeNow === false ? (
@@ -194,7 +194,7 @@ function RouteCard({ card }: { card: Extract<AssistantCard, { kind: 'route' }> }
                 </div>
             </div>
             {card.schedules.length > 0 && (
-                <ul className="mx-4 mt-3 space-y-1 rounded-xl bg-secondary px-3 py-2.5 text-[13px]">
+                <ul className="mx-4 mt-3 space-y-1 rounded-xl bg-secondary px-3 py-2.5 text-13">
                     {card.schedules.map((h, i) => (
                         <li key={i} className="flex justify-between gap-3">
                             <span className="text-muted-foreground">{CONVENTION_LABELS[h.convencion] || h.convencion}</span>
@@ -203,7 +203,7 @@ function RouteCard({ card }: { card: Extract<AssistantCard, { kind: 'route' }> }
                     ))}
                 </ul>
             )}
-            <Link href={href} className="mt-3 flex items-center justify-between border-t border-border px-4 py-3 text-[13px] font-semibold hover:bg-accent">
+            <Link href={href} className="mt-3 flex items-center justify-between border-t border-border px-4 py-3 text-13 font-semibold hover:bg-accent">
                 Ver en el mapa con buses en vivo
                 <ArrowRight className="h-4 w-4" />
             </Link>
@@ -230,7 +230,7 @@ function isServicePoint(p: PlanPlace | ServicePoint): p is ServicePoint {
 function PlacesCard({ card }: { card: Extract<AssistantCard, { kind: 'places' }> }) {
     return (
         <div className={shell}>
-            <p className="px-4 pt-3.5 pb-1 font-signage text-[18px] font-bold">{card.title}</p>
+            <p className="px-4 pt-3.5 pb-1 font-signage text-18 font-bold">{card.title}</p>
             <ul className="divide-y divide-border">
                 {card.places.map((p, i) => {
                     const sp = isServicePoint(p) ? p : null;
@@ -242,15 +242,15 @@ function PlacesCard({ card }: { card: Extract<AssistantCard, { kind: 'places' }>
                                 {station ? <TrainFront className="h-4 w-4" /> : <MapPin className="h-4 w-4" />}
                             </span>
                             <div className="min-w-0 flex-1">
-                                <p className="truncate text-[14px] font-medium">{prettyName(p.name)}</p>
-                                <p className="truncate text-[12px] text-muted-foreground">
+                                <p className="truncate text-14 font-medium">{prettyName(p.name)}</p>
+                                <p className="truncate text-12 text-muted-foreground">
                                     {sp ? [sp.address, sp.distanceM !== undefined ? formatDistance(sp.distanceM) : ''].filter(Boolean).join(' · ') : (p as PlanPlace).detail}
                                 </p>
-                                {hours && <p className="text-[12px] text-muted-foreground">Hoy: {hours}</p>}
+                                {hours && <p className="text-12 text-muted-foreground">Hoy: {hours}</p>}
                             </div>
                             <Link
                                 href={planHref(null, { name: p.name, lat: p.lat, lng: p.lng })}
-                                className="shrink-0 rounded-full border border-border px-3 py-1.5 text-[12px] font-semibold hover:bg-accent"
+                                className="shrink-0 rounded-full border border-border px-3 py-1.5 text-12 font-semibold hover:bg-accent"
                             >
                                 Ir hasta aquí
                             </Link>
@@ -285,10 +285,10 @@ function WeatherCard({ weather }: { weather: WeatherNow }) {
             <WeatherIcon weather={weather} className="h-10 w-10 shrink-0" />
             <div className="min-w-0">
                 <p className="flex items-baseline gap-2">
-                    <span className="font-signage text-[34px] font-bold leading-none tabular">{weather.temperature}°</span>
-                    <span className="text-[14px] text-muted-foreground">{weather.summary}</span>
+                    <span className="font-signage text-34 font-bold leading-none tabular">{weather.temperature}°</span>
+                    <span className="text-14 text-muted-foreground">{weather.summary}</span>
                 </p>
-                <p className={cn('mt-1 text-[13px]', weather.rainInMin !== null ? 'font-medium text-foreground' : 'text-muted-foreground')}>{rain}</p>
+                <p className={cn('mt-1 text-13', weather.rainInMin !== null ? 'font-medium text-foreground' : 'text-muted-foreground')}>{rain}</p>
             </div>
         </div>
     );
@@ -308,7 +308,7 @@ export default function AssistantCardView({ card }: { card: AssistantCard }) {
             return (
                 <div className="space-y-2">
                     <ArrivalBoard paradero={card.paradero} title={card.title} limit={5} compact highlight={card.route} />
-                    <Link href={`/mapa?estacion=${encodeURIComponent(card.paradero)}`} className="inline-flex items-center gap-1 px-1 text-[12px] font-semibold text-muted-foreground hover:text-foreground">
+                    <Link href={`/mapa?estacion=${encodeURIComponent(card.paradero)}`} className="inline-flex items-center gap-1 px-1 text-12 font-semibold text-muted-foreground hover:text-foreground">
                         Ver la estación en el mapa <ArrowRight className="h-3.5 w-3.5" />
                     </Link>
                 </div>

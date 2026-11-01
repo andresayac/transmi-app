@@ -23,7 +23,7 @@ export default function DeparturePicker({ value, today, nowTime, onChange }: Dep
                     role="radio"
                     aria-checked={!scheduled}
                     onClick={() => onChange({ ...value, mode: 'now' })}
-                    className={cn('px-3.5 h-8 rounded-full text-[13px] font-semibold transition-colors', !scheduled ? 'bg-foreground text-background' : 'text-muted-foreground')}
+                    className={cn('px-3.5 h-8 rounded-full text-13 font-semibold transition-colors', !scheduled ? 'bg-foreground text-background' : 'text-muted-foreground')}
                 >
                     Salir ahora
                 </button>
@@ -32,7 +32,7 @@ export default function DeparturePicker({ value, today, nowTime, onChange }: Dep
                     role="radio"
                     aria-checked={scheduled}
                     onClick={() => onChange({ mode: 'at', date: value.date || today, time: value.time || nowTime })}
-                    className={cn('px-3.5 h-8 rounded-full text-[13px] font-semibold transition-colors inline-flex items-center gap-1.5', scheduled ? 'bg-foreground text-background' : 'text-muted-foreground')}
+                    className={cn('px-3.5 h-8 rounded-full text-13 font-semibold transition-colors inline-flex items-center gap-1.5', scheduled ? 'bg-foreground text-background' : 'text-muted-foreground')}
                 >
                     <Clock3 className="w-3.5 h-3.5" /> Programar
                 </button>
@@ -44,14 +44,14 @@ export default function DeparturePicker({ value, today, nowTime, onChange }: Dep
                         value={value.date}
                         min={today}
                         onChange={(e) => e.target.value && onChange({ ...value, date: e.target.value })}
-                        className="h-9 px-2.5 rounded-lg bg-secondary text-[14px] text-foreground outline-none focus:ring-2 focus:ring-ring tabular"
+                        className="h-9 px-2.5 rounded-lg bg-secondary text-14 text-foreground outline-none focus:ring-2 focus:ring-ring tabular"
                         aria-label="Día de salida"
                     />
                     <input
                         type="time"
                         value={value.time}
                         onChange={(e) => e.target.value && onChange({ ...value, time: e.target.value })}
-                        className="h-9 px-2.5 rounded-lg bg-secondary text-[14px] text-foreground outline-none focus:ring-2 focus:ring-ring tabular"
+                        className="h-9 px-2.5 rounded-lg bg-secondary text-14 text-foreground outline-none focus:ring-2 focus:ring-ring tabular"
                         aria-label="Hora de salida"
                     />
                 </div>

@@ -32,7 +32,7 @@ export default function MessageView({ message, isLast, onRetry }: MessageViewPro
     if (message.role === 'user') {
         return (
             <div className="flex justify-end">
-                <p className="max-w-[85%] whitespace-pre-wrap rounded-[20px] rounded-br-md bg-foreground px-4 py-2.5 text-[15px] leading-snug text-background">
+                <p className="max-w-[85%] whitespace-pre-wrap rounded-[20px] rounded-br-md bg-foreground px-4 py-2.5 text-15 leading-snug text-background">
                     {message.content}
                 </p>
             </div>
@@ -60,7 +60,7 @@ export default function MessageView({ message, isLast, onRetry }: MessageViewPro
             <AssistantOrb size={26} icon={false} active={streaming} className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1 space-y-3">
                 {tools.length > 0 && (
-                    <div className="space-y-1 text-[13px] text-muted-foreground">
+                    <div className="space-y-1 text-13 text-muted-foreground">
                         {doneLabels.length > 0 && (
                             <p className="flex items-start gap-2">
                                 <Check className="mt-0.5 h-3.5 w-3.5 shrink-0" />
@@ -85,7 +85,7 @@ export default function MessageView({ message, isLast, onRetry }: MessageViewPro
                 {texts.map((part, i) => {
                     const caret = streaming && part === lastPart;
                     return (
-                        <div key={`t${i}`} className="relative text-[15px] leading-relaxed text-foreground/90">
+                        <div key={`t${i}`} className="relative text-15 leading-relaxed text-foreground/90">
                             <Markdown text={part.text} />
                             {caret && <span className="ml-0.5 inline-block h-4 w-[7px] translate-y-[3px] bg-foreground/70 motion-safe:animate-pulse" aria-hidden />}
                         </div>
@@ -95,13 +95,13 @@ export default function MessageView({ message, isLast, onRetry }: MessageViewPro
                 {cards.map((part, i) => <AssistantCardView key={`c${i}`} card={part.card} />)}
 
                 {waiting && (
-                    <p className="flex items-center gap-2 text-[13px] text-muted-foreground">
+                    <p className="flex items-center gap-2 text-13 text-muted-foreground">
                         <Loader2 className="h-3.5 w-3.5 animate-spin" /> Pensando…
                     </p>
                 )}
 
                 {message.status === 'error' && message.error && message.error.code !== 'not_configured' && (
-                    <div className="flex items-center gap-3 rounded-xl border border-border bg-secondary px-3.5 py-2.5 text-[13px]">
+                    <div className="flex items-center gap-3 rounded-xl border border-border bg-secondary px-3.5 py-2.5 text-13">
                         <AlertCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
                         <span className="flex-1">{message.error.message}</span>
                         {isLast && message.error.code !== 'refusal' && (

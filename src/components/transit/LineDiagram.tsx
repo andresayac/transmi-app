@@ -105,10 +105,10 @@ export default function LineDiagram({
                             />
                         </span>
                         <span className={cn('flex-1 min-w-0 pr-2', passed && 'opacity-40')}>
-                            <span className={cn('block truncate font-signage leading-tight', big ? 'text-[17px] font-bold' : 'text-[16px] font-medium', stop.active === false && 'line-through text-muted-foreground')}>
+                            <span className={cn('block truncate font-signage leading-tight', big ? 'text-17 font-bold' : 'text-16 font-medium', stop.active === false && 'line-through text-muted-foreground')}>
                                 {stop.name}
                             </span>
-                            {stop.sub && <span className="block truncate text-[11px] text-muted-foreground leading-tight mt-0.5">{stop.sub}</span>}
+                            {stop.sub && <span className="block truncate text-11 text-muted-foreground leading-tight mt-0.5">{stop.sub}</span>}
                         </span>
                         {renderStopExtra && <span className="shrink-0 pr-2">{renderStopExtra(i)}</span>}
                     </button>

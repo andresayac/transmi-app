@@ -73,16 +73,16 @@ export default function ItineraryDetail({ itinerary, from, to, departAt, live, o
                 <div className="px-5 pt-5">
                     <div className="flex items-end justify-between gap-3">
                         <div>
-                            <p className="font-signage tabular text-[40px] font-bold leading-none">
-                                {itinerary.durationMin}<span className="text-[22px] font-semibold ml-1">min</span>
+                            <p className="font-signage tabular text-40 font-bold leading-none">
+                                {itinerary.durationMin}<span className="text-22 font-semibold ml-1">min</span>
                             </p>
                             {departAt && (
-                                <p className="mt-1 text-[14px] text-muted-foreground tabular">
+                                <p className="mt-1 text-14 text-muted-foreground tabular">
                                     Llegas a las {formatTime(addMinutes(departAt, itinerary.durationMin))}
                                 </p>
                             )}
                         </div>
-                        <div className="text-right text-[13px] text-muted-foreground space-y-0.5">
+                        <div className="text-right text-13 text-muted-foreground space-y-0.5">
                             <p className="inline-flex items-center gap-1.5"><Footprints className="w-3.5 h-3.5" />{formatDistance(itinerary.walkMeters)} a pie</p>
                             <p className="flex items-center justify-end gap-1.5"><Repeat className="w-3.5 h-3.5" />{transferText(transferCount(itinerary))}</p>
                         </div>
@@ -97,9 +97,9 @@ export default function ItineraryDetail({ itinerary, from, to, departAt, live, o
 
                 {saveOpen && (
                     <div className="mx-5 mb-3 rounded-2xl border border-border p-2 grid grid-cols-3 gap-2 animate-slide-up">
-                        <button type="button" onClick={() => saveAs('home')} className="flex flex-col items-center gap-1 py-2.5 rounded-xl hover:bg-accent text-[13px] font-medium"><House className="w-5 h-5" />Casa</button>
-                        <button type="button" onClick={() => saveAs('work')} className="flex flex-col items-center gap-1 py-2.5 rounded-xl hover:bg-accent text-[13px] font-medium"><Briefcase className="w-5 h-5" />Trabajo</button>
-                        <button type="button" onClick={() => saveAs('place')} className="flex flex-col items-center gap-1 py-2.5 rounded-xl hover:bg-accent text-[13px] font-medium"><Star className="w-5 h-5" />Lugar</button>
+                        <button type="button" onClick={() => saveAs('home')} className="flex flex-col items-center gap-1 py-2.5 rounded-xl hover:bg-accent text-13 font-medium"><House className="w-5 h-5" />Casa</button>
+                        <button type="button" onClick={() => saveAs('work')} className="flex flex-col items-center gap-1 py-2.5 rounded-xl hover:bg-accent text-13 font-medium"><Briefcase className="w-5 h-5" />Trabajo</button>
+                        <button type="button" onClick={() => saveAs('place')} className="flex flex-col items-center gap-1 py-2.5 rounded-xl hover:bg-accent text-13 font-medium"><Star className="w-5 h-5" />Lugar</button>
                     </div>
                 )}
             </div>
@@ -120,7 +120,7 @@ export default function ItineraryDetail({ itinerary, from, to, departAt, live, o
                 <button
                     type="button"
                     onClick={onStart}
-                    className="flex-1 h-12 rounded-full bg-foreground text-background font-signage text-[20px] font-bold inline-flex items-center justify-center gap-2 active:scale-[0.98]"
+                    className="flex-1 h-12 rounded-full bg-foreground text-background font-signage text-20 font-bold inline-flex items-center justify-center gap-2 active:scale-[0.98]"
                 >
                     <Navigation className="w-5 h-5" /> Iniciar viaje
                 </button>

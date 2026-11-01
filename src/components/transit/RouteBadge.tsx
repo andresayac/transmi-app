@@ -11,11 +11,11 @@ interface RouteBadgeProps {
 }
 
 const SIZES = {
-    xs: 'h-5 min-w-7 px-1 text-[12px] rounded-[5px]',
-    sm: 'h-6 min-w-9 px-1.5 text-[14px] rounded-md',
-    md: 'h-8 min-w-11 px-2 text-[18px] rounded-lg',
-    lg: 'h-11 min-w-14 px-2.5 text-[26px] rounded-[10px]',
-    xl: 'h-16 min-w-20 px-3.5 text-[40px] rounded-2xl',
+    xs: 'h-5 min-w-7 px-1 text-12 rounded-[5px]',
+    sm: 'h-6 min-w-9 px-1.5 text-14 rounded-md',
+    md: 'h-8 min-w-11 px-2 text-18 rounded-lg',
+    lg: 'h-11 min-w-14 px-2.5 text-26 rounded-[10px]',
+    xl: 'h-16 min-w-20 px-3.5 text-40 rounded-2xl',
 };
 
 /**

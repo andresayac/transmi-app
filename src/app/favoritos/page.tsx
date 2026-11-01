@@ -10,7 +10,7 @@ import VoicePicker from '@/components/places/VoicePicker';
 import RouteBadge from '@/components/transit/RouteBadge';
 import { planHref } from '@/components/home/PlannerHero';
 import { useToast } from '@/components/ui/Toast';
-import { SavedPlace, ThemePref, useAppStore, useHydrated } from '@/stores/app';
+import { SavedPlace, TextSize, ThemePref, useAppStore, useHydrated } from '@/stores/app';
 import { shareRoute } from '@/utils/share';
 import { ROUTE_COLORS } from '@/utils/constants';
 import type { PlanPlace } from '@/types/transit';
@@ -37,7 +37,7 @@ function Segmented<T extends string>({ value, options, onChange, label }: { valu
                     role="radio"
                     aria-checked={value === o.value}
                     onClick={() => onChange(o.value)}
-                    className={cn('h-8 px-3 rounded-lg text-[13px] font-semibold transition', value === o.value ? 'bg-background shadow-sm' : 'text-muted-foreground')}
+                    className={cn('h-8 px-3 rounded-lg text-13 font-semibold transition', value === o.value ? 'bg-background shadow-sm' : 'text-muted-foreground')}
                 >
                     {o.label}
                 </button>
@@ -69,8 +69,8 @@ function PlaceRow({ icon: Icon, label, place, onEdit, onRemove }: { icon: typeof
                 <Icon className="w-[18px] h-[18px]" />
             </span>
             <button onClick={onEdit} className="flex-1 min-w-0 text-left">
-                <span className="block font-signage text-[19px] font-semibold leading-tight">{label}</span>
-                <span className="block text-[13px] text-muted-foreground truncate">{place ? (place.detail ? `${place.name} · ${place.detail}` : place.name) : 'Toca para agregar'}</span>
+                <span className="block font-signage text-19 font-semibold leading-tight">{label}</span>
+                <span className="block text-13 text-muted-foreground truncate">{place ? (place.detail ? `${place.name} · ${place.detail}` : place.name) : 'Toca para agregar'}</span>
             </button>
             {place ? (
                 <div className="flex items-center shrink-0">
@@ -161,12 +161,12 @@ export default function GuardadosPage() {
             <main className="px-4 pt-5 space-y-9">
                 {/* ── Places ─────────────────────── */}
                 <section id="lugares" aria-labelledby="lugares-title" className="scroll-mt-20">
-                    <h2 id="lugares-title" className="font-signage text-[24px] font-bold">Tus lugares</h2>
-                    <p className="text-[14px] text-muted-foreground mb-2">Planea con un toque desde el inicio, y el asistente entiende “llévame a casa”.</p>
+                    <h2 id="lugares-title" className="font-signage text-24 font-bold">Tus lugares</h2>
+                    <p className="text-14 text-muted-foreground mb-2">Planea con un toque desde el inicio, y el asistente entiende “llévame a casa”.</p>
 
                     {editing && (
                         <div className="my-3 space-y-2">
-                            <p className="text-[14px] font-semibold">
+                            <p className="text-14 font-semibold">
                                 {editing === 'home' ? 'Elige tu casa' : editing === 'work' ? 'Elige tu trabajo' : 'Nuevo lugar'}
                             </p>
                             {pendingPlace ? (
@@ -177,9 +177,9 @@ export default function GuardadosPage() {
                                         autoFocus
                                         aria-label="Nombre del lugar"
                                         placeholder="Nombre: Universidad, Gimnasio…"
-                                        className="flex-1 h-11 rounded-xl bg-secondary px-3.5 text-[16px] outline-none focus:ring-2 focus:ring-ring"
+                                        className="flex-1 h-11 rounded-xl bg-secondary px-3.5 text-16 outline-none focus:ring-2 focus:ring-ring"
                                     />
-                                    <button type="submit" className="h-11 px-4 rounded-xl bg-foreground text-background font-semibold text-[14px]">Guardar</button>
+                                    <button type="submit" className="h-11 px-4 rounded-xl bg-foreground text-background font-semibold text-14">Guardar</button>
                                     <button type="button" onClick={() => { setPendingPlace(null); setEditing(null); }} className="w-11 h-11 rounded-xl border border-border flex items-center justify-center" aria-label="Cancelar"><X className="w-4 h-4" /></button>
                                 </form>
                             ) : (
@@ -196,7 +196,7 @@ export default function GuardadosPage() {
                         ))}
                     </div>
                     {!editing && (
-                        <button onClick={() => setEditing('new')} className="mt-2 inline-flex items-center gap-2 h-10 px-4 rounded-full border border-border text-[14px] font-semibold hover:bg-accent">
+                        <button onClick={() => setEditing('new')} className="mt-2 inline-flex items-center gap-2 h-10 px-4 rounded-full border border-border text-14 font-semibold hover:bg-accent">
                             <Plus className="w-4 h-4" /> Agregar lugar
                         </button>
                     )}
@@ -205,13 +205,13 @@ export default function GuardadosPage() {
                 {/* ── Routes ─────────────────────── */}
                 <section aria-labelledby="rutas-title">
                     <div className="flex items-baseline justify-between">
-                        <h2 id="rutas-title" className="font-signage text-[24px] font-bold">Rutas guardadas</h2>
+                        <h2 id="rutas-title" className="font-signage text-24 font-bold">Rutas guardadas</h2>
                         {s.favorites.length > 1 && (
-                            <button onClick={viewAllOnMap} className="text-[14px] font-medium text-muted-foreground hover:text-foreground">Ver todas en el mapa</button>
+                            <button onClick={viewAllOnMap} className="text-14 font-medium text-muted-foreground hover:text-foreground">Ver todas en el mapa</button>
                         )}
                     </div>
                     {s.favorites.length === 0 ? (
-                        <p className="text-[14px] text-muted-foreground mt-1">
+                        <p className="text-14 text-muted-foreground mt-1">
                             Toca la estrella en cualquier ruta para tenerla aquí. <Link href="/explorar" className="underline underline-offset-4 text-foreground">Buscar rutas</Link>
                         </p>
                     ) : (
@@ -224,8 +224,8 @@ export default function GuardadosPage() {
                                     >
                                         <RouteBadge code={f.codigo} color={f.color} size="md" />
                                         <span className="min-w-0">
-                                            <span className="block font-signage text-[18px] font-semibold leading-tight truncate">{f.nombre}</span>
-                                            <span className="block text-[12px] text-muted-foreground">{f.tipo} · guardada {timeAgo(f.addedAt)}</span>
+                                            <span className="block font-signage text-18 font-semibold leading-tight truncate">{f.nombre}</span>
+                                            <span className="block text-12 text-muted-foreground">{f.tipo} · guardada {timeAgo(f.addedAt)}</span>
                                         </span>
                                     </button>
                                     <button
@@ -248,25 +248,25 @@ export default function GuardadosPage() {
 
                 {/* ── Mobility stats ─────────────── */}
                 <section aria-labelledby="movilidad-title">
-                    <h2 id="movilidad-title" className="font-signage text-[24px] font-bold">Tu movilidad</h2>
+                    <h2 id="movilidad-title" className="font-signage text-24 font-bold">Tu movilidad</h2>
                     {stats ? (
                         <div className="mt-2 rounded-2xl bg-black text-white p-5 relative overflow-hidden ring-1 ring-white/10">
                             <div className="absolute inset-x-0 top-0 system-stripe h-[4px]" aria-hidden />
-                            <p className="font-signage text-[40px] font-bold leading-none tabular">{stats.count} {stats.count === 1 ? 'viaje' : 'viajes'}</p>
-                            <p className="mt-2 text-[15px] text-white/75 tabular">
+                            <p className="font-signage text-40 font-bold leading-none tabular">{stats.count} {stats.count === 1 ? 'viaje' : 'viajes'}</p>
+                            <p className="mt-2 text-15 text-white/75 tabular">
                                 {stats.minutes >= 90 ? `${(stats.minutes / 60).toFixed(1)} horas` : `${stats.minutes} minutos`} en el sistema · {stats.km.toFixed(1)} km recorridos
                             </p>
-                            <p className="mt-1 text-[14px] text-white/55">
+                            <p className="mt-1 text-14 text-white/55">
                                 ≈ {stats.co2.toFixed(1)} kg de CO₂ que no emitiste frente a ir en carro (estimado)
                             </p>
                             {stats.topLine && (
-                                <p className="mt-4 flex items-center gap-2 text-[14px] text-white/75">
+                                <p className="mt-4 flex items-center gap-2 text-14 text-white/75">
                                     Tu línea más usada <RouteBadge code={stats.topLine} size="sm" />
                                 </p>
                             )}
                         </div>
                     ) : (
-                        <p className="text-[14px] text-muted-foreground mt-1">
+                        <p className="text-14 text-muted-foreground mt-1">
                             Cuando completes viajes con el modo viaje, aquí verás tus minutos, kilómetros y la línea que más usas. <Link href="/planear" className="underline underline-offset-4 text-foreground">Planear un viaje</Link>
                         </p>
                     )}
@@ -274,10 +274,10 @@ export default function GuardadosPage() {
 
                 {/* ── Settings ───────────────────── */}
                 <section aria-labelledby="ajustes-title" className="pb-4">
-                    <h2 id="ajustes-title" className="font-signage text-[24px] font-bold mb-2">Ajustes</h2>
+                    <h2 id="ajustes-title" className="font-signage text-24 font-bold mb-2">Ajustes</h2>
                     <div className="divide-y divide-border">
                         <div className="flex items-center justify-between gap-3 py-3">
-                            <span className="text-[15px] font-medium">Tema</span>
+                            <span className="text-15 font-medium">Tema</span>
                             <Segmented<ThemePref>
                                 label="Tema"
                                 value={s.settings.theme}
@@ -285,8 +285,24 @@ export default function GuardadosPage() {
                                 options={[{ value: 'system', label: 'Auto' }, { value: 'light', label: 'Claro' }, { value: 'dark', label: 'Oscuro' }]}
                             />
                         </div>
+                        <div className="flex flex-wrap items-center justify-between gap-3 py-3">
+                            <span className="text-15 font-medium">Tamaño de letra</span>
+                            <Segmented<TextSize>
+                                label="Tamaño de letra"
+                                value={s.settings.textSize}
+                                onChange={(textSize) => s.updateSettings({ textSize })}
+                                options={[{ value: 'normal', label: 'Normal' }, { value: 'large', label: 'Grande' }, { value: 'xlarge', label: 'Muy grande' }]}
+                            />
+                        </div>
                         <div className="flex items-center justify-between gap-3 py-3">
-                            <span className="text-[15px] font-medium">Luz del mapa</span>
+                            <span>
+                                <span className="block text-15 font-medium">Más contraste</span>
+                                <span className="block text-13 text-muted-foreground">Textos y bordes más marcados, para leer bajo el sol</span>
+                            </span>
+                            <Switch checked={s.settings.highContrast} onChange={(highContrast) => s.updateSettings({ highContrast })} label="Más contraste" />
+                        </div>
+                        <div className="flex items-center justify-between gap-3 py-3">
+                            <span className="text-15 font-medium">Luz del mapa</span>
                             <Segmented
                                 label="Luz del mapa"
                                 value={s.settings.mapLight}
@@ -296,8 +312,8 @@ export default function GuardadosPage() {
                         </div>
                         <div className="flex items-center justify-between gap-3 py-3">
                             <span>
-                                <span className="block text-[15px] font-medium">Ahorro de datos</span>
-                                <span className="block text-[13px] text-muted-foreground">
+                                <span className="block text-15 font-medium">Ahorro de datos</span>
+                                <span className="block text-13 text-muted-foreground">
                                     {s.settings.dataSaver === 'auto' && saving && phoneAsksToSaveData()
                                         ? 'Encendido porque tu teléfono pidió ahorrar datos'
                                         : 'Mapa solo cuando lo pidas, menos actualizaciones y la voz del teléfono'}
@@ -307,16 +323,16 @@ export default function GuardadosPage() {
                         </div>
                         <div className="flex items-center justify-between gap-3 py-3">
                             <span>
-                                <span className="block text-[15px] font-medium">Avisos por voz en viaje</span>
-                                <span className="block text-[13px] text-muted-foreground">Te anuncia la próxima parada y cuándo bajarte</span>
+                                <span className="block text-15 font-medium">Avisos por voz en viaje</span>
+                                <span className="block text-13 text-muted-foreground">Te anuncia la próxima parada y cuándo bajarte</span>
                             </span>
                             <Switch checked={s.settings.voice} onChange={(voice) => s.updateSettings({ voice })} label="Avisos por voz" />
                         </div>
                         <VoicePicker value={s.settings.ttsVoice} onChange={(ttsVoice) => s.updateSettings({ ttsVoice })} />
                         <div className="flex items-center justify-between gap-3 py-3">
                             <span>
-                                <span className="block text-[15px] font-medium">Despiértame</span>
-                                <span className="block text-[13px] text-muted-foreground">Paradas antes de tu destino</span>
+                                <span className="block text-15 font-medium">Despiértame</span>
+                                <span className="block text-13 text-muted-foreground">Paradas antes de tu destino</span>
                             </span>
                             <Segmented
                                 label="Paradas antes del aviso"
@@ -327,21 +343,21 @@ export default function GuardadosPage() {
                         </div>
                         <div className="flex flex-wrap gap-2 pt-4">
                             {s.searchHistory.length > 0 && (
-                                <button onClick={() => { s.clearSearches(); toast.show('Historial borrado', 'info'); }} className="h-9 px-3.5 rounded-full border border-border text-[13px] font-medium hover:bg-accent">
+                                <button onClick={() => { s.clearSearches(); toast.show('Historial borrado', 'info'); }} className="h-9 px-3.5 rounded-full border border-border text-13 font-medium hover:bg-accent">
                                     Borrar búsquedas
                                 </button>
                             )}
                             {s.trips.length > 0 && (
                                 <button
                                     onClick={() => { if (confirm('¿Borrar el historial de viajes?')) { useAppStore.setState({ trips: [] }); toast.show('Viajes borrados', 'info'); } }}
-                                    className="h-9 px-3.5 rounded-full border border-border text-[13px] font-medium hover:bg-accent"
+                                    className="h-9 px-3.5 rounded-full border border-border text-13 font-medium hover:bg-accent"
                                 >
                                     Borrar viajes
                                 </button>
                             )}
                         </div>
                     </div>
-                    <p className="text-[12px] text-muted-foreground mt-6">
+                    <p className="text-12 text-muted-foreground mt-6">
                         TransMi es un proyecto educativo y no es la app oficial de TransMilenio. Los datos pertenecen a TransMilenio S.A. Tus lugares y viajes se guardan solo en este dispositivo.
                     </p>
                 </section>

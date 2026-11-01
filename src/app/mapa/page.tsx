@@ -163,7 +163,7 @@ function MapScreen() {
                         aria-label="Capas del mapa"
                     >
                         <div className="flex items-center justify-between px-2 py-1">
-                            <span className="font-signage text-[18px] font-bold">Capas</span>
+                            <span className="font-signage text-18 font-bold">Capas</span>
                             <button onClick={() => setLayersOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-accent" aria-label="Cerrar capas">
                                 <X className="w-4 h-4" />
                             </button>
@@ -209,11 +209,11 @@ function MapScreen() {
 
             {mode === 'multi' && !multiRoutes && (
                 <div className="absolute left-3 right-3 bottom-[calc(env(safe-area-inset-bottom)+16px)] z-40 rounded-2xl bg-background border border-border p-4 shadow-2xl">
-                    <p className="font-signage text-[20px] font-bold">No hay rutas para comparar</p>
-                    <p className="text-[14px] text-muted-foreground mt-0.5">Elige varias rutas en Explorar, en una estación o en el catálogo y vuelve a abrir la comparación.</p>
+                    <p className="font-signage text-20 font-bold">No hay rutas para comparar</p>
+                    <p className="text-14 text-muted-foreground mt-0.5">Elige varias rutas en Explorar, en una estación o en el catálogo y vuelve a abrir la comparación.</p>
                     <div className="mt-3 flex gap-2">
-                        <Link href="/explorar" className="h-10 px-4 rounded-full bg-foreground text-background flex items-center text-[14px] font-semibold">Ir a Explorar</Link>
-                        <button onClick={() => setCatalogOpen(true)} className="h-10 px-4 rounded-full border border-border text-[14px] font-semibold">Abrir catálogo</button>
+                        <Link href="/explorar" className="h-10 px-4 rounded-full bg-foreground text-background flex items-center text-14 font-semibold">Ir a Explorar</Link>
+                        <button onClick={() => setCatalogOpen(true)} className="h-10 px-4 rounded-full border border-border text-14 font-semibold">Abrir catálogo</button>
                     </div>
                 </div>
             )}
@@ -242,8 +242,8 @@ function LayerToggle({ icon, title, subtitle, checked, onChange }: { icon: React
         >
             <span className={cn('w-10 h-10 rounded-xl flex items-center justify-center shrink-0', checked ? 'bg-foreground text-background' : 'bg-secondary')}>{icon}</span>
             <span className="flex-1 min-w-0">
-                <span className="block text-[14px] font-semibold leading-tight">{title}</span>
-                <span className="block text-[12px] text-muted-foreground leading-tight mt-0.5">{subtitle}</span>
+                <span className="block text-14 font-semibold leading-tight">{title}</span>
+                <span className="block text-12 text-muted-foreground leading-tight mt-0.5">{subtitle}</span>
             </span>
             <span className={cn('w-10 h-6 rounded-full p-0.5 transition shrink-0', checked ? 'bg-foreground' : 'bg-secondary border border-border')}>
                 <span className={cn('block w-5 h-5 rounded-full transition-transform', checked ? 'translate-x-4 bg-background' : 'bg-muted-foreground/60')} />

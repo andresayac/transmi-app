@@ -124,7 +124,7 @@ export default function AssistantPage() {
                         <ChevronLeft className="h-5 w-5" />
                     </button>
                     <AssistantOrb size={28} icon={false} active={streaming} className="ml-1" />
-                    <h1 className="ml-2 flex-1 font-signage text-[22px] font-bold leading-none">Asistente</h1>
+                    <h1 className="ml-2 flex-1 font-signage text-22 font-bold leading-none">Asistente</h1>
                     {voiceAvailable && (
                         <button
                             onClick={toggleVoice}
@@ -149,10 +149,10 @@ export default function AssistantPage() {
                 {notConfigured && (
                     <div className="mx-4 mt-4 flex gap-3 rounded-2xl border border-border bg-secondary p-4" role="alert">
                         <KeyRound className="mt-0.5 h-5 w-5 shrink-0" />
-                        <div className="text-[14px] leading-snug">
+                        <div className="text-14 leading-snug">
                             <p className="font-semibold">El asistente aún no está configurado</p>
                             <p className="mt-1 text-muted-foreground">
-                                Conecta cualquier API compatible con el estándar de chat completions (Groq, MiMo, OpenRouter, Ollama…): define <code className="rounded bg-background px-1 py-0.5 text-[13px]">AI_BASE_URL</code>, <code className="rounded bg-background px-1 py-0.5 text-[13px]">AI_API_KEY</code> y <code className="rounded bg-background px-1 py-0.5 text-[13px]">AI_MODEL</code> en <code className="rounded bg-background px-1 py-0.5 text-[13px]">.env</code> y reinicia el servidor.
+                                Conecta cualquier API compatible con el estándar de chat completions (Groq, MiMo, OpenRouter, Ollama…): define <code className="rounded bg-background px-1 py-0.5 text-13">AI_BASE_URL</code>, <code className="rounded bg-background px-1 py-0.5 text-13">AI_API_KEY</code> y <code className="rounded bg-background px-1 py-0.5 text-13">AI_MODEL</code> en <code className="rounded bg-background px-1 py-0.5 text-13">.env</code> y reinicia el servidor.
                             </p>
                         </div>
                     </div>
@@ -161,8 +161,8 @@ export default function AssistantPage() {
                 {empty ? (
                     <div className="flex min-h-full flex-col px-5 pb-6 pt-10">
                         <AssistantOrb size={88} breathe className="self-start" />
-                        <h2 className="mt-6 font-signage text-[34px] font-bold leading-[1.05]">Pregúntame cómo moverte por Bogotá</h2>
-                        <p className="mt-2 max-w-[34ch] text-[15px] text-muted-foreground">
+                        <h2 className="mt-6 font-signage text-34 font-bold leading-[1.05]">Pregúntame cómo moverte por Bogotá</h2>
+                        <p className="mt-2 max-w-[34ch] text-15 text-muted-foreground">
                             Consulto rutas, llegadas en vivo, el planeador y el clima para responderte.
                         </p>
 
@@ -197,7 +197,7 @@ function SuggestionButton({ icon: Icon, text, onClick }: { icon: typeof House; t
         <button
             type="button"
             onClick={() => onClick(text)}
-            className="flex w-full items-center gap-3 rounded-2xl border border-border px-4 py-3 text-left text-[15px] transition hover:bg-accent active:scale-[0.99]"
+            className="flex w-full items-center gap-3 rounded-2xl border border-border px-4 py-3 text-left text-15 transition hover:bg-accent active:scale-[0.99]"
         >
             <Icon className="h-[18px] w-[18px] shrink-0 text-muted-foreground" />
             <span>{text}</span>

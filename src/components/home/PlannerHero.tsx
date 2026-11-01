@@ -19,7 +19,7 @@ function Chip({ href, icon: Icon, label }: { href: string; icon: typeof House; l
     return (
         <Link
             href={href}
-            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full border border-border bg-background text-[14px] font-medium whitespace-nowrap hover:bg-accent active:scale-95 transition"
+            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full border border-border bg-background text-14 font-medium whitespace-nowrap hover:bg-accent active:scale-95 transition"
         >
             <Icon className="w-4 h-4 text-muted-foreground" />
             <span className="max-w-[140px] truncate">{label}</span>
@@ -44,7 +44,7 @@ export default function PlannerHero() {
                 className="group flex items-center gap-3 w-full rounded-2xl bg-foreground text-background px-5 h-[68px] shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] active:scale-[0.99] transition"
             >
                 <Search className="w-6 h-6 opacity-70" strokeWidth={2.4} />
-                <span className="font-signage text-[28px] font-bold leading-none">¿A dónde vas?</span>
+                <span className="font-signage text-28 font-bold leading-none">¿A dónde vas?</span>
             </Link>
 
             <div className="flex gap-2 overflow-x-auto scrollbar-hidden mt-3 -mx-4 px-4 pb-1">

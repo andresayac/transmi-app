@@ -29,7 +29,7 @@ export default function OccupancyMeter({ value, showLabel = false, className }: 
                     />
                 ))}
             </span>
-            {showLabel && <span className="text-[11px] text-muted-foreground">{level.label}</span>}
+            {showLabel && <span className="text-11 text-muted-foreground">{level.label}</span>}
         </span>
     );
 }

@@ -179,7 +179,7 @@ export default function ExplorerMode({ map, ready, darkPreset, layers, userLat, 
                                         onFocus={() => setSnap(1)}
                                         onChange={(e) => setQuery(e.target.value)}
                                         placeholder="Buscar estación o paradero"
-                                        className="w-full h-12 pl-10 pr-10 rounded-full bg-secondary text-[15px] placeholder:text-muted-foreground border border-transparent focus:border-ring focus:outline-none"
+                                        className="w-full h-12 pl-10 pr-10 rounded-full bg-secondary text-15 placeholder:text-muted-foreground border border-transparent focus:border-ring focus:outline-none"
                                     />
                                     {query && (
                                         <button
@@ -196,7 +196,7 @@ export default function ExplorerMode({ map, ready, darkPreset, layers, userLat, 
                                     onClick={goNearest}
                                     onPointerDown={(e) => e.stopPropagation()}
                                     disabled={status !== 'ready'}
-                                    className="h-12 px-4 rounded-full bg-foreground text-background flex items-center gap-2 text-[14px] font-semibold shrink-0 active:scale-95 transition disabled:opacity-50"
+                                    className="h-12 px-4 rounded-full bg-foreground text-background flex items-center gap-2 text-14 font-semibold shrink-0 active:scale-95 transition disabled:opacity-50"
                                 >
                                     <LocateFixed className="w-4 h-4" />
                                     Más cercana
@@ -208,12 +208,12 @@ export default function ExplorerMode({ map, ready, darkPreset, layers, userLat, 
                                         key={f}
                                         onClick={() => setFilter(f)}
                                         aria-pressed={filter === f}
-                                        className={cn('h-8 px-3.5 rounded-full text-[13px] font-semibold transition', filter === f ? 'bg-foreground text-background' : 'bg-secondary text-muted-foreground hover:text-foreground')}
+                                        className={cn('h-8 px-3.5 rounded-full text-13 font-semibold transition', filter === f ? 'bg-foreground text-background' : 'bg-secondary text-muted-foreground hover:text-foreground')}
                                     >
                                         {f === 'all' ? 'Todas' : f === 'TransMilenio' ? 'TransMilenio' : 'Zonal'}
                                     </button>
                                 ))}
-                                <span className="ml-auto text-[12px] text-muted-foreground tabular">
+                                <span className="ml-auto text-12 text-muted-foreground tabular">
                                     {status === 'ready' ? `${filtered.length.toLocaleString('es-CO')} paradas` : ''}
                                 </span>
                             </div>
@@ -223,18 +223,18 @@ export default function ExplorerMode({ map, ready, darkPreset, layers, userLat, 
                     <div className="px-2 pb-8">
                         {status === 'error' && (
                             <div className="mx-2 rounded-2xl bg-secondary p-4">
-                                <p className="text-[14px] font-semibold">No pudimos cargar las estaciones</p>
-                                <p className="text-[13px] text-muted-foreground mt-0.5">Revisa tu conexión e inténtalo de nuevo.</p>
+                                <p className="text-14 font-semibold">No pudimos cargar las estaciones</p>
+                                <p className="text-13 text-muted-foreground mt-0.5">Revisa tu conexión e inténtalo de nuevo.</p>
                                 <button
                                     onClick={() => { setStatus('loading'); setAttempt((a) => a + 1); }}
-                                    className="mt-3 h-10 px-4 rounded-full bg-foreground text-background text-[14px] font-semibold"
+                                    className="mt-3 h-10 px-4 rounded-full bg-foreground text-background text-14 font-semibold"
                                 >
                                     Reintentar
                                 </button>
                             </div>
                         )}
                         {query.trim().length >= 2 && results.length === 0 && status === 'ready' && (
-                            <p className="px-3 py-4 text-[14px] text-muted-foreground">No hay estaciones que coincidan con “{query.trim()}”. Prueba con otra parte del nombre o el código.</p>
+                            <p className="px-3 py-4 text-14 text-muted-foreground">No hay estaciones que coincidan con “{query.trim()}”. Prueba con otra parte del nombre o el código.</p>
                         )}
                         {results.length > 0 && (
                             <ul>
@@ -246,10 +246,10 @@ export default function ExplorerMode({ map, ready, darkPreset, layers, userLat, 
                                             <button onClick={() => openStation(s)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-accent text-left">
                                                 <span className={cn('shrink-0 border-[2.5px]', troncal ? 'w-4 h-4 rounded-[4px] border-foreground' : 'w-3 h-3 rounded-full border-muted-foreground ml-0.5 mr-0.5')} aria-hidden />
                                                 <span className="flex-1 min-w-0">
-                                                    <span className="block font-signage text-[17px] font-semibold truncate">{s.nombre}</span>
-                                                    <span className="block text-[12px] text-muted-foreground truncate">{troncal ? 'TransMilenio' : 'Zonal'} · {s.direccion}</span>
+                                                    <span className="block font-signage text-17 font-semibold truncate">{s.nombre}</span>
+                                                    <span className="block text-12 text-muted-foreground truncate">{troncal ? 'TransMilenio' : 'Zonal'} · {s.direccion}</span>
                                                 </span>
-                                                {dist !== null && <span className="text-[12px] text-muted-foreground tabular shrink-0">{formatDistance(dist)}</span>}
+                                                {dist !== null && <span className="text-12 text-muted-foreground tabular shrink-0">{formatDistance(dist)}</span>}
                                             </button>
                                         </li>
                                     );
@@ -257,7 +257,7 @@ export default function ExplorerMode({ map, ready, darkPreset, layers, userLat, 
                             </ul>
                         )}
                         {query.trim().length < 2 && status === 'ready' && (
-                            <p className="px-3 py-2 text-[13px] text-muted-foreground">
+                            <p className="px-3 py-2 text-13 text-muted-foreground">
                                 Toca una estación en el mapa para ver sus próximas llegadas y las rutas que paran ahí.
                             </p>
                         )}

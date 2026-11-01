@@ -80,18 +80,18 @@ export default function SaldoCard() {
 
             <div className="flex items-start justify-between">
                 <div>
-                    <p className="text-[13px] text-white/60">Saldo TuLlave</p>
+                    <p className="text-13 text-white/60">Saldo TuLlave</p>
                     {balance !== null && !showForm ? (
-                        <p className="font-signage text-[44px] font-bold leading-none tabular mt-1">{cop(balance)}</p>
+                        <p className="font-signage text-44 font-bold leading-none tabular mt-1">{cop(balance)}</p>
                     ) : (
-                        <p className="font-signage text-[26px] font-semibold leading-tight mt-1">Consulta tu tarjeta</p>
+                        <p className="font-signage text-26 font-semibold leading-tight mt-1">Consulta tu tarjeta</p>
                     )}
                 </div>
                 <CreditCard className="w-7 h-7 text-white/40" />
             </div>
 
             {balance !== null && !showForm && (
-                <p className={cn('mt-2 text-[14px]', trips !== null && trips < 2 ? 'text-[#FCBD1B]' : 'text-white/75')}>
+                <p className={cn('mt-2 text-14', trips !== null && trips < 2 ? 'text-[#FCBD1B]' : 'text-white/75')}>
                     {trips === 0 ? 'No alcanza para un pasaje. ' : `Alcanza para ${trips} ${trips === 1 ? 'viaje' : 'viajes'} `}
                     <span className="text-white/45">· pasaje {cop(fare)}</span>
                 </p>
@@ -110,19 +110,19 @@ export default function SaldoCard() {
                         placeholder="Número de tarjeta"
                         value={draft}
                         onChange={(e) => setDraft(e.target.value.replace(/\D/g, '').slice(0, 20))}
-                        className="flex-1 min-w-0 h-11 rounded-xl bg-white/10 px-3.5 text-[16px] tabular placeholder:text-white/40 outline-none focus:ring-2 focus:ring-white/40"
+                        className="flex-1 min-w-0 h-11 rounded-xl bg-white/10 px-3.5 text-16 tabular placeholder:text-white/40 outline-none focus:ring-2 focus:ring-white/40"
                     />
                     <button
                         type="submit"
                         disabled={loading || draft.length < 10}
-                        className="h-11 px-4 rounded-xl bg-white text-black text-[14px] font-semibold disabled:opacity-40 active:scale-95 transition"
+                        className="h-11 px-4 rounded-xl bg-white text-black text-14 font-semibold disabled:opacity-40 active:scale-95 transition"
                     >
                         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Consultar'}
                     </button>
                 </form>
             ) : hydrated && (
                 <div className="mt-4 flex items-center justify-between gap-3">
-                    <div className="text-[13px] text-white/55 tabular">
+                    <div className="text-13 text-white/55 tabular">
                         •••• {number.slice(-4)}
                         {entry?.ultima_transaccion && <> · último uso {relative(entry.ultima_transaccion)}</>}
                         {!entry && lastBalance && <> · consultado {relative(lastBalance.at)}</>}
@@ -138,7 +138,7 @@ export default function SaldoCard() {
                         </button>
                         <button
                             onClick={() => { setDraft(''); setEditing(true); }}
-                            className="h-9 px-3 rounded-full text-[13px] font-medium hover:bg-white/10 transition"
+                            className="h-9 px-3 rounded-full text-13 font-medium hover:bg-white/10 transition"
                         >
                             Cambiar
                         </button>
@@ -146,10 +146,10 @@ export default function SaldoCard() {
                 </div>
             )}
 
-            {error && <p className="mt-2 text-[13px] text-[#ff8a8a]" role="alert">{error}</p>}
+            {error && <p className="mt-2 text-13 text-[#ff8a8a]" role="alert">{error}</p>}
 
             {trips !== null && trips < 2 && !showForm && (
-                <Link href="/mapa?capa=recarga" className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-white underline underline-offset-4">
+                <Link href="/mapa?capa=recarga" className="mt-3 inline-flex items-center gap-1.5 text-13 font-semibold text-white underline underline-offset-4">
                     <MapPin className="w-3.5 h-3.5" /> Puntos de recarga cerca
                 </Link>
             )}

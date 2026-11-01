@@ -54,11 +54,11 @@ export default function RouteDiagram({ route, buses, selectedIndex, onStopClick,
                 />
             )}
             {stops.length === 0 ? (
-                <p className="text-[14px] text-muted-foreground">Esta ruta no tiene paradas publicadas.</p>
+                <p className="text-14 text-muted-foreground">Esta ruta no tiene paradas publicadas.</p>
             ) : (
                 <>
                     {buses.length > 0 && diagramBuses.length < buses.length && (
-                        <p className="text-[12px] text-muted-foreground">
+                        <p className="text-12 text-muted-foreground">
                             {buses.length - diagramBuses.length} bus{buses.length - diagramBuses.length === 1 ? '' : 'es'} fuera del recorrido (en patio o en desvío) solo aparecen en el mapa.
                         </p>
                     )}

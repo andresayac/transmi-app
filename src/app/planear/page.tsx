@@ -43,8 +43,8 @@ function FieldButton({ label, place, placeholder, marker, onClick, onClear }: {
         <div className="flex items-center gap-3 min-h-[52px]">
             <span className="w-5 flex justify-center shrink-0">{marker}</span>
             <button type="button" onClick={onClick} className="flex-1 min-w-0 text-left py-1.5" aria-label={`${label}: ${place?.name || placeholder}`}>
-                <span className="block text-[12px] text-muted-foreground">{label}</span>
-                <span className={cn('block truncate text-[16px] font-semibold', place ? 'text-foreground' : 'text-muted-foreground')}>
+                <span className="block text-12 text-muted-foreground">{label}</span>
+                <span className={cn('block truncate text-16 font-semibold', place ? 'text-foreground' : 'text-muted-foreground')}>
                     {place?.name || placeholder}
                 </span>
             </button>
@@ -225,7 +225,7 @@ function Planner() {
                     <button type="button" onClick={goBack} className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-accent active:scale-95" aria-label="Volver">
                         <ArrowLeft className="w-5 h-5" />
                     </button>
-                    <h1 className="font-signage text-[24px] font-bold">¿A dónde vas?</h1>
+                    <h1 className="font-signage text-24 font-bold">¿A dónde vas?</h1>
                 </div>
                 <SystemStripe />
             </header>
@@ -261,7 +261,7 @@ function Planner() {
                 </div>
 
                 {fromChoice === 'gps' && gps.error && !gpsPoint && (
-                    <p className="mt-2 text-[13px] text-muted-foreground">
+                    <p className="mt-2 text-13 text-muted-foreground">
                         {gps.error}. <button type="button" onClick={gps.requestLocation} className="font-semibold text-foreground underline underline-offset-2">Reintentar</button> o elige el origen a mano.
                     </p>
                 )}
@@ -278,27 +278,27 @@ function Planner() {
                         <div className="flex gap-2 mb-5">
                             {home && (
                                 <button type="button" onClick={() => setTo(home)} className="flex-1 flex items-center gap-2.5 rounded-2xl border border-border p-3 active:scale-[0.98]">
-                                    <House className="w-5 h-5" /><span className="font-semibold text-[15px]">Casa</span>
+                                    <House className="w-5 h-5" /><span className="font-semibold text-15">Casa</span>
                                 </button>
                             )}
                             {work && (
                                 <button type="button" onClick={() => setTo(work)} className="flex-1 flex items-center gap-2.5 rounded-2xl border border-border p-3 active:scale-[0.98]">
-                                    <Briefcase className="w-5 h-5" /><span className="font-semibold text-[15px]">Trabajo</span>
+                                    <Briefcase className="w-5 h-5" /><span className="font-semibold text-15">Trabajo</span>
                                 </button>
                             )}
                         </div>
                     )}
                     {hydrated && recent.length > 0 ? (
                         <>
-                            <h2 className="text-[14px] font-semibold text-muted-foreground mb-1">Viajes recientes</h2>
+                            <h2 className="text-14 font-semibold text-muted-foreground mb-1">Viajes recientes</h2>
                             <ul>
                                 {recent.map((p, i) => (
                                     <li key={`${p.lat},${p.lng},${i}`}>
                                         <button type="button" onClick={() => setTo(p)} className="w-full flex items-center gap-3 py-3 text-left border-b border-border last:border-0">
                                             <Clock3 className="w-4 h-4 text-muted-foreground shrink-0" />
                                             <span className="min-w-0">
-                                                <span className="block truncate text-[15px] font-medium">{p.name}</span>
-                                                {p.detail && <span className="block truncate text-[12px] text-muted-foreground">{p.detail}</span>}
+                                                <span className="block truncate text-15 font-medium">{p.name}</span>
+                                                {p.detail && <span className="block truncate text-12 text-muted-foreground">{p.detail}</span>}
                                             </span>
                                         </button>
                                     </li>
@@ -308,8 +308,8 @@ function Planner() {
                     ) : (
                         <button type="button" onClick={() => setEditing('to')} className="w-full rounded-2xl border border-dashed border-border p-5 text-left active:scale-[0.99]">
                             <MapPin className="w-5 h-5 mb-2" />
-                            <p className="font-signage text-[20px] font-bold">Escribe tu destino</p>
-                            <p className="text-[13px] text-muted-foreground mt-0.5">Una dirección, un lugar como “Movistar Arena” o una estación.</p>
+                            <p className="font-signage text-20 font-bold">Escribe tu destino</p>
+                            <p className="text-13 text-muted-foreground mt-0.5">Una dirección, un lugar como “Movistar Arena” o una estación.</p>
                         </button>
                     )}
                 </section>
@@ -317,16 +317,16 @@ function Planner() {
 
             {to && (
                 <section className="px-4 pt-5 space-y-3" aria-live="polite" aria-busy={loading}>
-                    {samePoints && <p className="text-[14px] text-muted-foreground">El origen y el destino son el mismo lugar. Cambia uno de los dos.</p>}
+                    {samePoints && <p className="text-14 text-muted-foreground">El origen y el destino son el mismo lugar. Cambia uno de los dos.</p>}
                     {!from && !samePoints && (
-                        <p className="text-[14px] text-muted-foreground">
+                        <p className="text-14 text-muted-foreground">
                             Elige desde dónde sales para ver las rutas. <button type="button" onClick={() => setEditing('from')} className="font-semibold text-foreground underline underline-offset-2">Elegir origen</button>
                         </p>
                     )}
 
                     {loading && (
                         <>
-                            <p className="text-[13px] text-muted-foreground">Buscando las mejores opciones…</p>
+                            <p className="text-13 text-muted-foreground">Buscando las mejores opciones…</p>
                             <ItineraryCardSkeleton />
                             <ItineraryCardSkeleton />
                             <ItineraryCardSkeleton />
@@ -335,8 +335,8 @@ function Planner() {
 
                     {current?.error && (
                         <div className="rounded-2xl border border-border p-5">
-                            <p className="text-[15px] font-semibold">{current.error}</p>
-                            <button type="button" onClick={() => setNonce((n) => n + 1)} className="mt-3 inline-flex items-center gap-2 h-10 px-4 rounded-full bg-foreground text-background text-[14px] font-semibold">
+                            <p className="text-15 font-semibold">{current.error}</p>
+                            <button type="button" onClick={() => setNonce((n) => n + 1)} className="mt-3 inline-flex items-center gap-2 h-10 px-4 rounded-full bg-foreground text-background text-14 font-semibold">
                                 <RefreshCw className="w-4 h-4" /> Reintentar
                             </button>
                         </div>
@@ -344,17 +344,17 @@ function Planner() {
 
                     {current?.data && itineraries.length === 0 && (
                         <div className="rounded-2xl border border-border p-5">
-                            <p className="font-signage text-[20px] font-bold">No encontramos rutas</p>
-                            <p className="mt-1 text-[14px] text-muted-foreground">
+                            <p className="font-signage text-20 font-bold">No encontramos rutas</p>
+                            <p className="mt-1 text-14 text-muted-foreground">
                                 {departure.mode === 'at'
                                     ? 'A esa hora puede que el sistema no esté operando. Prueba con otra hora.'
                                     : 'Prueba con un origen o destino más cerca de una estación, o con otra hora de salida.'}
                             </p>
                             <div className="mt-3 flex flex-wrap gap-2">
                                 {departure.mode === 'at' && (
-                                    <button type="button" onClick={() => setDeparture({ ...departure, mode: 'now' })} className="h-9 px-4 rounded-full bg-foreground text-background text-[13px] font-semibold">Salir ahora</button>
+                                    <button type="button" onClick={() => setDeparture({ ...departure, mode: 'now' })} className="h-9 px-4 rounded-full bg-foreground text-background text-13 font-semibold">Salir ahora</button>
                                 )}
-                                <button type="button" onClick={() => setEditing('from')} className="h-9 px-4 rounded-full bg-secondary text-[13px] font-semibold">Cambiar origen</button>
+                                <button type="button" onClick={() => setEditing('from')} className="h-9 px-4 rounded-full bg-secondary text-13 font-semibold">Cambiar origen</button>
                             </div>
                         </div>
                     )}
@@ -362,10 +362,10 @@ function Planner() {
                     {itineraries.length > 0 && (
                         <>
                             <div className="flex items-center justify-between">
-                                <p className="text-[13px] text-muted-foreground">
+                                <p className="text-13 text-muted-foreground">
                                     {itineraries.length === 1 ? '1 opción' : `${itineraries.length} opciones`}
                                 </p>
-                                <button type="button" onClick={() => setNonce((n) => n + 1)} className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-foreground" aria-label="Actualizar opciones">
+                                <button type="button" onClick={() => setNonce((n) => n + 1)} className="inline-flex items-center gap-1.5 text-13 font-semibold text-foreground" aria-label="Actualizar opciones">
                                     <RefreshCw className="w-3.5 h-3.5" /> Actualizar
                                 </button>
                             </div>

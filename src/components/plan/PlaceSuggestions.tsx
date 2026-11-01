@@ -26,8 +26,8 @@ function Row({ icon, title, detail, onClick, muted }: { icon: React.ReactNode; t
                 {icon}
             </span>
             <span className="flex-1 min-w-0">
-                <span className="block truncate text-[15px] font-semibold text-foreground">{title}</span>
-                {detail && <span className="block truncate text-[12px] text-muted-foreground">{detail}</span>}
+                <span className="block truncate text-15 font-semibold text-foreground">{title}</span>
+                {detail && <span className="block truncate text-12 text-muted-foreground">{detail}</span>}
             </span>
         </button>
     );
@@ -87,7 +87,7 @@ export default function PlaceSuggestions({ field, initialQuery = '', gps, gpsErr
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         placeholder={placeholder}
-                        className="w-full h-11 pl-4 pr-10 rounded-xl bg-secondary text-[16px] text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring"
+                        className="w-full h-11 pl-4 pr-10 rounded-xl bg-secondary text-16 text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring"
                         enterKeyHint="search"
                         autoComplete="off"
                         aria-label={placeholder}
@@ -106,7 +106,7 @@ export default function PlaceSuggestions({ field, initialQuery = '', gps, gpsErr
 
             <div className="flex-1 overflow-y-auto overscroll-contain pb-[env(safe-area-inset-bottom)]">
                 {assign && (
-                    <p className="px-4 pt-3 pb-1 text-[13px] text-muted-foreground">
+                    <p className="px-4 pt-3 pb-1 text-13 text-muted-foreground">
                         Elige un resultado y quedará guardado como {assign === 'home' ? 'tu casa' : 'tu trabajo'}.
                     </p>
                 )}
@@ -140,7 +140,7 @@ export default function PlaceSuggestions({ field, initialQuery = '', gps, gpsErr
 
                                 {saved.length > 0 && (
                                     <>
-                                        <h3 className="px-4 pt-4 pb-1 text-[13px] font-semibold text-muted-foreground">Tus lugares</h3>
+                                        <h3 className="px-4 pt-4 pb-1 text-13 font-semibold text-muted-foreground">Tus lugares</h3>
                                         {saved.map((p) => (
                                             <Row key={p.id} icon={<Star className="w-4 h-4" />} title={p.label} detail={p.detail || p.name} onClick={() => onPick(p)} muted />
                                         ))}
@@ -149,7 +149,7 @@ export default function PlaceSuggestions({ field, initialQuery = '', gps, gpsErr
 
                                 {recent.length > 0 && (
                                     <>
-                                        <h3 className="px-4 pt-4 pb-1 text-[13px] font-semibold text-muted-foreground">Recientes</h3>
+                                        <h3 className="px-4 pt-4 pb-1 text-13 font-semibold text-muted-foreground">Recientes</h3>
                                         {recent.map((p, i) => (
                                             <Row key={`${p.lat},${p.lng},${i}`} icon={<Clock3 className="w-4 h-4" />} title={p.name} detail={p.detail} onClick={() => onPick(p)} muted />
                                         ))}
@@ -163,13 +163,13 @@ export default function PlaceSuggestions({ field, initialQuery = '', gps, gpsErr
                 {searching && (
                     <div className="py-1">
                         {loading && places.length === 0 && (
-                            <div className="flex items-center gap-2 px-4 py-4 text-[14px] text-muted-foreground">
+                            <div className="flex items-center gap-2 px-4 py-4 text-14 text-muted-foreground">
                                 <Loader2 className="w-4 h-4 animate-spin" /> Buscando lugares…
                             </div>
                         )}
-                        {error && <p className="px-4 py-4 text-[14px] text-muted-foreground">{error}</p>}
+                        {error && <p className="px-4 py-4 text-14 text-muted-foreground">{error}</p>}
                         {!loading && !error && places.length === 0 && (
-                            <p className="px-4 py-4 text-[14px] text-muted-foreground">
+                            <p className="px-4 py-4 text-14 text-muted-foreground">
                                 No encontramos “{query.trim()}”. Prueba con una dirección (Calle 26 # 68) o el nombre de una estación.
                             </p>
                         )}

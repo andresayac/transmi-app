@@ -10,15 +10,15 @@ import { stopLabel } from './utils';
 import { cn } from '@/lib/utils';
 
 function TimeCell({ at }: { at: Date | null }) {
-    return <span className="w-14 shrink-0 pt-0.5 text-right text-[12px] text-muted-foreground tabular">{at ? formatTime(at) : ''}</span>;
+    return <span className="w-14 shrink-0 pt-0.5 text-right text-12 text-muted-foreground tabular">{at ? formatTime(at) : ''}</span>;
 }
 
 function StopName({ name, className }: { name: string; className?: string }) {
     const { station, platform } = stopLabel(name);
     return (
         <span className={className}>
-            <span className="font-signage text-[18px] font-semibold text-foreground">{station}</span>
-            {platform && <span className="block text-[12px] text-muted-foreground">{platform}</span>}
+            <span className="font-signage text-18 font-semibold text-foreground">{station}</span>
+            {platform && <span className="block text-12 text-muted-foreground">{platform}</span>}
         </span>
     );
 }
@@ -41,12 +41,12 @@ function RideStep({ leg, at }: { leg: PlanLeg; at: Date | null }) {
                 <div className="mt-2 flex items-center gap-2.5">
                     <RouteBadge code={line.code} color={line.color} size="md" />
                     <div className="min-w-0">
-                        <p className="text-[14px] font-semibold text-foreground truncate">Dirección {line.longName || line.name}</p>
-                        <p className="text-[12px] text-muted-foreground">{leg.durationMin} min · {leg.distanceText}</p>
+                        <p className="text-14 font-semibold text-foreground truncate">Dirección {line.longName || line.name}</p>
+                        <p className="text-12 text-muted-foreground">{leg.durationMin} min · {leg.distanceText}</p>
                     </div>
                 </div>
                 {!!leg.suspendedStops && (
-                    <p className="mt-2 flex items-center gap-1.5 text-[12px] font-medium text-warning">
+                    <p className="mt-2 flex items-center gap-1.5 text-12 font-medium text-warning">
                         <AlertTriangle className="w-3.5 h-3.5" />
                         {leg.suspendedStops === 1 ? '1 parada suspendida' : `${leg.suspendedStops} paradas suspendidas`} en este tramo
                     </p>
@@ -54,7 +54,7 @@ function RideStep({ leg, at }: { leg: PlanLeg; at: Date | null }) {
                 <button
                     type="button"
                     onClick={() => setOpen((v) => !v)}
-                    className="mt-2 inline-flex items-center gap-1 text-[13px] font-semibold text-foreground hover:underline underline-offset-2"
+                    className="mt-2 inline-flex items-center gap-1 text-13 font-semibold text-foreground hover:underline underline-offset-2"
                     aria-expanded={open}
                 >
                     {count === 1 ? '1 parada' : `${count} paradas`}
@@ -87,7 +87,7 @@ function WalkStep({ leg, at, isLast }: { leg: PlanLeg; at: Date | null; isLast: 
                 <span className="flex-1 border-l-[3px] border-dotted border-muted-foreground/50 mt-1" />
             </div>
             <div className="flex-1 min-w-0 pb-5">
-                <p className="text-[14px] text-foreground">
+                <p className="text-14 text-foreground">
                     Camina <span className="font-semibold">{leg.durationMin} min</span> ({leg.distanceText}) hasta {target}
                 </p>
             </div>
@@ -114,7 +114,7 @@ export default function ItineraryTimeline({ itinerary, from, to, departAt }: { i
                     <CircleDot className="w-5 h-5 text-foreground z-10" />
                     <span className="flex-1 border-l-[3px] border-dotted border-muted-foreground/50" />
                 </div>
-                <p className="flex-1 min-w-0 pb-4 font-signage text-[18px] font-semibold text-foreground truncate">{from.name}</p>
+                <p className="flex-1 min-w-0 pb-4 font-signage text-18 font-semibold text-foreground truncate">{from.name}</p>
             </li>
             {steps}
             <li className="flex gap-3">
@@ -123,8 +123,8 @@ export default function ItineraryTimeline({ itinerary, from, to, departAt }: { i
                     <Flag className="w-5 h-5 text-foreground" />
                 </div>
                 <div className="flex-1 min-w-0">
-                    <p className="font-signage text-[18px] font-semibold text-foreground truncate">{to.name}</p>
-                    {to.detail && <p className="text-[12px] text-muted-foreground truncate">{to.detail}</p>}
+                    <p className="font-signage text-18 font-semibold text-foreground truncate">{to.name}</p>
+                    {to.detail && <p className="text-12 text-muted-foreground truncate">{to.detail}</p>}
                 </div>
             </li>
         </ol>

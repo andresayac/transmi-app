@@ -58,11 +58,11 @@ export default function ArrivalBoard({ paradero, title, limit = 6, className, on
                 <div className="flex items-center justify-between px-4 pt-3 pb-2">
                     <div className="flex items-center gap-2 min-w-0">
                         <span className="live-dot shrink-0" />
-                        <span className="font-signage text-[17px] font-semibold truncate">{title}</span>
+                        <span className="font-signage text-17 font-semibold truncate">{title}</span>
                     </div>
                     <button
                         onClick={refresh}
-                        className="flex items-center gap-1 text-[11px] text-white/50 hover:text-white/80 active:scale-95 transition"
+                        className="flex items-center gap-1 text-11 text-white/50 hover:text-white/80 active:scale-95 transition"
                         aria-label="Actualizar llegadas"
                     >
                         <RefreshCw className={cn('w-3 h-3', loading && 'animate-spin')} />
@@ -81,17 +81,17 @@ export default function ArrivalBoard({ paradero, title, limit = 6, className, on
                 ))}
 
                 {!loading && !error && data && rows.length === 0 && (
-                    <p className="px-4 py-5 text-[13px] text-white/50">No hay buses próximos reportados en este momento.</p>
+                    <p className="px-4 py-5 text-13 text-white/50">No hay buses próximos reportados en este momento.</p>
                 )}
 
                 {error && !data && (
-                    <p className="px-4 py-5 text-[13px] text-white/60">
+                    <p className="px-4 py-5 text-13 text-white/60">
                         No pudimos leer las llegadas. <button onClick={refresh} className="underline underline-offset-2">Reintentar</button>
                     </p>
                 )}
 
                 {wantedMissing && (
-                    <p className="px-4 py-2.5 text-[13px] text-white/60">La {wanted} no aparece en las próximas llegadas. Estas son las demás rutas:</p>
+                    <p className="px-4 py-2.5 text-13 text-white/60">La {wanted} no aparece en las próximas llegadas. Estas son las demás rutas:</p>
                 )}
 
                 {rows.map((a) => {
@@ -106,12 +106,12 @@ export default function ArrivalBoard({ paradero, title, limit = 6, className, on
                         >
                             <RouteBadge code={a.code} color={a.color} size="sm" />
                             <div className="flex-1 min-w-0">
-                                <FlapText value={a.destination} className="block truncate font-signage text-[16px] font-medium text-white/90" stagger={12} />
-                                {!compact && <span className="block text-[11px] text-white/40 tabular">{a.distanceLabel}</span>}
+                                <FlapText value={a.destination} className="block truncate font-signage text-16 font-medium text-white/90" stagger={12} />
+                                {!compact && <span className="block text-11 text-white/40 tabular">{a.distanceLabel}</span>}
                             </div>
                             <FlapText
                                 value={minutesText(a)}
-                                className={cn('font-signage tabular text-[20px] font-bold shrink-0', arriving ? 'text-[#FCBD1B]' : 'text-white')}
+                                className={cn('font-signage tabular text-20 font-bold shrink-0', arriving ? 'text-[#FCBD1B]' : 'text-white')}
                             />
                         </button>
                     );

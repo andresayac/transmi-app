@@ -45,7 +45,7 @@ export default function Composer({ onSend, onStop, streaming, disabled }: Compos
 
     return (
         <div className="border-t border-border bg-background/95 px-3 pt-2.5 pb-[calc(env(safe-area-inset-bottom)+10px)] backdrop-blur-xl">
-            {speech.error && <p className="px-2 pb-1.5 text-[12px] text-muted-foreground" role="status">{speech.error}</p>}
+            {speech.error && <p className="px-2 pb-1.5 text-12 text-muted-foreground" role="status">{speech.error}</p>}
             <div className={cn('flex items-end gap-2 rounded-[22px] border border-border bg-secondary py-1.5 pl-4 pr-1.5 transition-colors focus-within:border-ring', speech.listening && 'border-foreground')}>
                 <label htmlFor="assistant-input" className="sr-only">Mensaje para el asistente</label>
                 <textarea
@@ -58,7 +58,7 @@ export default function Composer({ onSend, onStop, streaming, disabled }: Compos
                     readOnly={speech.listening}
                     placeholder={speech.listening ? 'Te escucho…' : '¿A dónde quieres ir?'}
                     maxLength={2000}
-                    className="max-h-[140px] min-h-[36px] flex-1 resize-none bg-transparent py-2 text-[16px] leading-snug text-foreground placeholder:text-muted-foreground focus:outline-none"
+                    className="max-h-[140px] min-h-[36px] flex-1 resize-none bg-transparent py-2 text-16 leading-snug text-foreground placeholder:text-muted-foreground focus:outline-none"
                 />
 
                 {speech.supported && !streaming && (

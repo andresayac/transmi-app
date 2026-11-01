@@ -19,7 +19,7 @@ export default function AppHeader({ title, right, className }: { title?: string;
             <div className="flex items-center justify-between max-w-lg mx-auto px-4 h-14">
                 <div className="flex items-center gap-2.5 min-w-0">
                     <TransMiLogo size={34} />
-                    {title && <h1 className="font-signage text-[22px] font-bold text-foreground leading-none truncate">{title}</h1>}
+                    {title && <h1 className="font-signage text-22 font-bold text-foreground leading-none truncate">{title}</h1>}
                 </div>
                 <div className="flex items-center gap-1.5">
                     {right}

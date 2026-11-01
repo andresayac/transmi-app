@@ -62,7 +62,7 @@ function SearchField({ value, onChange, onSubmit, placeholder, autoFocus }: {
                 autoFocus={autoFocus}
                 aria-label={placeholder}
                 enterKeyHint="search"
-                className="w-full h-12 rounded-2xl bg-secondary pl-11 pr-10 text-[16px] placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring"
+                className="w-full h-12 rounded-2xl bg-secondary pl-11 pr-10 text-16 placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring"
             />
             {value && (
                 <button type="button" onClick={() => onChange('')} className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-accent" aria-label="Borrar búsqueda">
@@ -254,7 +254,7 @@ function ExplorarContent() {
                                 aria-selected={tab === t.key}
                                 onClick={() => { setTab(t.key); setDrill({ type: 'list' }); }}
                                 className={cn(
-                                    'h-9 rounded-xl text-[14px] font-semibold transition',
+                                    'h-9 rounded-xl text-14 font-semibold transition',
                                     tab === t.key ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
                                 )}
                             >
@@ -269,10 +269,10 @@ function ExplorarContent() {
                         <ArrowLeft className="w-5 h-5" />
                     </button>
                     <div className="min-w-0">
-                        <h2 className="font-signage text-[26px] font-bold leading-none truncate">{title}</h2>
-                        {drill.type === 'estaciones' && <p className="text-[13px] text-muted-foreground mt-1">Troncal {drill.troncal.letra} · {estaciones.length || '…'} estaciones</p>}
-                        {drill.type === 'estacion' && <p className="text-[13px] text-muted-foreground mt-1 truncate">{drill.stop.direccion}</p>}
-                        {drill.type === 'zona' && <p className="text-[13px] text-muted-foreground mt-1">{rutas.length || '…'} rutas zonales</p>}
+                        <h2 className="font-signage text-26 font-bold leading-none truncate">{title}</h2>
+                        {drill.type === 'estaciones' && <p className="text-13 text-muted-foreground mt-1">Troncal {drill.troncal.letra} · {estaciones.length || '…'} estaciones</p>}
+                        {drill.type === 'estacion' && <p className="text-13 text-muted-foreground mt-1 truncate">{drill.stop.direccion}</p>}
+                        {drill.type === 'zona' && <p className="text-13 text-muted-foreground mt-1">{rutas.length || '…'} rutas zonales</p>}
                     </div>
                 </div>
             )}
@@ -292,12 +292,12 @@ function ExplorarContent() {
                         {!results.length && !searching && history.length > 0 && (
                             <div>
                                 <div className="flex items-center justify-between mb-1.5">
-                                    <span className="text-[13px] text-muted-foreground">Búsquedas recientes</span>
-                                    <button onClick={clearHistory} className="text-[13px] text-muted-foreground hover:text-foreground">Borrar</button>
+                                    <span className="text-13 text-muted-foreground">Búsquedas recientes</span>
+                                    <button onClick={clearHistory} className="text-13 text-muted-foreground hover:text-foreground">Borrar</button>
                                 </div>
                                 <div className="flex flex-wrap gap-1.5">
                                     {history.map((term) => (
-                                        <span key={term} className="inline-flex items-center h-8 rounded-full bg-secondary text-[14px]">
+                                        <span key={term} className="inline-flex items-center h-8 rounded-full bg-secondary text-14">
                                             <button onClick={() => { setSearchTerm(term); runSearch(term); }} className="pl-3 pr-1.5 h-full">{term}</button>
                                             <button onClick={() => removeItem(term)} className="pr-2 h-full text-muted-foreground" aria-label={`Quitar ${term}`}><X className="w-3.5 h-3.5" /></button>
                                         </span>
@@ -312,7 +312,7 @@ function ExplorarContent() {
                                     <button
                                         key={f.key}
                                         onClick={() => setFilter(f.key)}
-                                        className={cn('h-8 px-3 rounded-full text-[13px] font-semibold whitespace-nowrap transition', filter === f.key ? 'bg-foreground text-background' : 'bg-secondary text-muted-foreground')}
+                                        className={cn('h-8 px-3 rounded-full text-13 font-semibold whitespace-nowrap transition', filter === f.key ? 'bg-foreground text-background' : 'bg-secondary text-muted-foreground')}
                                     >
                                         {f.label} <span className="opacity-60 tabular">{counts[f.key] || 0}</span>
                                     </button>
@@ -321,14 +321,14 @@ function ExplorarContent() {
                         )}
 
                         {searching && <ListSkeleton />}
-                        {searchError && <p className="text-[14px] text-destructive">{searchError}</p>}
+                        {searchError && <p className="text-14 text-destructive">{searchError}</p>}
                         {!searching && searchTerm && results.length === 0 && !searchError && initialQ !== '' && (
-                            <p className="text-[14px] text-muted-foreground py-6 text-center">No encontramos rutas con “{searchTerm}”. Prueba con el código (por ejemplo B23) o el destino.</p>
+                            <p className="text-14 text-muted-foreground py-6 text-center">No encontramos rutas con “{searchTerm}”. Prueba con el código (por ejemplo B23) o el destino.</p>
                         )}
                         {!searching && filtered.length > 0 && routeList(filtered)}
 
                         {!searching && !results.length && !history.length && (
-                            <p className="text-[14px] text-muted-foreground pt-2">
+                            <p className="text-14 text-muted-foreground pt-2">
                                 Busca por código o destino. Marca con + las rutas que quieras comparar en el mapa.
                             </p>
                         )}
@@ -345,10 +345,10 @@ function ExplorarContent() {
                                     onClick={() => openTroncal(t)}
                                     className="flex flex-col items-start gap-2 p-3 rounded-2xl border border-border hover:bg-accent/60 active:scale-[0.97] transition text-left"
                                 >
-                                    <span className="font-signage w-11 h-11 rounded-xl flex items-center justify-center text-[28px] font-bold" style={{ backgroundColor: t.color, color: readableOn(t.color) }}>
+                                    <span className="font-signage w-11 h-11 rounded-xl flex items-center justify-center text-28 font-bold" style={{ backgroundColor: t.color, color: readableOn(t.color) }}>
                                         {t.letra}
                                     </span>
-                                    <span className="font-signage text-[16px] font-semibold leading-tight line-clamp-2">{t.nombre}</span>
+                                    <span className="font-signage text-16 font-semibold leading-tight line-clamp-2">{t.nombre}</span>
                                 </button>
                             ))}
                         </div>
@@ -373,8 +373,8 @@ function ExplorarContent() {
                         <div>
                             {zonas.map((z) => (
                                 <button key={z.id} onClick={() => openZona(z)} className="w-full flex items-center justify-between py-3.5 border-b border-border last:border-0 text-left hover:bg-accent/40 active:bg-accent transition">
-                                    <span className="font-signage text-[19px] font-semibold">{z.nombre}</span>
-                                    <span className="text-[13px] text-muted-foreground tabular">{z.cantiad} rutas</span>
+                                    <span className="font-signage text-19 font-semibold">{z.nombre}</span>
+                                    <span className="text-13 text-muted-foreground tabular">{z.cantiad} rutas</span>
                                 </button>
                             ))}
                         </div>
@@ -405,17 +405,17 @@ function ExplorarContent() {
                             >
                                 <span className={cn('w-2.5 h-2.5 shrink-0', p.sistema === 'TransMilenio' ? 'rounded-[3px] bg-foreground' : 'rounded-full bg-muted-foreground')} />
                                 <span className="flex-1 min-w-0">
-                                    <span className="block font-signage text-[18px] font-semibold leading-tight truncate">{p.nombre}</span>
-                                    <span className="block text-[12px] text-muted-foreground truncate">{p.direccion} · {p.sistema}</span>
+                                    <span className="block font-signage text-18 font-semibold leading-tight truncate">{p.nombre}</span>
+                                    <span className="block text-12 text-muted-foreground truncate">{p.direccion} · {p.sistema}</span>
                                 </span>
-                                <span className="text-[12px] text-muted-foreground tabular shrink-0">{p.codigo}</span>
+                                <span className="text-12 text-muted-foreground tabular shrink-0">{p.codigo}</span>
                             </button>
                         ))}
                         {!loading && paradaSearch.length >= 2 && paradas.length === 0 && (
-                            <p className="text-[14px] text-muted-foreground py-6 text-center">Sin resultados para “{paradaSearch}”.</p>
+                            <p className="text-14 text-muted-foreground py-6 text-center">Sin resultados para “{paradaSearch}”.</p>
                         )}
                         {!paradaSearch && (
-                            <p className="text-[14px] text-muted-foreground pt-1">Busca una parada zonal o una estación para ver sus llegadas en vivo y las rutas que pasan.</p>
+                            <p className="text-14 text-muted-foreground pt-1">Busca una parada zonal o una estación para ver sus llegadas en vivo y las rutas que pasan.</p>
                         )}
                     </div>
                 )}
@@ -428,14 +428,14 @@ function ExplorarContent() {
                             <div className="flex gap-2">
                                 <Link
                                     href={`/mapa?estacion=${encodeURIComponent(drill.stop.codigo)}`}
-                                    className="flex-1 inline-flex items-center justify-center gap-2 h-11 rounded-xl border border-border font-semibold text-[14px] hover:bg-accent active:scale-[0.98] transition"
+                                    className="flex-1 inline-flex items-center justify-center gap-2 h-11 rounded-xl border border-border font-semibold text-14 hover:bg-accent active:scale-[0.98] transition"
                                 >
                                     <MapIcon className="w-4 h-4" /> Ver en el mapa
                                 </Link>
                                 {c && (
                                     <Link
                                         href={`/planear?${new URLSearchParams({ toLat: String(c.lat), toLng: String(c.lng), toName: drill.stop.nombre }).toString()}`}
-                                        className="flex-1 inline-flex items-center justify-center gap-2 h-11 rounded-xl bg-foreground text-background font-semibold text-[14px] active:scale-[0.98] transition"
+                                        className="flex-1 inline-flex items-center justify-center gap-2 h-11 rounded-xl bg-foreground text-background font-semibold text-14 active:scale-[0.98] transition"
                                     >
                                         <Navigation className="w-4 h-4" /> Cómo llegar
                                     </Link>
@@ -449,8 +449,8 @@ function ExplorarContent() {
                             </div>
                             <ArrivalBoard paradero={drill.stop.codigo} title="Próximas llegadas" limit={8} />
                             <section>
-                                <h3 className="font-signage text-[22px] font-bold mb-1">Rutas que paran aquí</h3>
-                                {loading ? <ListSkeleton /> : rutas.length ? routeList(rutas) : <p className="text-[14px] text-muted-foreground py-4">No encontramos rutas para esta parada.</p>}
+                                <h3 className="font-signage text-22 font-bold mb-1">Rutas que paran aquí</h3>
+                                {loading ? <ListSkeleton /> : rutas.length ? routeList(rutas) : <p className="text-14 text-muted-foreground py-4">No encontramos rutas para esta parada.</p>}
                             </section>
                         </div>
                     );
@@ -466,9 +466,9 @@ function ExplorarContent() {
                                 <span key={r.id} className="w-5 h-5 rounded-full ring-2 ring-foreground" style={{ backgroundColor: r.color }} />
                             ))}
                         </div>
-                        <span className="flex-1 text-[14px] font-semibold">{selectedCount} {selectedCount === 1 ? 'ruta' : 'rutas'} para comparar</span>
-                        <button onClick={clearAll} className="h-9 px-3 rounded-xl text-[13px] font-medium opacity-70 hover:opacity-100">Limpiar</button>
-                        <button onClick={compareOnMap} className="h-9 px-4 rounded-xl bg-background text-foreground text-[14px] font-bold active:scale-95 transition">Ver en el mapa</button>
+                        <span className="flex-1 text-14 font-semibold">{selectedCount} {selectedCount === 1 ? 'ruta' : 'rutas'} para comparar</span>
+                        <button onClick={clearAll} className="h-9 px-3 rounded-xl text-13 font-medium opacity-70 hover:opacity-100">Limpiar</button>
+                        <button onClick={compareOnMap} className="h-9 px-4 rounded-xl bg-background text-foreground text-14 font-bold active:scale-95 transition">Ver en el mapa</button>
                     </div>
                 </div>
             )}

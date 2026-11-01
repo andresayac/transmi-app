@@ -30,18 +30,18 @@ export default function ItineraryCard({ itinerary, departAt, live, onSelect }: I
         >
             <div className="flex items-start justify-between gap-3">
                 <div>
-                    <p className="font-signage tabular text-[34px] font-bold leading-none text-foreground">
-                        {itinerary.durationMin}<span className="text-[20px] font-semibold ml-1">min</span>
+                    <p className="font-signage tabular text-34 font-bold leading-none text-foreground">
+                        {itinerary.durationMin}<span className="text-20 font-semibold ml-1">min</span>
                     </p>
                     {departAt && (
-                        <p className="mt-1 text-[13px] text-muted-foreground tabular">
+                        <p className="mt-1 text-13 text-muted-foreground tabular">
                             {formatTime(departAt)} → {formatTime(addMinutes(departAt, itinerary.durationMin))}
                         </p>
                     )}
                 </div>
                 <div className="flex flex-wrap justify-end gap-1.5 max-w-[55%]">
                     {itinerary.tags.map((t) => (
-                        <span key={t} className={cn('px-2 py-0.5 rounded-full text-[11px] font-semibold', t === 'fastest' ? 'bg-foreground text-background' : 'bg-secondary text-foreground')}>
+                        <span key={t} className={cn('px-2 py-0.5 rounded-full text-11 font-semibold', t === 'fastest' ? 'bg-foreground text-background' : 'bg-secondary text-foreground')}>
                             {TAG_LABELS[t]}
                         </span>
                     ))}
@@ -50,7 +50,7 @@ export default function ItineraryCard({ itinerary, departAt, live, onSelect }: I
 
             <SegmentBar legs={itinerary.legs} className="mt-3" />
 
-            <div className="mt-3 flex items-center gap-4 text-[13px] text-muted-foreground">
+            <div className="mt-3 flex items-center gap-4 text-13 text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5"><Footprints className="w-3.5 h-3.5" />{formatDistance(itinerary.walkMeters)}</span>
                 <span className="inline-flex items-center gap-1.5"><Repeat className="w-3.5 h-3.5" />{transferText(transfers)}</span>
                 <ChevronRight className="w-4 h-4 ml-auto" />

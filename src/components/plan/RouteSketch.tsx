@@ -86,11 +86,11 @@ export default function RouteSketch({ itinerary, from, to, rider, padding, class
                 <button
                     type="button"
                     onClick={onShowMap}
-                    className="h-9 pl-3 pr-3.5 rounded-full glass shadow-lg inline-flex items-center gap-1.5 text-[13px] font-semibold text-foreground active:scale-95"
+                    className="h-9 pl-3 pr-3.5 rounded-full glass shadow-lg inline-flex items-center gap-1.5 text-13 font-semibold text-foreground active:scale-95"
                 >
                     <MapIcon className="w-4 h-4" /> Ver mapa
                 </button>
-                <span className="text-[12px] font-medium text-muted-foreground">Ahorrando datos</span>
+                <span className="text-12 font-medium text-muted-foreground">Ahorrando datos</span>
             </div>
         </div>
     );

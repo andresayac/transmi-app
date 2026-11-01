@@ -31,14 +31,14 @@ export default function WeatherChip({ lat, lng, className }: { lat?: number | nu
     return (
         <span
             className={cn(
-                'inline-flex items-center gap-1.5 h-8 pl-2.5 pr-3 rounded-full text-[13px] font-medium',
+                'inline-flex items-center gap-1.5 h-8 pl-2.5 pr-3 rounded-full text-13 font-medium',
                 rain ? 'bg-foreground text-background' : 'bg-secondary text-foreground',
                 className,
             )}
             title={data.summary}
         >
             <WeatherIcon code={data.code} isDay={data.isDay} className="w-4 h-4" />
-            <span className="font-signage text-[16px] font-bold tabular">{data.temperature}°</span>
+            <span className="font-signage text-16 font-bold tabular">{data.temperature}°</span>
             <span className="truncate">{rain || data.summary}</span>
         </span>
     );

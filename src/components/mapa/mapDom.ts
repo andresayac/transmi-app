@@ -12,7 +12,7 @@ function h<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, te
 }
 
 function badge(code: string, color: string) {
-    return h('span', 'font-signage inline-flex items-center justify-center h-6 min-w-9 px-1.5 rounded-md text-[14px] font-bold leading-none', code, {
+    return h('span', 'font-signage inline-flex items-center justify-center h-6 min-w-9 px-1.5 rounded-md text-14 font-bold leading-none', code, {
         backgroundColor: color,
         color: readableOn(color),
     });
@@ -62,15 +62,15 @@ export function paintBusElement(parts: ReturnType<typeof createBusElement>, bus:
 export function busPopupContent(bus: LiveBus, color: string, routeCode: string) {
     const wrap = h('div', 'p-3 min-w-[190px] font-sans');
     const top = h('div', 'flex items-center gap-2 mb-1.5');
-    top.append(badge(routeCode, color), h('span', 'font-signage text-[17px] font-bold', bus.label || 'Bus'));
+    top.append(badge(routeCode, color), h('span', 'font-signage text-17 font-bold', bus.label || 'Bus'));
     wrap.appendChild(top);
-    if (bus.destination) wrap.appendChild(h('p', 'text-[13px] font-medium', `Hacia ${bus.destination}`));
+    if (bus.destination) wrap.appendChild(h('p', 'text-13 font-medium', `Hacia ${bus.destination}`));
     const occ = occupancyInfo(bus.occupancy);
-    const occRow = h('p', 'flex items-center gap-1.5 text-[12px] text-muted-foreground mt-1');
+    const occRow = h('p', 'flex items-center gap-1.5 text-12 text-muted-foreground mt-1');
     occRow.append(h('span', 'inline-block w-2 h-2 rounded-full', undefined, { backgroundColor: occ.color }), document.createTextNode(occ.label));
     wrap.appendChild(occRow);
-    if (bus.accessibility) wrap.appendChild(h('p', 'text-[12px] text-muted-foreground', bus.accessibility.charAt(0) + bus.accessibility.slice(1).toLowerCase()));
-    if (bus.lastSeen) wrap.appendChild(h('p', 'text-[11px] text-muted-foreground mt-1', `Reportado a las ${bus.lastSeen.toLowerCase()}`));
+    if (bus.accessibility) wrap.appendChild(h('p', 'text-12 text-muted-foreground', bus.accessibility.charAt(0) + bus.accessibility.slice(1).toLowerCase()));
+    if (bus.lastSeen) wrap.appendChild(h('p', 'text-11 text-muted-foreground mt-1', `Reportado a las ${bus.lastSeen.toLowerCase()}`));
     return wrap;
 }
 
@@ -81,26 +81,26 @@ export function stopPopupContent(name: string, sub: string, routeCode?: string, 
         top.appendChild(badge(routeCode, color));
         wrap.appendChild(top);
     }
-    wrap.appendChild(h('p', 'font-signage text-[17px] font-bold leading-tight', name));
-    if (sub) wrap.appendChild(h('p', 'text-[12px] text-muted-foreground mt-0.5', sub));
+    wrap.appendChild(h('p', 'font-signage text-17 font-bold leading-tight', name));
+    if (sub) wrap.appendChild(h('p', 'text-12 text-muted-foreground mt-0.5', sub));
     return wrap;
 }
 
 export function tooltipContent(text: string) {
-    return h('div', 'px-2.5 py-1.5 rounded-lg bg-black/85 text-white text-[12px] font-semibold whitespace-nowrap', text);
+    return h('div', 'px-2.5 py-1.5 rounded-lg bg-black/85 text-white text-12 font-semibold whitespace-nowrap', text);
 }
 
 export function pointPopupContent(p: { n?: string; a?: string; l?: string; wk?: string; sat?: string; hol?: string }, kindLabel: string) {
     const wrap = h('div', 'p-3 min-w-[200px] max-w-[240px] font-sans');
-    wrap.appendChild(h('p', 'text-[11px] text-muted-foreground', kindLabel));
-    wrap.appendChild(h('p', 'font-signage text-[17px] font-bold leading-tight mt-0.5', (p.n || 'Punto').trim()));
-    if (p.a) wrap.appendChild(h('p', 'text-[12px] mt-0.5', p.a));
-    if (p.l) wrap.appendChild(h('p', 'text-[12px] text-muted-foreground', p.l));
+    wrap.appendChild(h('p', 'text-11 text-muted-foreground', kindLabel));
+    wrap.appendChild(h('p', 'font-signage text-17 font-bold leading-tight mt-0.5', (p.n || 'Punto').trim()));
+    if (p.a) wrap.appendChild(h('p', 'text-12 mt-0.5', p.a));
+    if (p.l) wrap.appendChild(h('p', 'text-12 text-muted-foreground', p.l));
     const rows: [string, string | undefined][] = [['Entre semana', p.wk], ['Sábados', p.sat], ['Domingos y festivos', p.hol]];
     const list = h('div', 'mt-2 space-y-0.5');
     for (const [label, value] of rows) {
         if (!value) continue;
-        const row = h('p', 'flex justify-between gap-3 text-[12px]');
+        const row = h('p', 'flex justify-between gap-3 text-12');
         row.append(h('span', 'text-muted-foreground', label), h('span', 'tabular font-medium', value));
         list.appendChild(row);
     }

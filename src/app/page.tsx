@@ -62,9 +62,9 @@ function FavoriteRoutes() {
   return (
     <section aria-label="Tus rutas">
       <div className="flex items-baseline justify-between mb-2">
-        <h2 className="font-signage text-[22px] font-bold">Tus rutas</h2>
+        <h2 className="font-signage text-22 font-bold">Tus rutas</h2>
         {favorites.length > 1 && (
-          <button onClick={openAllOnMap} className="text-[14px] font-medium text-muted-foreground hover:text-foreground">
+          <button onClick={openAllOnMap} className="text-14 font-medium text-muted-foreground hover:text-foreground">
             Ver todas en el mapa
           </button>
         )}
@@ -77,7 +77,7 @@ function FavoriteRoutes() {
             className="flex items-center gap-2.5 h-14 pl-2.5 pr-4 rounded-2xl border border-border hover:bg-accent active:scale-[0.97] transition shrink-0"
           >
             <RouteBadge code={f.codigo} color={f.color} size="md" />
-            <span className="font-signage text-[17px] font-semibold max-w-[130px] truncate">{f.nombre}</span>
+            <span className="font-signage text-17 font-semibold max-w-[130px] truncate">{f.nombre}</span>
           </Link>
         ))}
       </div>
@@ -104,7 +104,7 @@ function RouteSearchShortcut() {
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder="Buscar ruta: B23, K10, Suba…"
-        className="w-full h-12 rounded-2xl bg-secondary pl-11 pr-12 text-[16px] placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring"
+        className="w-full h-12 rounded-2xl bg-secondary pl-11 pr-12 text-16 placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring"
       />
       {q && (
         <button type="submit" className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-xl bg-foreground text-background flex items-center justify-center" aria-label="Buscar">
@@ -129,7 +129,7 @@ export default function HomePage() {
 
       <main className="px-4 pt-5 space-y-7">
         <div className="flex items-center justify-between gap-3 min-h-8">
-          <p className="text-[15px] text-muted-foreground" suppressHydrationWarning>{greeting()}</p>
+          <p className="text-15 text-muted-foreground" suppressHydrationWarning>{greeting()}</p>
           <WeatherChip />
         </div>
 
@@ -160,14 +160,14 @@ export default function HomePage() {
         >
           <AssistantOrb size={48} breathe />
           <span className="flex-1 min-w-0">
-            <span className="block font-signage text-[20px] font-bold leading-tight">Pregúntale al asistente</span>
-            <span className="block text-[14px] text-muted-foreground truncate">“¿Cómo llego al Movistar Arena antes de las 7?”</span>
+            <span className="block font-signage text-20 font-bold leading-tight">Pregúntale al asistente</span>
+            <span className="block text-14 text-muted-foreground truncate">“¿Cómo llego al Movistar Arena antes de las 7?”</span>
           </span>
           <ArrowRight className="w-5 h-5 text-muted-foreground shrink-0" />
         </Link>
 
         <section aria-label="Buscar rutas">
-          <h2 className="font-signage text-[22px] font-bold mb-2">Buscar una ruta</h2>
+          <h2 className="font-signage text-22 font-bold mb-2">Buscar una ruta</h2>
           <RouteSearchShortcut />
         </section>
       </main>

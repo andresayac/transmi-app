@@ -27,12 +27,12 @@ function WalkCard({ leg, nextLeg, isLastLeg, remainingM }: Pick<CurrentLegProps,
     const platform = isLastLeg ? null : stopLabel(leg.to.name).platform;
     return (
         <div>
-            <div className="flex items-center gap-2 text-muted-foreground text-[13px]">
+            <div className="flex items-center gap-2 text-muted-foreground text-13">
                 <Footprints className="w-4 h-4" /> Caminando
             </div>
-            <p className="mt-1 font-signage text-[28px] font-bold leading-tight">Camina hasta {target}</p>
-            {platform && <p className="text-[13px] text-muted-foreground">{platform}</p>}
-            <p className="mt-1 text-[15px] tabular">
+            <p className="mt-1 font-signage text-28 font-bold leading-tight">Camina hasta {target}</p>
+            {platform && <p className="text-13 text-muted-foreground">{platform}</p>}
+            <p className="mt-1 text-15 tabular">
                 <span className="font-semibold">{formatDistance(remainingM)}</span>
                 <span className="text-muted-foreground"> · unos {walkMinutes(remainingM)} min</span>
             </p>
@@ -40,8 +40,8 @@ function WalkCard({ leg, nextLeg, isLastLeg, remainingM }: Pick<CurrentLegProps,
                 <div className="mt-4 flex items-center gap-3 rounded-2xl bg-secondary p-3">
                     <RouteBadge code={nextLeg.line.code} color={nextLeg.line.color} size="md" />
                     <div className="min-w-0">
-                        <p className="text-[14px] font-semibold truncate">Luego toma el {nextLeg.line.code}</p>
-                        <p className="text-[12px] text-muted-foreground truncate">Dirección {nextLeg.line.longName || nextLeg.line.name}</p>
+                        <p className="text-14 font-semibold truncate">Luego toma el {nextLeg.line.code}</p>
+                        <p className="text-12 text-muted-foreground truncate">Dirección {nextLeg.line.longName || nextLeg.line.name}</p>
                         <NextDepartureHint leg={nextLeg} className="mt-1" />
                     </div>
                 </div>
@@ -71,18 +71,18 @@ function RideCard({ leg, stopProgress, alarmStops }: Pick<CurrentLegProps, 'leg'
             <div className="flex items-center gap-3">
                 <RouteBadge code={line.code} color={line.color} size="lg" />
                 <div className="min-w-0">
-                    <p className="text-[13px] text-muted-foreground">A bordo</p>
-                    <p className="text-[16px] font-semibold truncate">Dirección {line.longName || line.name}</p>
+                    <p className="text-13 text-muted-foreground">A bordo</p>
+                    <p className="text-16 font-semibold truncate">Dirección {line.longName || line.name}</p>
                 </div>
             </div>
 
             {left === 0 ? (
-                <p className="mt-4 font-signage text-[32px] font-bold leading-tight">Bájate aquí: {exit.station}</p>
+                <p className="mt-4 font-signage text-32 font-bold leading-tight">Bájate aquí: {exit.station}</p>
             ) : (
                 <>
-                    <p className="mt-4 text-[13px] text-muted-foreground">Próxima parada</p>
-                    <p className="font-signage text-[32px] font-bold leading-tight">{next.station}</p>
-                    <p className="mt-1 text-[15px]">
+                    <p className="mt-4 text-13 text-muted-foreground">Próxima parada</p>
+                    <p className="font-signage text-32 font-bold leading-tight">{next.station}</p>
+                    <p className="mt-1 text-15">
                         {left === 1 ? 'Te bajas en la próxima' : <>Te bajas en <span className="font-semibold tabular">{left} paradas</span></>}
                         <span className="text-muted-foreground"> · {exit.station}</span>
                     </p>
@@ -92,7 +92,7 @@ function RideCard({ leg, stopProgress, alarmStops }: Pick<CurrentLegProps, 'leg'
             {alert && (
                 <div className="mt-3 flex items-center gap-2.5 rounded-2xl bg-foreground text-background px-4 py-3" role="alert">
                     <BellRing className="w-5 h-5 shrink-0 animate-pulse-dot" />
-                    <p className="text-[15px] font-semibold">Prepárate para bajarte{exit.platform ? ` · ${exit.platform}` : ''}</p>
+                    <p className="text-15 font-semibold">Prepárate para bajarte{exit.platform ? ` · ${exit.platform}` : ''}</p>
                 </div>
             )}
 

@@ -76,7 +76,7 @@ export default function PlacePicker({ onPick, onCancel, placeholder = 'Busca una
                     autoFocus={autoFocus}
                     placeholder={placeholder}
                     aria-label={placeholder}
-                    className="w-full h-12 bg-transparent pl-11 pr-11 text-[16px] outline-none placeholder:text-muted-foreground"
+                    className="w-full h-12 bg-transparent pl-11 pr-11 text-16 outline-none placeholder:text-muted-foreground"
                 />
                 {(loading || onCancel) && (
                     <span className="absolute right-2 top-1/2 -translate-y-1/2">
@@ -92,7 +92,7 @@ export default function PlacePicker({ onPick, onCancel, placeholder = 'Busca una
                 {allowGps && (
                     <button onClick={useGps} disabled={locating} className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-accent active:bg-accent">
                         <LocateFixed className={cn('w-[18px] h-[18px]', locating && 'animate-spin')} />
-                        <span className="text-[15px] font-medium">{locating ? 'Buscando tu ubicación…' : 'Usar mi ubicación actual'}</span>
+                        <span className="text-15 font-medium">{locating ? 'Buscando tu ubicación…' : 'Usar mi ubicación actual'}</span>
                     </button>
                 )}
                 {results.map((p, i) => {
@@ -101,13 +101,13 @@ export default function PlacePicker({ onPick, onCancel, placeholder = 'Busca una
                         <button key={`${p.lat},${p.lng},${i}`} onClick={() => onPick(p)} className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-accent active:bg-accent">
                             <Icon className="w-[18px] h-[18px] text-muted-foreground shrink-0" />
                             <span className="min-w-0">
-                                <span className="block text-[15px] font-medium truncate">{p.name}</span>
-                                {p.detail && <span className="block text-[12px] text-muted-foreground truncate">{p.detail}</span>}
+                                <span className="block text-15 font-medium truncate">{p.name}</span>
+                                {p.detail && <span className="block text-12 text-muted-foreground truncate">{p.detail}</span>}
                             </span>
                         </button>
                     );
                 })}
-                {error && <p className="px-4 py-3 text-[13px] text-destructive">{error}</p>}
+                {error && <p className="px-4 py-3 text-13 text-destructive">{error}</p>}
             </div>
         </div>
     );

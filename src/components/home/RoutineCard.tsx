@@ -100,20 +100,20 @@ export default function RoutineCard({ here }: Props) {
     return (
         <section aria-label={suggestion.title} className="rounded-2xl border border-border p-4">
             <div className="flex items-center justify-between gap-3">
-                <p className="inline-flex items-center gap-2 text-[14px] font-semibold">
+                <p className="inline-flex items-center gap-2 text-14 font-semibold">
                     <Icon className="w-4 h-4" /> {suggestion.title}
                 </p>
                 {firstRide?.line && <RouteBadge code={firstRide.line.code} color={firstRide.line.color} size="sm" />}
             </div>
 
             {!from ? (
-                <p className="mt-2 text-[14px] text-muted-foreground">Activa tu ubicación para saber cuándo salir.</p>
+                <p className="mt-2 text-14 text-muted-foreground">Activa tu ubicación para saber cuándo salir.</p>
             ) : !itinerary ? (
-                loading ? <div className="mt-3 h-10 w-40 rounded-lg skeleton" /> : <p className="mt-2 text-[14px] text-muted-foreground">El planeador no encontró una ruta para este momento.</p>
+                loading ? <div className="mt-3 h-10 w-40 rounded-lg skeleton" /> : <p className="mt-2 text-14 text-muted-foreground">El planeador no encontró una ruta para este momento.</p>
             ) : (
                 <>
-                    <p className="mt-2 font-signage tabular text-[40px] font-bold leading-none">{headline}</p>
-                    <p className="mt-2 text-[14px] leading-snug text-foreground/85">
+                    <p className="mt-2 font-signage tabular text-40 font-bold leading-none">{headline}</p>
+                    <p className="mt-2 text-14 leading-snug text-foreground/85">
                         {firstRide?.line ? (
                             <>
                                 {walkBefore > 0 && <>Camina {walkBefore} min a <b>{stopLabel(firstRide.from.name).station}</b> y </>}
@@ -126,7 +126,7 @@ export default function RoutineCard({ here }: Props) {
                         {arriveAt && <> Llegas a las <b>{formatTime(arriveAt)}</b>.</>}
                     </p>
                     {missed && nextBus && firstRide?.line && (
-                        <p className="mt-1 text-[13px] text-muted-foreground">
+                        <p className="mt-1 text-13 text-muted-foreground">
                             El próximo {firstRide.line.code} pasa en {nextBus.minutes === 0 ? 'este momento' : `${nextBus.minutes} min`}, antes de que alcances a llegar: toma el siguiente.
                         </p>
                     )}
@@ -134,11 +134,11 @@ export default function RoutineCard({ here }: Props) {
                         <button
                             type="button"
                             onClick={start}
-                            className="flex-1 h-11 rounded-full bg-foreground text-background text-[14px] font-semibold inline-flex items-center justify-center gap-2 active:scale-[0.98]"
+                            className="flex-1 h-11 rounded-full bg-foreground text-background text-14 font-semibold inline-flex items-center justify-center gap-2 active:scale-[0.98]"
                         >
                             <Navigation className="w-4 h-4" /> Iniciar viaje
                         </button>
-                        <Link href={planHref(suggestion.place, from.kind === 'gps' ? null : from)} className="h-11 px-4 rounded-full border border-border text-[14px] font-semibold inline-flex items-center hover:bg-accent">
+                        <Link href={planHref(suggestion.place, from.kind === 'gps' ? null : from)} className="h-11 px-4 rounded-full border border-border text-14 font-semibold inline-flex items-center hover:bg-accent">
                             Opciones
                         </Link>
                     </div>

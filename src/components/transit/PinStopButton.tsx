@@ -34,7 +34,7 @@ export default function PinStopButton({ stop, variant = 'icon', className }: { s
                 type="button"
                 onClick={toggle}
                 aria-pressed={pinned}
-                className={cn('inline-flex items-center justify-center gap-2 h-11 px-4 rounded-xl border font-semibold text-[14px] active:scale-[0.98] transition', pinned ? 'border-foreground' : 'border-border hover:bg-accent', className)}
+                className={cn('inline-flex items-center justify-center gap-2 h-11 px-4 rounded-xl border font-semibold text-14 active:scale-[0.98] transition', pinned ? 'border-foreground' : 'border-border hover:bg-accent', className)}
             >
                 <Icon className="w-4 h-4" /> {label}
             </button>

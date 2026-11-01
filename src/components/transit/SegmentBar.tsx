@@ -29,7 +29,7 @@ export default function SegmentBar({ legs, className }: { legs: PlanLeg[]; class
                 return (
                     <div
                         key={i}
-                        className="flex items-center justify-center rounded-md px-1.5 font-signage font-bold text-[14px] leading-none tabular whitespace-nowrap"
+                        className="flex items-center justify-center rounded-md px-1.5 font-signage font-bold text-14 leading-none tabular whitespace-nowrap"
                         style={{ flex: `${grow} 1 0%`, minWidth: 'max-content', backgroundColor: color, color: readableOn(color) }}
                         title={`${leg.line?.code} · ${leg.durationMin} min`}
                     >
