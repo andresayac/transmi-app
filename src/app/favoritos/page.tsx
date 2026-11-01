@@ -1,61 +1,122 @@
 'use client';
 
+import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Briefcase, House, MapPin, Navigation, Pencil, Plus, Share2, Trash2, X } from 'lucide-react';
 import AppHeader from '@/components/layout/AppHeader';
-import { Button } from '@/components/ui/button';
-import { useFavorites } from '@/hooks/useFavorites';
+import PlacePicker from '@/components/places/PlacePicker';
+import RouteBadge from '@/components/transit/RouteBadge';
+import { planHref } from '@/components/home/PlannerHero';
 import { useToast } from '@/components/ui/Toast';
+import { SavedPlace, ThemePref, useAppStore, useHydrated } from '@/stores/app';
 import { shareRoute } from '@/utils/share';
 import { ROUTE_COLORS } from '@/utils/constants';
+import type { PlanPlace } from '@/types/transit';
+import { cn } from '@/lib/utils';
 
 function timeAgo(dateStr: string): string {
-    try {
-        const d = new Date(dateStr);
-        if (isNaN(d.getTime())) return '';
-        const diff = Math.floor((Date.now() - d.getTime()) / 1000);
-        if (diff < 60) return 'Hace un momento';
-        if (diff < 3600) return `Hace ${Math.floor(diff / 60)} min`;
-        if (diff < 86400) return `Hace ${Math.floor(diff / 3600)}h`;
-        const days = Math.floor(diff / 86400);
-        if (days === 1) return 'Ayer';
-        if (days < 30) return `Hace ${days} días`;
-        return `Hace ${Math.floor(days / 30)} mes${Math.floor(days / 30) > 1 ? 'es' : ''}`;
-    } catch {
-        return '';
-    }
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '';
+    const days = Math.floor((Date.now() - d.getTime()) / 86400000);
+    if (days < 1) return 'hoy';
+    if (days === 1) return 'ayer';
+    if (days < 30) return `hace ${days} días`;
+    const months = Math.floor(days / 30);
+    return `hace ${months} ${months === 1 ? 'mes' : 'meses'}`;
 }
 
-export default function FavoritesPage() {
+function Segmented<T extends string>({ value, options, onChange, label }: { value: T; options: { value: T; label: string }[]; onChange: (v: T) => void; label: string }) {
+    return (
+        <div role="radiogroup" aria-label={label} className="inline-grid grid-flow-col auto-cols-fr p-1 rounded-xl bg-secondary">
+            {options.map((o) => (
+                <button
+                    key={o.value}
+                    role="radio"
+                    aria-checked={value === o.value}
+                    onClick={() => onChange(o.value)}
+                    className={cn('h-8 px-3 rounded-lg text-[13px] font-semibold transition', value === o.value ? 'bg-background shadow-sm' : 'text-muted-foreground')}
+                >
+                    {o.label}
+                </button>
+            ))}
+        </div>
+    );
+}
+
+type Editing = 'home' | 'work' | 'new' | null;
+
+function PlaceRow({ icon: Icon, label, place, onEdit, onRemove }: { icon: typeof House; label: string; place: PlanPlace | null; onEdit: () => void; onRemove?: () => void }) {
+    return (
+        <div className="flex items-center gap-3 py-3 border-b border-border last:border-0">
+            <span className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                <Icon className="w-[18px] h-[18px]" />
+            </span>
+            <button onClick={onEdit} className="flex-1 min-w-0 text-left">
+                <span className="block font-signage text-[19px] font-semibold leading-tight">{label}</span>
+                <span className="block text-[13px] text-muted-foreground truncate">{place ? (place.detail ? `${place.name} · ${place.detail}` : place.name) : 'Toca para agregar'}</span>
+            </button>
+            {place ? (
+                <div className="flex items-center shrink-0">
+                    <Link href={planHref(place)} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-accent" aria-label={`Cómo llegar a ${label}`}>
+                        <Navigation className="w-[17px] h-[17px]" />
+                    </Link>
+                    <button onClick={onEdit} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-accent" aria-label={`Cambiar ${label}`}>
+                        <Pencil className="w-4 h-4 text-muted-foreground" />
+                    </button>
+                    {onRemove && (
+                        <button onClick={onRemove} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-accent" aria-label={`Quitar ${label}`}>
+                            <Trash2 className="w-4 h-4 text-muted-foreground" />
+                        </button>
+                    )}
+                </div>
+            ) : (
+                <button onClick={onEdit} className="w-9 h-9 rounded-full border border-border flex items-center justify-center" aria-label={`Agregar ${label}`}>
+                    <Plus className="w-4 h-4" />
+                </button>
+            )}
+        </div>
+    );
+}
+
+export default function GuardadosPage() {
     const router = useRouter();
-    const { favorites, removeFavorite } = useFavorites();
     const toast = useToast();
+    const hydrated = useHydrated();
+    const s = useAppStore();
 
-    const handleSelect = (fav: { id: string; nombre: string; codigo: string }) => {
-        const params = new URLSearchParams({
-            id: fav.id,
-            nombre: fav.nombre,
-            codigo: fav.codigo,
-        });
-        router.push(`/mapa?${params.toString()}`);
+    const [editing, setEditing] = useState<Editing>(null);
+    const [pendingPlace, setPendingPlace] = useState<PlanPlace | null>(null);
+    const [newLabel, setNewLabel] = useState('');
+
+    const stats = useMemo(() => {
+        const trips = s.trips;
+        if (!trips.length) return null;
+        const minutes = trips.reduce((a, t) => a + t.durationMin, 0);
+        const km = trips.reduce((a, t) => a + t.distanceM, 0) / 1000;
+        const lineCount: Record<string, number> = {};
+        trips.forEach((t) => t.lines.forEach((l) => { lineCount[l] = (lineCount[l] || 0) + 1; }));
+        const topLine = Object.entries(lineCount).sort((a, b) => b[1] - a[1])[0]?.[0];
+        return { count: trips.length, minutes, km, co2: km * 0.12, topLine };
+    }, [s.trips]);
+
+    const pickPlace = (place: PlanPlace) => {
+        if (editing === 'home') { s.setHome(place); toast.show('Casa guardada', 'success'); setEditing(null); }
+        else if (editing === 'work') { s.setWork(place); toast.show('Trabajo guardado', 'success'); setEditing(null); }
+        else { setPendingPlace(place); setNewLabel(place.name.slice(0, 24)); }
     };
 
-    const handleRemove = (e: React.MouseEvent, id: string, codigo: string) => {
-        e.stopPropagation();
-        removeFavorite(id);
-        toast.show(`${codigo} eliminada de favoritos`, 'info');
+    const saveNewPlace = () => {
+        if (!pendingPlace || !newLabel.trim()) return;
+        s.savePlace(pendingPlace, newLabel.trim());
+        toast.show(`${newLabel.trim()} guardado`, 'success');
+        setPendingPlace(null);
+        setNewLabel('');
+        setEditing(null);
     };
 
-    const handleShare = async (e: React.MouseEvent, fav: { id: string; nombre: string; codigo: string }) => {
-        e.stopPropagation();
-        const result = await shareRoute(fav);
-        if (result.success && result.method === 'clipboard') {
-            toast.show('Enlace copiado', 'success');
-        }
-    };
-
-    const handleViewAllOnMap = () => {
-        if (favorites.length === 0) return;
-        const mapped = favorites.map((f, i) => ({
+    const viewAllOnMap = () => {
+        const mapped = s.favorites.slice(0, 10).map((f, i) => ({
             id: f.id,
             codigo: f.codigo,
             nombre: f.nombre,
@@ -67,104 +128,203 @@ export default function FavoritesPage() {
         router.push('/mapa?multi=true');
     };
 
+    if (!hydrated) {
+        return (
+            <div className="safe-bottom">
+                <AppHeader title="Guardados" />
+                <div className="px-4 pt-6 space-y-3">{[1, 2, 3].map((i) => <div key={i} className="h-14 rounded-xl bg-secondary animate-pulse" />)}</div>
+            </div>
+        );
+    }
+
     return (
         <div className="safe-bottom">
-            <AppHeader />
+            <AppHeader title="Guardados" />
 
-            <div className="px-4 pt-4 pb-2">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h2 className="text-xl font-bold text-foreground">
-                            Favoritos
-                        </h2>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">
-                            {favorites.length} ruta{favorites.length !== 1 ? 's' : ''} guardada{favorites.length !== 1 ? 's' : ''}
-                        </p>
-                    </div>
-                    {favorites.length >= 2 && (
-                        <Button
-                            onClick={handleViewAllOnMap}
-                            size="sm"
-                            className="h-8 rounded-lg text-[11px] font-semibold px-3"
-                        >
-                            Ver todas en mapa
-                        </Button>
+            <main className="px-4 pt-5 space-y-9">
+                {/* ── Places ─────────────────────── */}
+                <section id="lugares" aria-labelledby="lugares-title" className="scroll-mt-20">
+                    <h2 id="lugares-title" className="font-signage text-[24px] font-bold">Tus lugares</h2>
+                    <p className="text-[14px] text-muted-foreground mb-2">Planea con un toque desde el inicio, y el asistente entiende “llévame a casa”.</p>
+
+                    {editing && (
+                        <div className="my-3 space-y-2">
+                            <p className="text-[14px] font-semibold">
+                                {editing === 'home' ? 'Elige tu casa' : editing === 'work' ? 'Elige tu trabajo' : 'Nuevo lugar'}
+                            </p>
+                            {pendingPlace ? (
+                                <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); saveNewPlace(); }}>
+                                    <input
+                                        value={newLabel}
+                                        onChange={(e) => setNewLabel(e.target.value)}
+                                        autoFocus
+                                        aria-label="Nombre del lugar"
+                                        placeholder="Nombre: Universidad, Gimnasio…"
+                                        className="flex-1 h-11 rounded-xl bg-secondary px-3.5 text-[16px] outline-none focus:ring-2 focus:ring-ring"
+                                    />
+                                    <button type="submit" className="h-11 px-4 rounded-xl bg-foreground text-background font-semibold text-[14px]">Guardar</button>
+                                    <button type="button" onClick={() => { setPendingPlace(null); setEditing(null); }} className="w-11 h-11 rounded-xl border border-border flex items-center justify-center" aria-label="Cancelar"><X className="w-4 h-4" /></button>
+                                </form>
+                            ) : (
+                                <PlacePicker onPick={pickPlace} onCancel={() => setEditing(null)} />
+                            )}
+                        </div>
                     )}
-                </div>
-            </div>
 
-            {favorites.length === 0 ? (
-                <div className="px-4 pt-16 text-center">
-                    <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-secondary flex items-center justify-center">
-                        <svg className="w-7 h-7 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                        </svg>
-                    </div>
-                    <p className="text-foreground font-semibold text-[15px] mb-1">Sin favoritos aún</p>
-                    <p className="text-muted-foreground text-xs max-w-[220px] mx-auto mb-6">
-                        Guarda tus rutas frecuentes para acceder rápido
-                    </p>
-                    <Button
-                        onClick={() => router.push('/')}
-                        variant="secondary"
-                        className="rounded-lg h-9 text-xs font-semibold px-5"
-                    >
-                        Buscar rutas
-                    </Button>
-                </div>
-            ) : (
-                <div className="px-4 py-2">
-                    <div className="border border-border rounded-xl overflow-hidden divide-y divide-border">
-                        {favorites.map((fav) => (
-                            <div
-                                key={fav.id}
-                                onClick={() => handleSelect(fav)}
-                                role="button"
-                                tabIndex={0}
-                                onKeyDown={(e) => { if (e.key === 'Enter') handleSelect(fav); }}
-                                className="w-full flex items-center gap-3 px-3.5 py-3 text-left hover:bg-accent/50 active:bg-accent transition-colors cursor-pointer"
-                            >
-                                {/* Route badge */}
-                                <span
-                                    className="px-2 py-0.5 rounded text-white text-[11px] font-bold shrink-0"
-                                    style={{ backgroundColor: fav.color || '#525252' }}
-                                >
-                                    {fav.codigo}
-                                </span>
-
-                                {/* Info */}
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-foreground text-[13px] font-medium truncate">{fav.nombre}</p>
-                                    <p className="text-muted-foreground text-[10px]">
-                                        {fav.tipo || 'Ruta'}
-                                        {fav.addedAt && <> · Guardada {timeAgo(fav.addedAt)}</>}
-                                    </p>
-                                </div>
-
-                                {/* Actions */}
-                                <div className="flex items-center gap-0.5 shrink-0">
-                                    <button
-                                        onClick={(e) => handleShare(e, fav)}
-                                        className="w-7 h-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                                    >
-                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                                        </svg>
-                                    </button>
-                                    <button
-                                        onClick={(e) => handleRemove(e, fav.id, fav.codigo)}
-                                        className="w-7 h-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                                    >
-                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
+                    <div>
+                        <PlaceRow icon={House} label="Casa" place={s.home} onEdit={() => setEditing('home')} onRemove={s.home ? () => s.setHome(null) : undefined} />
+                        <PlaceRow icon={Briefcase} label="Trabajo" place={s.work} onEdit={() => setEditing('work')} onRemove={s.work ? () => s.setWork(null) : undefined} />
+                        {s.savedPlaces.map((p: SavedPlace) => (
+                            <PlaceRow key={p.id} icon={MapPin} label={p.label} place={p} onEdit={() => router.push(planHref(p))} onRemove={() => s.removePlace(p.id)} />
                         ))}
                     </div>
-                </div>
-            )}
+                    {!editing && (
+                        <button onClick={() => setEditing('new')} className="mt-2 inline-flex items-center gap-2 h-10 px-4 rounded-full border border-border text-[14px] font-semibold hover:bg-accent">
+                            <Plus className="w-4 h-4" /> Agregar lugar
+                        </button>
+                    )}
+                </section>
+
+                {/* ── Routes ─────────────────────── */}
+                <section aria-labelledby="rutas-title">
+                    <div className="flex items-baseline justify-between">
+                        <h2 id="rutas-title" className="font-signage text-[24px] font-bold">Rutas guardadas</h2>
+                        {s.favorites.length > 1 && (
+                            <button onClick={viewAllOnMap} className="text-[14px] font-medium text-muted-foreground hover:text-foreground">Ver todas en el mapa</button>
+                        )}
+                    </div>
+                    {s.favorites.length === 0 ? (
+                        <p className="text-[14px] text-muted-foreground mt-1">
+                            Toca la estrella en cualquier ruta para tenerla aquí. <Link href="/explorar" className="underline underline-offset-4 text-foreground">Buscar rutas</Link>
+                        </p>
+                    ) : (
+                        <div className="mt-1">
+                            {s.favorites.map((f) => (
+                                <div key={f.id} className="flex items-center gap-3 py-3 border-b border-border last:border-0">
+                                    <button
+                                        onClick={() => router.push(`/mapa?${new URLSearchParams({ id: f.id, nombre: f.nombre, codigo: f.codigo }).toString()}`)}
+                                        className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                                    >
+                                        <RouteBadge code={f.codigo} color={f.color} size="md" />
+                                        <span className="min-w-0">
+                                            <span className="block font-signage text-[18px] font-semibold leading-tight truncate">{f.nombre}</span>
+                                            <span className="block text-[12px] text-muted-foreground">{f.tipo} · guardada {timeAgo(f.addedAt)}</span>
+                                        </span>
+                                    </button>
+                                    <button
+                                        onClick={async () => { const r = await shareRoute(f); if (r.success && r.method === 'clipboard') toast.show('Enlace copiado', 'success'); }}
+                                        className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-accent" aria-label={`Compartir ${f.codigo}`}
+                                    >
+                                        <Share2 className="w-[17px] h-[17px] text-muted-foreground" />
+                                    </button>
+                                    <button
+                                        onClick={() => { s.removeFavorite(f.id); toast.show(`${f.codigo} quitada de guardados`, 'info'); }}
+                                        className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-accent" aria-label={`Quitar ${f.codigo}`}
+                                    >
+                                        <Trash2 className="w-4 h-4 text-muted-foreground" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </section>
+
+                {/* ── Mobility stats ─────────────── */}
+                <section aria-labelledby="movilidad-title">
+                    <h2 id="movilidad-title" className="font-signage text-[24px] font-bold">Tu movilidad</h2>
+                    {stats ? (
+                        <div className="mt-2 rounded-2xl bg-black text-white p-5 relative overflow-hidden ring-1 ring-white/10">
+                            <div className="absolute inset-x-0 top-0 system-stripe h-[4px]" aria-hidden />
+                            <p className="font-signage text-[40px] font-bold leading-none tabular">{stats.count} {stats.count === 1 ? 'viaje' : 'viajes'}</p>
+                            <p className="mt-2 text-[15px] text-white/75 tabular">
+                                {stats.minutes >= 90 ? `${(stats.minutes / 60).toFixed(1)} horas` : `${stats.minutes} minutos`} en el sistema · {stats.km.toFixed(1)} km recorridos
+                            </p>
+                            <p className="mt-1 text-[14px] text-white/55">
+                                ≈ {stats.co2.toFixed(1)} kg de CO₂ que no emitiste frente a ir en carro (estimado)
+                            </p>
+                            {stats.topLine && (
+                                <p className="mt-4 flex items-center gap-2 text-[14px] text-white/75">
+                                    Tu línea más usada <RouteBadge code={stats.topLine} size="sm" />
+                                </p>
+                            )}
+                        </div>
+                    ) : (
+                        <p className="text-[14px] text-muted-foreground mt-1">
+                            Cuando completes viajes con el modo viaje, aquí verás tus minutos, kilómetros y la línea que más usas. <Link href="/planear" className="underline underline-offset-4 text-foreground">Planear un viaje</Link>
+                        </p>
+                    )}
+                </section>
+
+                {/* ── Settings ───────────────────── */}
+                <section aria-labelledby="ajustes-title" className="pb-4">
+                    <h2 id="ajustes-title" className="font-signage text-[24px] font-bold mb-2">Ajustes</h2>
+                    <div className="divide-y divide-border">
+                        <div className="flex items-center justify-between gap-3 py-3">
+                            <span className="text-[15px] font-medium">Tema</span>
+                            <Segmented<ThemePref>
+                                label="Tema"
+                                value={s.settings.theme}
+                                onChange={(theme) => s.updateSettings({ theme })}
+                                options={[{ value: 'system', label: 'Auto' }, { value: 'light', label: 'Claro' }, { value: 'dark', label: 'Oscuro' }]}
+                            />
+                        </div>
+                        <div className="flex items-center justify-between gap-3 py-3">
+                            <span className="text-[15px] font-medium">Luz del mapa</span>
+                            <Segmented
+                                label="Luz del mapa"
+                                value={s.settings.mapLight}
+                                onChange={(mapLight) => s.updateSettings({ mapLight })}
+                                options={[{ value: 'auto', label: 'Real' }, { value: 'day', label: 'Día' }, { value: 'night', label: 'Noche' }]}
+                            />
+                        </div>
+                        <div className="flex items-center justify-between gap-3 py-3">
+                            <span>
+                                <span className="block text-[15px] font-medium">Avisos por voz en viaje</span>
+                                <span className="block text-[13px] text-muted-foreground">Te anuncia la próxima parada y cuándo bajarte</span>
+                            </span>
+                            <button
+                                role="switch"
+                                aria-checked={s.settings.voice}
+                                onClick={() => s.updateSettings({ voice: !s.settings.voice })}
+                                className={cn('relative w-12 h-7 rounded-full transition shrink-0', s.settings.voice ? 'bg-foreground' : 'bg-secondary ring-1 ring-border')}
+                            >
+                                <span className={cn('absolute top-1 w-5 h-5 rounded-full transition-all', s.settings.voice ? 'left-6 bg-background' : 'left-1 bg-muted-foreground')} />
+                                <span className="sr-only">Avisos por voz</span>
+                            </button>
+                        </div>
+                        <div className="flex items-center justify-between gap-3 py-3">
+                            <span>
+                                <span className="block text-[15px] font-medium">Despiértame</span>
+                                <span className="block text-[13px] text-muted-foreground">Paradas antes de tu destino</span>
+                            </span>
+                            <Segmented
+                                label="Paradas antes del aviso"
+                                value={String(s.settings.alarmStops)}
+                                onChange={(v) => s.updateSettings({ alarmStops: Number(v) })}
+                                options={[{ value: '1', label: '1' }, { value: '2', label: '2' }, { value: '3', label: '3' }]}
+                            />
+                        </div>
+                        <div className="flex flex-wrap gap-2 pt-4">
+                            {s.searchHistory.length > 0 && (
+                                <button onClick={() => { s.clearSearches(); toast.show('Historial borrado', 'info'); }} className="h-9 px-3.5 rounded-full border border-border text-[13px] font-medium hover:bg-accent">
+                                    Borrar búsquedas
+                                </button>
+                            )}
+                            {s.trips.length > 0 && (
+                                <button
+                                    onClick={() => { if (confirm('¿Borrar el historial de viajes?')) { useAppStore.setState({ trips: [] }); toast.show('Viajes borrados', 'info'); } }}
+                                    className="h-9 px-3.5 rounded-full border border-border text-[13px] font-medium hover:bg-accent"
+                                >
+                                    Borrar viajes
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                    <p className="text-[12px] text-muted-foreground mt-6">
+                        TransMi es un proyecto educativo y no es la app oficial de TransMilenio. Los datos pertenecen a TransMilenio S.A. Tus lugares y viajes se guardan solo en este dispositivo.
+                    </p>
+                </section>
+            </main>
         </div>
     );
 }

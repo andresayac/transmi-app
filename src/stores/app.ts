@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { useEffect, useState } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import type { Itinerary, PlanPlace } from '@/types/transit';
 
 export interface FavoriteRoute {
@@ -192,12 +192,13 @@ export const useAppStore = create<AppState>()(
 
 /** True once persisted state has been loaded (avoids SSR/client mismatches). */
 export function useHydrated(): boolean {
-    const [hydrated, setHydrated] = useState(() => useAppStore.persist.hasHydrated());
+    const hydrated = useSyncExternalStore(
+        (onChange) => useAppStore.persist.onFinishHydration(onChange),
+        () => useAppStore.persist.hasHydrated(),
+        () => false,
+    );
     useEffect(() => {
-        const unsub = useAppStore.persist.onFinishHydration(() => setHydrated(true));
         if (!useAppStore.persist.hasHydrated()) useAppStore.persist.rehydrate();
-        else setHydrated(true);
-        return unsub;
     }, []);
     return hydrated;
 }

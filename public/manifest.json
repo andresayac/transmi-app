@@ -1,30 +1,65 @@
 {
-  "name": "TransMi — Rutas de Bogotá",
+  "id": "/",
+  "name": "TransMi — Moverse por Bogotá",
   "short_name": "TransMi",
-  "description": "Consulta rutas y ubicación en tiempo real del sistema de transporte de Bogotá",
+  "description": "Planea viajes, mira los buses en vivo y pregúntale al asistente sobre TransMilenio y el SITP",
+  "lang": "es-CO",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0f1a",
-  "theme_color": "#0a0f1a",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "orientation": "portrait",
   "scope": "/",
   "categories": [
     "transportation",
     "navigation",
-    "utilities"
+    "travel"
   ],
   "icons": [
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Planear viaje",
+      "short_name": "Planear",
+      "description": "¿A dónde vas?",
+      "url": "/planear",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Mapa en vivo",
+      "short_name": "Mapa",
+      "url": "/mapa",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Asistente",
+      "short_name": "Asistente",
+      "url": "/asistente",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Viaje en curso",
+      "short_name": "Viaje",
+      "url": "/viaje",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }
