@@ -149,7 +149,7 @@ export default function AssistantPage() {
                         <div className="text-[14px] leading-snug">
                             <p className="font-semibold">El asistente aún no está configurado</p>
                             <p className="mt-1 text-muted-foreground">
-                                El asistente necesita una clave de API de Anthropic. Agrega <code className="rounded bg-background px-1 py-0.5 text-[13px]">ANTHROPIC_API_KEY</code> en <code className="rounded bg-background px-1 py-0.5 text-[13px]">.env.local</code> y reinicia el servidor.
+                                Conecta cualquier API compatible con el estándar de chat completions (Groq, MiMo, OpenRouter, Ollama…): define <code className="rounded bg-background px-1 py-0.5 text-[13px]">AI_BASE_URL</code>, <code className="rounded bg-background px-1 py-0.5 text-[13px]">AI_API_KEY</code> y <code className="rounded bg-background px-1 py-0.5 text-[13px]">AI_MODEL</code> en <code className="rounded bg-background px-1 py-0.5 text-[13px]">.env</code> y reinicia el servidor.
                             </p>
                         </div>
                     </div>

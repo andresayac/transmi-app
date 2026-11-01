@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/badge/Next.js-16-black?logo=next.js" alt="Next.js" />
   <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react" alt="React" />
   <img src="https://img.shields.io/badge/Mapbox-GL_3-4264FB?logo=mapbox" alt="Mapbox" />
-  <img src="https://img.shields.io/badge/Claude-Opus_5.5-D97757" alt="Claude" />
+  <img src="https://img.shields.io/badge/IA-API_compatible_con_OpenAI-555555" alt="IA" />
   <img src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss" alt="Tailwind" />
 </p>
@@ -53,7 +53,7 @@ La idea surgió como un **proyecto educativo** para aprender a integrar APIs de 
 - Comparación de varias rutas (multi-ruta), estaciones con llegadas en vivo y capas de **puntos de recarga** y **personalización** TuLlave
 
 ### ✨ Asistente con IA (`/asistente`)
-- Conversación en español con **Claude Opus 5.5** y herramientas sobre los datos reales: buscar lugares, planear viajes, rutas, llegadas, buses en vivo, recargas, clima y tarifa
+- Conversación en español con **cualquier proveedor compatible con el estándar de chat completions** (Groq, Xiaomi MiMo, OpenRouter, DeepSeek, Ollama…) y herramientas sobre los datos reales: buscar lugares, planear viajes, rutas, llegadas, buses en vivo, recargas, clima y tarifa
 - Respuestas con **tarjetas interactivas** (itinerarios que se inician con un toque, tableros de llegadas, rutas)
 - **Dictado por voz** (es-CO) y lectura en voz alta
 
@@ -78,7 +78,7 @@ La idea surgió como un **proyecto educativo** para aprender a integrar APIs de 
 | **TypeScript 5** | Tipado estático |
 | **Tailwind CSS 4** | Sistema de diseño con tokens |
 | **Mapbox GL JS 3** | Estilo Standard monocromo, 3D, capas GeoJSON |
-| **Anthropic SDK** | Asistente con tool runner en streaming, fallbacks y prompt caching |
+| **Cliente `openai` + Zod** | Asistente con herramientas en streaming sobre cualquier API compatible (host + clave + modelo) |
 | **Zustand** | Estado persistente (favoritos, lugares, viajes, ajustes) con migración desde v2 |
 | **Motion** | Paneles inferiores arrastrables |
 | **Open-Meteo / Photon** | Clima y búsqueda de lugares sin clave |
@@ -137,9 +137,13 @@ pnpm dev                     # http://localhost:3000
 | `NEXT_PUBLIC_MAPBOX_TOKEN` | ✅ Sí | Token de [Mapbox](https://account.mapbox.com/access-tokens/) para el mapa |
 | `BUS_API_TOKEN` | ❌ Opcional | Token del proxy (`x-auth-token`) para los datos en vivo |
 | `PROXY_BASE` | ❌ Opcional | Proxy para la API en vivo cuando se despliega fuera de Colombia |
-| `ANTHROPIC_API_KEY` | ❌ Opcional | Activa el asistente con IA. Sin ella el resto de la app funciona |
-| `ASSISTANT_MODEL` | ❌ Opcional | Modelo del asistente (por defecto `claude-opus-5-5`) |
-| `ASSISTANT_EFFORT` | ❌ Opcional | `low` (por defecto) · `medium` · `high` · `xhigh` · `max` |
+| `AI_BASE_URL` | ❌ Opcional | Host de una API compatible (p. ej. `https://api.groq.com/openai/v1`, `https://api.xiaomimimo.com/v1`) |
+| `AI_API_KEY` | ❌ Opcional | Clave de ese proveedor (vacía para servidores locales como Ollama) |
+| `AI_MODEL` | ❌ Opcional | Modelo con soporte de *tools* (p. ej. `openai/gpt-oss-120b` en Groq, `mimo-v2.6-flash` en MiMo) |
+| `AI_FALLBACK_BASE_URL` · `_API_KEY` · `_MODEL` | ❌ Opcional | Segundo proveedor que responde si el principal falla |
+| `AI_REASONING_EFFORT` · `AI_MAX_TOKENS` | ❌ Opcional | Parámetros estándar, solo se envían si los defines |
+
+Para verificar la conexión y que el modelo llame herramientas: `GET /api/asistente?probar=1`.
 | `NEXT_PUBLIC_MAP_PROVIDER` | ❌ Opcional | `mapbox` o `openfreemap`. Sin definir: Mapbox, con cambio automático a OpenFreeMap si Mapbox rechaza las teselas |
 
 #### Sobre `PROXY_BASE`

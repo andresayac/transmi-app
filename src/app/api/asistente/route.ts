@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod/v4';
 import { hasCredentials, mapAssistantError, MAX_TURNS, runAssistant } from '@/lib/server/assistant/run';
+import { describeEndpoints, probeEndpoints } from '@/lib/server/assistant/probe';
 import type { AssistantEvent } from '@/components/assistant/types';
 
 export const runtime = 'nodejs';
@@ -27,6 +28,20 @@ const bodySchema = z.object({
         work: placeSchema,
     }).optional(),
 });
+
+// GET /api/asistente            → which AI endpoint(s) are configured (never the key)
+// GET /api/asistente?probar=1   → also checks connection, model and tool calling
+export async function GET(request: Request) {
+    const endpoints = describeEndpoints();
+    if (!endpoints.length) {
+        return NextResponse.json({ configured: false, help: 'Define AI_BASE_URL, AI_API_KEY y AI_MODEL en .env (cualquier API compatible con OpenAI).' });
+    }
+    if (new URL(request.url).searchParams.get('probar') !== '1') {
+        return NextResponse.json({ configured: true, endpoints });
+    }
+    const checks = await probeEndpoints();
+    return NextResponse.json({ configured: true, ok: checks.some((c) => c.reachable && c.toolCalls), checks });
+}
 
 // POST /api/asistente — streams NDJSON AssistantEvent lines (see components/assistant/types.ts)
 export async function POST(request: Request) {

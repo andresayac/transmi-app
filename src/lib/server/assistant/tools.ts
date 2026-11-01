@@ -1,7 +1,5 @@
 import 'server-only';
 
-import { betaZodTool } from '@anthropic-ai/sdk/helpers/beta/zod';
-import type { BetaToolRunContext } from '@anthropic-ai/sdk/lib/tools/BetaRunnableTool';
 import { z } from 'zod/v4';
 import {
     findStations,
@@ -35,14 +33,25 @@ const placeSchema = z.object({
 
 const json = (value: unknown) => JSON.stringify(value);
 
-function toolId(context?: BetaToolRunContext): string {
-    const use = context?.toolUse as { id?: string } | undefined;
-    return use?.id || Math.random().toString(36).slice(2);
+/**
+ * A tool the model can call: its Zod schema becomes the JSON Schema in the request's
+ * `tools` array, and the same schema validates the arguments the model sends back.
+ */
+export interface ToolDef<S extends z.ZodType = z.ZodType> {
+    name: string;
+    description: string;
+    inputSchema: S;
+    /** callId is the provider's tool-call id, used to pair UI status rows */
+    run: (input: z.infer<S>, callId?: string) => Promise<string>;
+}
+
+function defineTool<S extends z.ZodType>(def: ToolDef<S>): ToolDef<S> {
+    return def;
 }
 
 /** Runs a tool body while streaming start/done/error status rows to the UI. */
-async function track(emit: Emit, name: string, label: string, context: BetaToolRunContext | undefined, body: () => Promise<string>): Promise<string> {
-    const id = toolId(context);
+async function track(emit: Emit, name: string, label: string, callId: string | undefined, body: () => Promise<string>): Promise<string> {
+    const id = callId || Math.random().toString(36).slice(2);
     emit({ type: 'tool', id, name, status: 'start', label });
     try {
         const result = await body();
@@ -87,17 +96,16 @@ function summarizeItinerary(it: Itinerary, i: number) {
     };
 }
 
-export function createTools(emit: Emit, ctx: AssistantContext) {
-    const buscarLugar = betaZodTool({
+export function createTools(emit: Emit, ctx: AssistantContext): ToolDef[] {
+    const buscarLugar = defineTool({
         name: 'buscar_lugar',
         description:
             'Busca un lugar de Bogotá por nombre o dirección (sitios, barrios, direcciones como "Calle 26 # 68-35") y estaciones de TransMilenio. Devuelve candidatos con coordenadas. Úsala antes de planear_viaje cuando el usuario nombra un lugar.',
         inputSchema: z.object({
             consulta: z.string().min(2).max(160).describe('Texto del lugar tal como lo diría el usuario'),
         }),
-        eager_input_streaming: true,
-        run: (input, context) =>
-            track(emit, 'buscar_lugar', `Buscando "${input.consulta}"…`, context, async () => {
+        run: (input, callId) =>
+            track(emit, 'buscar_lugar', `Buscando "${input.consulta}"…`, callId, async () => {
                 const near = typeof ctx.lat === 'number' && typeof ctx.lng === 'number' ? { lat: ctx.lat, lng: ctx.lng } : undefined;
                 const places = await searchPlaces(input.consulta, near);
                 if (!places.length) return 'Sin resultados. Pide al usuario más detalles (barrio, dirección o un sitio cercano).';
@@ -105,7 +113,7 @@ export function createTools(emit: Emit, ctx: AssistantContext) {
             }),
     });
 
-    const planearViaje = betaZodTool({
+    const planearViaje = defineTool({
         name: 'planear_viaje',
         description:
             'Planea un viaje en transporte público entre dos puntos de Bogotá con el planeador oficial (TransMilenio, zonal, alimentadores, caminata). Devuelve hasta 3 opciones resumidas; la app muestra las tarjetas completas.',
@@ -115,9 +123,8 @@ export function createTools(emit: Emit, ctx: AssistantContext) {
             hora_salida: z.string().regex(/^\d{1,2}:\d{2}$/).optional().describe('Hora de salida en formato 24h HH:mm, solo si el usuario quiere salir a otra hora'),
             fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe('Fecha YYYY-MM-DD si no es hoy'),
         }),
-        eager_input_streaming: true,
-        run: (input, context) =>
-            track(emit, 'planear_viaje', `Planeando tu viaje a ${input.destino.nombre}…`, context, async () => {
+        run: (input, callId) =>
+            track(emit, 'planear_viaje', `Planeando tu viaje a ${input.destino.nombre}…`, callId, async () => {
                 const from: PlanPlace = { name: input.origen.nombre, lat: input.origen.lat, lng: input.origen.lng };
                 const to: PlanPlace = { name: input.destino.nombre, lat: input.destino.lat, lng: input.destino.lng };
                 const itineraries = await planTrip(from, to, departureParams(input.hora_salida, input.fecha));
@@ -128,13 +135,12 @@ export function createTools(emit: Emit, ctx: AssistantContext) {
             }),
     });
 
-    const buscarRutas = betaZodTool({
+    const buscarRutas = defineTool({
         name: 'buscar_rutas',
         description: 'Busca rutas por código o nombre (p. ej. "K23", "B13", "Portal 80", "Suba"). Devuelve id, código, nombre, tipo y si opera ahora. Usa el id, código y nombre para detalle_ruta o buses_en_vivo.',
         inputSchema: z.object({ texto: z.string().min(1).max(60).describe('Código o nombre de la ruta') }),
-        eager_input_streaming: true,
-        run: (input, context) =>
-            track(emit, 'buscar_rutas', `Buscando la ruta ${input.texto}…`, context, async () => {
+        run: (input, callId) =>
+            track(emit, 'buscar_rutas', `Buscando la ruta ${input.texto}…`, callId, async () => {
                 const routes = await searchRoutes(input.texto);
                 if (!routes.length) return 'No se encontraron rutas con ese texto.';
                 return json(routes.slice(0, 12).map((r) => ({
@@ -147,7 +153,7 @@ export function createTools(emit: Emit, ctx: AssistantContext) {
             }),
     });
 
-    const detalleRuta = betaZodTool({
+    const detalleRuta = defineTool({
         name: 'detalle_ruta',
         description: 'Recorrido completo (paradas en orden), horarios y si opera ahora de una ruta. Requiere id, código y nombre obtenidos con buscar_rutas.',
         inputSchema: z.object({
@@ -155,9 +161,8 @@ export function createTools(emit: Emit, ctx: AssistantContext) {
             codigo: z.string().min(1).max(20),
             nombre: z.string().max(120),
         }),
-        eager_input_streaming: true,
-        run: (input, context) =>
-            track(emit, 'detalle_ruta', `Consultando la ruta ${input.codigo}…`, context, async () => {
+        run: (input, callId) =>
+            track(emit, 'detalle_ruta', `Consultando la ruta ${input.codigo}…`, callId, async () => {
                 const route = await getRouteDetail(input.id, input.nombre, input.codigo);
                 const activeNow = isActiveNow(route.schedules);
                 emit({
@@ -186,16 +191,15 @@ export function createTools(emit: Emit, ctx: AssistantContext) {
             }),
     });
 
-    const llegadasEstacion = betaZodTool({
+    const llegadasEstacion = defineTool({
         name: 'llegadas_estacion',
         description: 'Próximos buses en vivo de una estación de TransMilenio o paradero zonal, por nombre (p. ej. "Calle 72", "Portal Norte"). Opcionalmente filtra por código de ruta. La app muestra el tablero de llegadas.',
         inputSchema: z.object({
             estacion: z.string().min(2).max(100).describe('Nombre de la estación o paradero'),
             ruta: z.string().max(20).optional().describe('Código de ruta para filtrar, p. ej. "B13"'),
         }),
-        eager_input_streaming: true,
-        run: (input, context) =>
-            track(emit, 'llegadas_estacion', `Leyendo llegadas en ${input.estacion}…`, context, async () => {
+        run: (input, callId) =>
+            track(emit, 'llegadas_estacion', `Leyendo llegadas en ${input.estacion}…`, callId, async () => {
                 const matches = await findStations(input.estacion, 3);
                 if (!matches.length) return `No encontré una estación llamada "${input.estacion}". Pide el nombre exacto o usa buscar_lugar.`;
                 const station = matches[0];
@@ -213,16 +217,15 @@ export function createTools(emit: Emit, ctx: AssistantContext) {
             }),
     });
 
-    const busesEnVivo = betaZodTool({
+    const busesEnVivo = defineTool({
         name: 'buses_en_vivo',
         description: 'Cuántos buses de una ruta están circulando ahora y qué tan llenos van. Requiere código y nombre (destino) de la ruta, obtenidos con buscar_rutas.',
         inputSchema: z.object({
             codigo: z.string().min(1).max(20),
             nombre: z.string().max(120).describe('Nombre/destino de la ruta tal como lo devuelve buscar_rutas'),
         }),
-        eager_input_streaming: true,
-        run: (input, context) =>
-            track(emit, 'buses_en_vivo', `Ubicando los buses de la ${input.codigo}…`, context, async () => {
+        run: (input, callId) =>
+            track(emit, 'buses_en_vivo', `Ubicando los buses de la ${input.codigo}…`, callId, async () => {
                 const buses = await getLiveBuses(input.codigo, input.nombre);
                 const occupancy = { vacio: 0, medio: 0, lleno: 0, sin_dato: 0 };
                 for (const b of buses) {
@@ -241,13 +244,12 @@ export function createTools(emit: Emit, ctx: AssistantContext) {
             }),
     });
 
-    const estacionesCercanas = betaZodTool({
+    const estacionesCercanas = defineTool({
         name: 'estaciones_cercanas',
         description: 'Estaciones troncales de TransMilenio y paraderos zonales más cercanos a un punto, con distancia.',
         inputSchema: z.object({ lat, lng }),
-        eager_input_streaming: true,
-        run: (input, context) =>
-            track(emit, 'estaciones_cercanas', 'Buscando estaciones cercanas…', context, async () => {
+        run: (input, callId) =>
+            track(emit, 'estaciones_cercanas', 'Buscando estaciones cercanas…', callId, async () => {
                 const [troncal, zonal] = await Promise.all([
                     nearestStations(input.lat, input.lng, 4, 'TransMilenio'),
                     nearestStations(input.lat, input.lng, 3, 'TransMiZonal'),
@@ -267,7 +269,7 @@ export function createTools(emit: Emit, ctx: AssistantContext) {
             }),
     });
 
-    const puntosRecarga = betaZodTool({
+    const puntosRecarga = defineTool({
         name: 'puntos_recarga_cercanos',
         description: 'Puntos de recarga de la tarjeta TuLlave (tiendas, droguerías) o puntos de personalización de la tarjeta más cercanos a un punto, con horarios.',
         inputSchema: z.object({
@@ -275,9 +277,8 @@ export function createTools(emit: Emit, ctx: AssistantContext) {
             lng,
             tipo: z.enum(['recarga', 'personalizacion']).optional().describe('recarga (por defecto) o personalizacion'),
         }),
-        eager_input_streaming: true,
-        run: (input, context) =>
-            track(emit, 'puntos_recarga_cercanos', input.tipo === 'personalizacion' ? 'Buscando puntos de personalización…' : 'Buscando puntos de recarga…', context, async () => {
+        run: (input, callId) =>
+            track(emit, 'puntos_recarga_cercanos', input.tipo === 'personalizacion' ? 'Buscando puntos de personalización…' : 'Buscando puntos de recarga…', callId, async () => {
                 const kind = input.tipo || 'recarga';
                 const points = await nearestServicePoints(kind, input.lat, input.lng, 5);
                 if (!points.length) return 'No hay puntos registrados cerca.';
@@ -291,13 +292,12 @@ export function createTools(emit: Emit, ctx: AssistantContext) {
             }),
     });
 
-    const clima = betaZodTool({
+    const clima = defineTool({
         name: 'clima',
         description: 'Clima actual en Bogotá (o en la ubicación del usuario) y si va a llover en las próximas 2 horas.',
         inputSchema: z.object({}),
-        eager_input_streaming: true,
-        run: (_input, context) =>
-            track(emit, 'clima', 'Revisando el clima…', context, async () => {
+        run: (_input, callId) =>
+            track(emit, 'clima', 'Revisando el clima…', callId, async () => {
                 const w = await getWeather(ctx.lat ?? 4.65, ctx.lng ?? -74.1);
                 emit({ type: 'card', card: { kind: 'weather', weather: w } });
                 return json({
@@ -309,18 +309,17 @@ export function createTools(emit: Emit, ctx: AssistantContext) {
             }),
     });
 
-    const tarifa = betaZodTool({
+    const tarifa = defineTool({
         name: 'tarifa',
         description: 'Valor actual del pasaje de TransMilenio y TransMiZonal en pesos colombianos.',
         inputSchema: z.object({}),
-        eager_input_streaming: true,
-        run: (_input, context) =>
-            track(emit, 'tarifa', 'Consultando la tarifa…', context, async () => {
+        run: (_input, callId) =>
+            track(emit, 'tarifa', 'Consultando la tarifa…', callId, async () => {
                 const fare = await getFare();
                 return json({ tarifa_cop: fare, nota: 'Mismo valor para TransMilenio y TransMiZonal según la información oficial de la app.' });
             }),
     });
 
     // Order is part of the cached prefix: keep it fixed.
-    return [buscarLugar, planearViaje, buscarRutas, detalleRuta, llegadasEstacion, busesEnVivo, estacionesCercanas, puntosRecarga, clima, tarifa];
+    return <ToolDef[]>[buscarLugar, planearViaje, buscarRutas, detalleRuta, llegadasEstacion, busesEnVivo, estacionesCercanas, puntosRecarga, clima, tarifa];
 }
