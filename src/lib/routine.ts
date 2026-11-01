@@ -1,4 +1,5 @@
 import { haversine } from '@/lib/geo';
+import { serviceDay } from '@/lib/schedule';
 import type { PlanPlace } from '@/types/transit';
 
 /**
@@ -37,7 +38,8 @@ const WINDOW_MIN = 75;
 const LOOKBACK_DAYS = 60;
 
 const minutesOfDay = (d: Date) => d.getHours() * 60 + d.getMinutes();
-const isWeekend = (d: Date) => d.getDay() === 0 || d.getDay() === 6;
+// Festivos behave like weekends: no commute by default, and their habits are weekend habits
+const isWeekend = (d: Date) => serviceDay(d) === 0 || serviceDay(d) === 6;
 const circularDiff = (a: number, b: number) => Math.min(Math.abs(a - b), 1440 - Math.abs(a - b));
 
 function near(a: { lat: number; lng: number } | null | undefined, b: { lat: number; lng: number } | null | undefined, meters: number) {

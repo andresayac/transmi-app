@@ -71,14 +71,15 @@ function MapScreen() {
     const [layersOpen, setLayersOpen] = useState(false);
     const [catalogOpen, setCatalogOpen] = useState(false);
 
-    // ?capa=: center on the rider once we know where they are (else Bogotá stays in view)
+    // ?capa=: center on the rider once we know where they are (else Bogotá stays in view),
+    // unless the link already points the camera somewhere (?lat&lng)
     const capaCentered = useRef(false);
     useEffect(() => {
-        if (!capa || capaCentered.current || !map || !ready || mode !== 'explorer') return;
+        if (!capa || lat !== null || capaCentered.current || !map || !ready || mode !== 'explorer') return;
         if (geo.latitude === null || geo.longitude === null) return;
         capaCentered.current = true;
         map.flyTo({ center: [geo.longitude, geo.latitude], zoom: 15, duration: 1200 });
-    }, [capa, map, ready, mode, geo.latitude, geo.longitude]);
+    }, [capa, lat, map, ready, mode, geo.latitude, geo.longitude]);
 
     // Comparison routes come from sessionStorage (client only)
     const storedMulti = useSyncExternalStore(noopSubscribe, readMultiRoutes, serverMultiRoutes);

@@ -150,7 +150,7 @@ export default function HomePage() {
 
         <InstallBanner />
 
-        <SaldoCard />
+        <SaldoCard here={here} />
 
         <FavoriteRoutes />
 

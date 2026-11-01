@@ -1,11 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { CreditCard, Loader2, MapPin, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { transmilenioApi } from '@/services/transmilenio';
 import { useLiveData } from '@/hooks/useLiveData';
+import { useFare } from '@/hooks/useFare';
+import { useClock } from '@/components/plan/useClock';
 import { useAppStore, useHydrated } from '@/stores/app';
+import { estimateBalance, titleCase, tripsLeft, type BalanceEstimate } from '@/lib/balance';
+import { bogotaNow, formatTime, openingState } from '@/lib/schedule';
+import { formatDistance } from '@/lib/geo';
+import type { ServicePoint } from '@/types/transit';
 import { cn } from '@/lib/utils';
 
 interface SaldoEntry {
@@ -28,17 +34,31 @@ function relative(dateStr: string): string {
     return days === 1 ? 'ayer' : `hace ${days} días`;
 }
 
+/** "Alcanza para 2 viajes." — or, with trips made since the last check, what's probably left. */
+function coverageText(estimate: BalanceEstimate, trips: number): string {
+    const coverage = trips === 0 ? 'no alcanza para un pasaje' : `alcanza para ${trips} ${trips === 1 ? 'viaje' : 'viajes'}`;
+    if (!estimate.tripsSince) return coverage.charAt(0).toUpperCase() + coverage.slice(1) + '.';
+    const n = estimate.tripsSince;
+    return `Tras ${n === 1 ? 'un viaje' : `${n} viajes`} desde la consulta quedarían unos ${cop(estimate.value)}: ${coverage}.`;
+}
+
+/** Minutes after midnight (may pass 24 h) → "9:00 pm". */
+const clockText = (min: number) => formatTime(new Date(2000, 0, 1, Math.floor(min / 60) % 24, min % 60));
+
 /**
  * TuLlave balance, shaped like the card itself. Remembers the number, shows
- * how many trips the balance covers at the current fare.
+ * how many trips the balance covers at the current fare, discounts the trips
+ * made since the last check, and when it runs low points to the nearest
+ * recharge point that is open right now.
  */
-export default function SaldoCard() {
+export default function SaldoCard({ here }: { here?: { lat: number; lng: number } | null }) {
     const hydrated = useHydrated();
     const cardNumber = useAppStore((s) => s.cardNumber);
     const lastBalance = useAppStore((s) => s.lastBalance);
+    const loggedTrips = useAppStore((s) => s.trips);
+    const home = useAppStore((s) => s.home);
     const setCard = useAppStore((s) => s.setCard);
-    const { data: info } = useLiveData<{ fare: number }>('/api/info');
-    const fare = info?.fare || 3550;
+    const fare = useFare();
 
     const [editing, setEditing] = useState(false);
     const [draft, setDraft] = useState('');
@@ -69,9 +89,27 @@ export default function SaldoCard() {
         setLoading(false);
     };
 
-    const balance = entry ? parseInt(entry.saldo_tarjeta) : lastBalance?.value ?? null;
-    const trips = balance !== null ? Math.floor(balance / fare) : null;
+    const estimate = useMemo(() => estimateBalance(lastBalance, loggedTrips, fare), [lastBalance, loggedTrips, fare]);
+    const balance = estimate?.checked ?? null;
+    const trips = estimate ? tripsLeft(estimate.value, fare) : null;
     const showForm = hydrated && (editing || !cardNumber);
+    const low = trips !== null && trips < 2 && !showForm;
+
+    // Running low: look for a recharge point open right now, near the rider (or home)
+    const near = here ? { ...here, label: 'de ti' } : home ? { lat: home.lat, lng: home.lng, label: 'de tu casa' } : null;
+    const { data: nearby } = useLiveData<{ points: ServicePoint[] }>(
+        low && near ? `/api/puntos?tipo=recarga&lat=${near.lat.toFixed(3)}&lng=${near.lng.toFixed(3)}&limit=10` : null,
+    );
+    const clock = useClock();
+    const openPoint = useMemo(() => {
+        if (!nearby?.points?.length || !clock) return null;
+        const now = bogotaNow(new Date(clock));
+        for (const point of nearby.points) {
+            const state = openingState(point.hours, now);
+            if (state.open) return { point, closesAt: state.closesAt! };
+        }
+        return null;
+    }, [nearby, clock]);
 
     return (
         <section aria-label="Saldo TuLlave" className="relative overflow-hidden rounded-2xl bg-[#0a0a0a] text-white p-5 ring-1 ring-white/10">
@@ -90,10 +128,10 @@ export default function SaldoCard() {
                 <CreditCard className="w-7 h-7 text-white/40" />
             </div>
 
-            {balance !== null && !showForm && (
-                <p className={cn('mt-2 text-14', trips !== null && trips < 2 ? 'text-[#FCBD1B]' : 'text-white/75')}>
-                    {trips === 0 ? 'No alcanza para un pasaje. ' : `Alcanza para ${trips} ${trips === 1 ? 'viaje' : 'viajes'} `}
-                    <span className="text-white/45">· pasaje {cop(fare)}</span>
+            {estimate && !showForm && (
+                <p className={cn('mt-2 text-14 leading-snug', low ? 'text-[#FCBD1B]' : 'text-white/75')}>
+                    {coverageText(estimate, trips ?? 0)}{' '}
+                    <span className="text-white/45">Pasaje {cop(fare)}</span>
                 </p>
             )}
 
@@ -148,10 +186,26 @@ export default function SaldoCard() {
 
             {error && <p className="mt-2 text-13 text-[#ff8a8a]" role="alert">{error}</p>}
 
-            {trips !== null && trips < 2 && !showForm && (
-                <Link href="/mapa?capa=recarga" className="mt-3 inline-flex items-center gap-1.5 text-13 font-semibold text-white underline underline-offset-4">
-                    <MapPin className="w-3.5 h-3.5" /> Puntos de recarga cerca
-                </Link>
+            {low && (
+                <div className="mt-4 rounded-xl bg-white/[0.07] p-3.5">
+                    <p className="font-signage text-19 font-bold leading-tight text-[#FCBD1B]">{trips === 0 ? 'Recarga antes de salir' : 'Recarga pronto'}</p>
+                    {openPoint && near ? (
+                        <Link
+                            href={`/mapa?capa=recarga&lat=${openPoint.point.lat}&lng=${openPoint.point.lng}&zoom=17`}
+                            className="mt-1.5 flex items-start gap-2 text-14 text-white/85 active:opacity-70"
+                        >
+                            <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
+                            <span className="min-w-0">
+                                <span className="font-semibold text-white">{titleCase(openPoint.point.name)}</span>, a {formatDistance(openPoint.point.distanceM ?? 0)} {near.label}
+                                <span className="block text-13 text-white/55">{openPoint.point.address}. Abierto hasta las {clockText(openPoint.closesAt)}</span>
+                            </span>
+                        </Link>
+                    ) : (
+                        <Link href="/mapa?capa=recarga" className="mt-1.5 inline-flex items-center gap-1.5 text-13 font-semibold text-white underline underline-offset-4">
+                            <MapPin className="w-3.5 h-3.5" /> {nearby && near ? 'Los puntos más cercanos están cerrados. Ver el mapa' : 'Puntos de recarga cerca'}
+                        </Link>
+                    )}
+                </div>
             )}
         </section>
     );

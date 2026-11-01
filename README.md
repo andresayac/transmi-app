@@ -36,7 +36,7 @@ La idea surgió como un **proyecto educativo** para aprender a integrar APIs de 
 - **¿A dónde vas?**: un toque para planear, con accesos a Casa, Trabajo, lugares guardados y recientes
 - **Estación más cercana** con un **tablero de llegadas en vivo** (animación tipo split-flap) para todas las rutas que paran ahí
 - **Clima** de Bogotá con aviso de **"lluvia en ~N min"**
-- **Saldo TuLlave** con cuántos viajes alcanzan según la tarifa vigente, y enlace a puntos de recarga cuando el saldo es bajo
+- **Saldo TuLlave** con cuántos viajes alcanzan según la tarifa vigente; descuenta los viajes hechos desde la última consulta y, cuando el saldo es bajo, muestra el **punto de recarga más cercano abierto ahora** (con su horario, festivos incluidos). Tu rutina también avisa si no alcanza para el pasaje
 
 ### 🧭 Planeador de viajes (`/planear`)
 - Origen y destino con búsqueda de lugares (OpenStreetMap), estaciones, tu ubicación y lugares guardados
@@ -70,6 +70,11 @@ La idea surgió como un **proyecto educativo** para aprender a integrar APIs de 
 - Tipografía de señalética: **Barlow** y **Barlow Condensed**
 - **Franja del sistema**: firma visual con los 15 colores oficiales de las troncales
 - Modo claro, oscuro o del sistema, sin parpadeo al cargar
+
+### 📶 Para todos los días
+- **Ahorro de datos** (se activa solo si el teléfono lo pide): mapas planos y bajo pedido (mientras tanto, un **esquema del recorrido dibujado sin descargar nada**), datos en vivo con la mitad de consultas y avisos con la voz del teléfono. El catálogo de 7.400 paradas se guarda un mes en el teléfono
+- **Tamaño de letra** (Normal, Grande, Muy grande) y **Más contraste**; la app sigue además el tamaño de letra y el contraste del teléfono
+- **Festivos de Colombia** calculados en el teléfono (Ley Emiliani y Semana Santa): horarios de rutas, rutina y puntos de recarga usan el horario de domingos y festivos
 
 ---
 

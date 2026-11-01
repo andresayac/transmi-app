@@ -29,7 +29,7 @@ export function formatClock(t: string): string {
     return `${h}:${String(m).padStart(2, '0')}`;
 }
 
-/** Whether a schedule convention (L-S, L-V, D-F, S…) applies to a given weekday (0 = Sunday). */
+/** Whether a schedule convention (L-S, L-V, D-F, S…) applies to a given weekday (0 = Sunday; pass serviceDay() so festivos count as Sunday). */
 export function conventionAppliesTo(convencion: string, day: number): boolean {
     const conv = convencion?.toUpperCase().trim() || '';
     if (conv === 'L-S') return day >= 1 && day <= 6;
@@ -39,9 +39,82 @@ export function conventionAppliesTo(convencion: string, day: number): boolean {
     return true;
 }
 
+// ─── Colombian public holidays ("festivos") ──────────────
+
+const ymd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+/** Easter Sunday (Gregorian calendar, anonymous algorithm). */
+function easter(year: number): Date {
+    const a = year % 19, b = Math.floor(year / 100), c = year % 100;
+    const d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3);
+    const h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4;
+    const l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const month = Math.floor((h + l - 7 * m + 114) / 31);
+    const day = ((h + l - 7 * m + 114) % 31) + 1;
+    return new Date(year, month - 1, day);
+}
+
+const holidayCache = new Map<number, Set<string>>();
+
+/**
+ * Colombia's festivos for a year as "YYYY-MM-DD". Most move to the following
+ * Monday (Ley Emiliani); Holy Thursday and Good Friday follow Easter.
+ */
+export function colombianHolidays(year: number): Set<string> {
+    const cached = holidayCache.get(year);
+    if (cached) return cached;
+    const date = (month: number, day: number) => new Date(year, month - 1, day);
+    const nextMonday = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + ((8 - d.getDay()) % 7));
+    const plus = (d: Date, days: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + days);
+    const e = easter(year);
+    const days = [
+        date(1, 1), date(5, 1), date(7, 20), date(8, 7), date(12, 8), date(12, 25),
+        ...[date(1, 6), date(3, 19), date(6, 29), date(8, 15), date(10, 12), date(11, 1), date(11, 11)].map(nextMonday),
+        plus(e, -3), plus(e, -2), // Jueves y Viernes Santo
+        plus(e, 43), plus(e, 64), plus(e, 71), // Ascensión, Corpus Christi, Sagrado Corazón (already Mondays)
+    ];
+    const set = new Set(days.map(ymd));
+    holidayCache.set(year, set);
+    return set;
+}
+
+export function isHoliday(date: Date): boolean {
+    return colombianHolidays(date.getFullYear()).has(ymd(date));
+}
+
+/** Weekday for timetables (0 = Sunday): on a festivo the system runs its Sunday service. */
+export function serviceDay(date: Date): number {
+    return isHoliday(date) ? 0 : date.getDay();
+}
+
+// ─── Opening hours ───────────────────────────────────────
+
+export interface WeeklyHours {
+    /** Monday to Friday, Saturday, Sunday and holidays: "08:00-21:00" or "Sin Servicio" */
+    wk: string;
+    sat: string;
+    hol: string;
+}
+
+/** Is a place open at `now`, and until when (minutes after midnight; past 24 h when it closes after midnight)? */
+export function openingState(hours: WeeklyHours, now = bogotaNow()): { open: boolean; closesAt: number | null } {
+    const day = serviceDay(now);
+    const range = (day === 0 ? hours.hol : day === 6 ? hours.sat : hours.wk) || '';
+    const match = range.match(/(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})/);
+    if (!match) return { open: false, closesAt: null };
+    const start = +match[1] * 60 + +match[2];
+    let end = +match[3] * 60 + +match[4];
+    if (end <= start) end += 24 * 60; // closes after midnight
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    if (nowMin >= start && nowMin < end) return { open: true, closesAt: end };
+    // Still inside last night's late opening
+    if (nowMin + 24 * 60 < end) return { open: true, closesAt: end - 24 * 60 };
+    return { open: false, closesAt: null };
+}
+
 export function operatesToday(horarios?: ScheduleEntry[] | null): boolean {
     if (!horarios?.length) return true;
-    const day = bogotaNow().getDay();
+    const day = serviceDay(bogotaNow());
     return horarios.some((h) => conventionAppliesTo(h.convencion, day));
 }
 
@@ -49,7 +122,7 @@ export function operatesToday(horarios?: ScheduleEntry[] | null): boolean {
 export function isActiveNow(horarios?: ScheduleEntry[] | null): boolean | null {
     if (!horarios?.length) return null;
     const now = bogotaNow();
-    const day = now.getDay();
+    const day = serviceDay(now);
     const nowMin = now.getHours() * 60 + now.getMinutes();
     return horarios.some((h) => {
         if (!conventionAppliesTo(h.convencion, day)) return false;

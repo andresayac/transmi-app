@@ -3,10 +3,12 @@
 import { useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Briefcase, House, MapPin, Navigation } from 'lucide-react';
+import { Briefcase, CreditCard, House, MapPin, Navigation } from 'lucide-react';
 import { useAppStore, useHydrated } from '@/stores/app';
 import { useLiveData } from '@/hooks/useLiveData';
 import { useClock } from '@/components/plan/useClock';
+import { useFare } from '@/hooks/useFare';
+import { estimateBalance } from '@/lib/balance';
 import { stopLabel } from '@/components/plan/utils';
 import RouteBadge from '@/components/transit/RouteBadge';
 import { leaveInMinutes, suggestRoutine } from '@/lib/routine';
@@ -30,6 +32,8 @@ export default function RoutineCard({ here }: Props) {
     const home = useAppStore((s) => s.home);
     const work = useAppStore((s) => s.work);
     const trips = useAppStore((s) => s.trips);
+    const lastBalance = useAppStore((s) => s.lastBalance);
+    const fare = useFare();
     const now = useClock();
 
     // Re-evaluate every few minutes (bucket the clock so the plan isn't refetched every tick)
@@ -74,6 +78,10 @@ export default function RoutineCard({ here }: Props) {
         if (!line || !arrivals) return null;
         return nextArrivalFor(arrivals.arrivals, line.code, line.longName || line.name);
     }, [firstRide, arrivals]);
+
+    // Known (or estimated) balance below one fare: say so before the rider walks to the station
+    const balance = useMemo(() => estimateBalance(lastBalance, trips, fare), [lastBalance, trips, fare]);
+    const shortOfFare = !!firstRide && !!balance && balance.value < fare;
 
     if (!suggestion) return null;
 
@@ -128,6 +136,12 @@ export default function RoutineCard({ here }: Props) {
                     {missed && nextBus && firstRide?.line && (
                         <p className="mt-1 text-13 text-muted-foreground">
                             El próximo {firstRide.line.code} pasa en {nextBus.minutes === 0 ? 'este momento' : `${nextBus.minutes} min`}, antes de que alcances a llegar: toma el siguiente.
+                        </p>
+                    )}
+                    {shortOfFare && (
+                        <p className="mt-3 flex items-start gap-2 rounded-xl bg-[#FCBD1B]/15 px-3 py-2.5 text-13 font-medium leading-snug">
+                            <CreditCard className="w-4 h-4 mt-px shrink-0" />
+                            <span>Tu TuLlave no alcanza para el pasaje. Recarga antes de entrar a la estación.</span>
                         </p>
                     )}
                     <div className="mt-4 flex gap-2">
