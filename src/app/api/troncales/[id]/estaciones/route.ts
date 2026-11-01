@@ -1,30 +1,27 @@
-import { NextResponse } from 'next/server';
+import { loader } from '@/lib/server/upstream';
+import { respond } from '@/lib/server/respond';
+import { getStations } from '@/lib/server/transit';
+import { orderAlongLine } from '@/lib/geo';
+import type { Estacion } from '@/types/explorar';
 
-const TM_API_BASE = 'https://api.buscador-rutas.transmilenio.gov.co/loader.php';
-
-export async function GET(
-    request: Request,
-    { params }: { params: Promise<{ id: string }> }
-) {
+// GET /api/troncales/:id/estaciones — stations of a troncal, in line order, with coordinates.
+// The upstream list is alphabetical and has no coordinates; we join them from the stations catalog.
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const url = `${TM_API_BASE}?lServicio=Rutas&lTipo=api&lFuncion=estacionesByTroncal&troncal=${encodeURIComponent(id)}`;
-
-    try {
-        const response = await fetch(url, {
-            headers: {
-                'User-Agent': 'okhttp/4.12.0',
-                'uuid': '951d0eaf-daaf-464f-8baf-1d00fe09a01b',
-                'version': '2.7.6',
-            },
-            next: { revalidate: 3600 },
+    return respond('las estaciones de la troncal', async () => {
+        const [data, stations] = await Promise.all([
+            loader<{ lista_estaciones?: Estacion[] }>('estacionesByTroncal', { troncal: id }, 3600),
+            getStations().catch(() => []),
+        ]);
+        const byCode = new Map(stations.map((s) => [s.codigo, s]));
+        const list = (data.lista_estaciones || []).map((e) => {
+            const s = byCode.get(e.codigo);
+            return s ? { ...e, coordenada: e.coordenada || `${s.lat},${s.lng}` } : e;
         });
-
-        const data = await response.json();
-        return NextResponse.json(data, {
-            headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200' },
+        const ordered = orderAlongLine(list, (e) => {
+            const s = byCode.get(e.codigo);
+            return s ? { lat: s.lat, lng: s.lng } : null;
         });
-    } catch (error) {
-        console.error('Error fetching estaciones:', error);
-        return NextResponse.json({ error: 'Failed to fetch estaciones' }, { status: 500 });
-    }
+        return { lista_estaciones: ordered };
+    }, 3600);
 }

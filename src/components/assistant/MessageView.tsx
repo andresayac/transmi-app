@@ -24,6 +24,9 @@ export default function MessageView({ message, isLast, onRetry }: MessageViewPro
         );
     }
 
+    // The page shows its own setup notice; an empty reply bubble would only add noise
+    if (message.error?.code === 'not_configured' && message.parts.length === 0) return null;
+
     const streaming = message.status === 'streaming';
     const lastPart = message.parts[message.parts.length - 1];
     const waiting = streaming && (!lastPart || (lastPart.type === 'tool' && lastPart.status !== 'start'));

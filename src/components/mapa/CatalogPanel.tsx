@@ -1,339 +1,234 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Check, Library, Loader2, RefreshCw, Search, X } from 'lucide-react';
 import { transmilenioApi } from '@/services/transmilenio';
-import { RouteCatalogEntry, RouteCatalog, CatalogProgress } from '@/types/catalog';
+import type { RouteCatalog, CatalogProgress } from '@/types/catalog';
 import { ROUTE_COLORS } from '@/utils/constants';
+import RouteBadge from '@/components/transit/RouteBadge';
+import { readableOn } from '@/lib/color';
+import { cn } from '@/lib/utils';
+import type { StoredMultiRoute } from './types';
 
 interface CatalogPanelProps {
-    onSelectRoutes: (routes: Array<{ id: string; codigo: string; nombre: string; tipoServicio: string; color: string; originalColor: string }>) => void;
+    onSelectRoutes: (routes: StoredMultiRoute[]) => void;
     onClose: () => void;
 }
 
+/** Full system catalog: load every troncal route once, filter, pick several to compare on the map. */
 export default function CatalogPanel({ onSelectRoutes, onClose }: CatalogPanelProps) {
-    const [catalog, setCatalog] = useState<RouteCatalog | null>(null);
+    const [catalog, setCatalog] = useState<RouteCatalog | null>(() => (typeof window === 'undefined' ? null : transmilenioApi.getRouteCatalog()));
     const [loading, setLoading] = useState(false);
+    const [failed, setFailed] = useState(false);
     const [progress, setProgress] = useState<CatalogProgress | null>(null);
     const [search, setSearch] = useState('');
     const [filterTroncal, setFilterTroncal] = useState<string | null>(null);
     const [selected, setSelected] = useState<Set<string>>(new Set());
 
-    // Try to load cached catalog on mount
     useEffect(() => {
-        const cached = transmilenioApi.getRouteCatalog();
-        if (cached) setCatalog(cached);
-    }, []);
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [onClose]);
 
     const loadCatalog = async (force = false) => {
         setLoading(true);
+        setFailed(false);
         setProgress(null);
         try {
-            const result = await transmilenioApi.getAllRouteCatalog(
-                (p) => setProgress(p),
-                force,
-            );
-            setCatalog(result);
+            setCatalog(await transmilenioApi.getAllRouteCatalog((p) => setProgress(p), force));
         } catch {
-            // error handled silently
+            setFailed(true);
         }
         setLoading(false);
         setProgress(null);
     };
 
-    // Get unique troncales for filter
     const troncales = useMemo(() => {
         if (!catalog) return [];
         const map = new Map<string, { id: string; nombre: string; letra: string; color: string }>();
         for (const e of catalog.entries) {
-            if (!map.has(e.troncalId)) {
-                map.set(e.troncalId, {
-                    id: e.troncalId,
-                    nombre: e.troncalNombre,
-                    letra: e.troncalLetra,
-                    color: e.troncalColor,
-                });
-            }
+            if (!map.has(e.troncalId)) map.set(e.troncalId, { id: e.troncalId, nombre: e.troncalNombre, letra: e.troncalLetra, color: e.troncalColor });
         }
-        return Array.from(map.values());
+        return Array.from(map.values()).sort((a, b) => a.letra.localeCompare(b.letra));
     }, [catalog]);
 
-    // Filtered entries
     const filtered = useMemo(() => {
         if (!catalog) return [];
         let entries = catalog.entries;
-        if (filterTroncal) {
-            entries = entries.filter((e) => e.troncalId === filterTroncal);
-        }
-        if (search.trim()) {
-            const q = search.toLowerCase();
-            entries = entries.filter(
-                (e) =>
-                    e.codigo.toLowerCase().includes(q) ||
-                    e.nombre.toLowerCase().includes(q),
-            );
-        }
-        return entries.sort((a, b) => a.codigo.localeCompare(b.codigo));
+        if (filterTroncal) entries = entries.filter((e) => e.troncalId === filterTroncal);
+        const q = search.trim().toLowerCase();
+        if (q) entries = entries.filter((e) => e.codigo.toLowerCase().includes(q) || e.nombre.toLowerCase().includes(q));
+        return [...entries].sort((a, b) => a.codigo.localeCompare(b.codigo, 'es', { numeric: true }));
     }, [catalog, filterTroncal, search]);
 
-    const toggleSelect = (id: string) => {
-        setSelected((prev) => {
-            const next = new Set(prev);
-            if (next.has(id)) next.delete(id);
-            else next.add(id);
-            return next;
-        });
-    };
+    const toggle = (id: string) => setSelected((prev) => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next;
+    });
 
-    const handleViewSelected = () => {
+    const viewSelected = () => {
         if (!catalog || selected.size === 0) return;
-        const selectedEntries = catalog.entries.filter((e) => selected.has(e.id));
-        const routes = selectedEntries.map((e, i) => ({
+        onSelectRoutes(catalog.entries.filter((e) => selected.has(e.id)).map((e, i) => ({
             id: e.id,
             codigo: e.codigo,
             nombre: e.nombre,
             tipoServicio: e.tipoServicio,
             color: ROUTE_COLORS[i % ROUTE_COLORS.length],
             originalColor: e.color,
-        }));
-        onSelectRoutes(routes);
+        })));
     };
 
-    const progressPercent = progress
-        ? Math.round((progress.loaded / Math.max(progress.total, 1)) * 100)
-        : 0;
+    const pct = progress ? Math.round((progress.loaded / Math.max(progress.total, 1)) * 100) : 0;
 
-    // ─── No catalog loaded ───────────────────────────────
-    if (!catalog && !loading) {
-        return (
-            <div className="absolute inset-0 z-50 flex items-end justify-center" onClick={onClose}>
-                <div
-                    className="w-full max-w-md glass rounded-t-3xl p-6 pb-8 animate-slide-up"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <div className="flex justify-center mb-4">
-                        <div className="w-10 h-1 rounded-full bg-white/20" />
-                    </div>
-                    <div className="text-center">
-                        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-500/15 flex items-center justify-center">
-                            <svg className="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
-                            </svg>
+    return (
+        <div className="absolute inset-0 z-50 flex flex-col justify-end bg-black/55" onClick={onClose} role="dialog" aria-modal="true" aria-label="Catálogo de rutas">
+            <div
+                className="w-full max-w-lg mx-auto bg-background rounded-t-[22px] border-t border-border flex flex-col overflow-hidden animate-slide-up shadow-2xl"
+                style={{ maxHeight: '88dvh' }}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className="shrink-0 px-4 pt-4 pb-3">
+                    <div className="flex items-start justify-between gap-3">
+                        <div>
+                            <h2 className="font-signage text-[24px] font-bold leading-tight">Catálogo de rutas</h2>
+                            <p className="text-[13px] text-muted-foreground tabular">
+                                {catalog
+                                    ? `${catalog.entries.length} rutas · ${catalog.troncalCount} troncales · ${catalog.estacionCount} estaciones`
+                                    : 'Todas las rutas troncales en un solo lugar'}
+                            </p>
                         </div>
-                        <h3 className="text-white font-bold text-lg mb-1">Catálogo de Rutas</h3>
-                        <p className="text-white/50 text-sm mb-6">
-                            Carga todas las rutas del sistema para buscar y seleccionar rápidamente
-                        </p>
-                        <button
-                            onClick={() => loadCatalog()}
-                            className="w-full py-3.5 rounded-2xl bg-blue-500 text-white font-bold text-sm active:scale-95 transition-transform shadow-lg shadow-blue-500/25"
-                        >
-                            Cargar catálogo completo
-                        </button>
+                        <div className="flex items-center gap-1">
+                            {catalog && !loading && (
+                                <button onClick={() => loadCatalog(true)} className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-accent" aria-label="Actualizar catálogo">
+                                    <RefreshCw className="w-4 h-4" />
+                                </button>
+                            )}
+                            <button onClick={onClose} className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-accent" aria-label="Cerrar catálogo">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        );
-    }
 
-    // ─── Loading state ───────────────────────────────────
-    if (loading) {
-        return (
-            <div className="absolute inset-0 z-50 flex items-end justify-center">
-                <div className="w-full max-w-md glass rounded-t-3xl p-6 pb-8 animate-slide-up">
-                    <div className="flex justify-center mb-4">
-                        <div className="w-10 h-1 rounded-full bg-white/20" />
+                {/* Not loaded yet */}
+                {!catalog && !loading && (
+                    <div className="px-4 pb-[calc(env(safe-area-inset-bottom)+24px)] text-center">
+                        <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-secondary flex items-center justify-center">
+                            <Library className="w-7 h-7" />
+                        </div>
+                        <p className="text-[14px] text-muted-foreground mb-5 max-w-xs mx-auto">
+                            Descarga una vez todas las rutas de todas las troncales para buscarlas y compararlas sin esperar. Toma alrededor de un minuto.
+                        </p>
+                        {failed && <p className="text-[13px] text-destructive mb-3">No se pudo descargar el catálogo. Revisa tu conexión e inténtalo de nuevo.</p>}
+                        <button onClick={() => loadCatalog()} className="w-full h-12 rounded-full bg-foreground text-background text-[15px] font-semibold active:scale-[0.98] transition">
+                            Descargar catálogo
+                        </button>
                     </div>
-                    <div className="text-center">
-                        <div className="w-12 h-12 mx-auto mb-4 border-3 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
-                        <h3 className="text-white font-bold text-base mb-2">Cargando catálogo...</h3>
+                )}
+
+                {/* Loading */}
+                {loading && (
+                    <div className="px-4 pb-[calc(env(safe-area-inset-bottom)+24px)] text-center" role="status">
+                        <Loader2 className="w-8 h-8 mx-auto mb-3 animate-spin" />
+                        <p className="text-[15px] font-semibold">Descargando catálogo…</p>
                         {progress && (
                             <>
-                                <p className="text-white/50 text-sm mb-3">{progress.label}</p>
-                                {/* Progress bar */}
-                                <div className="w-full bg-white/10 rounded-full h-2 mb-2 overflow-hidden">
-                                    <div
-                                        className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all duration-300"
-                                        style={{ width: `${progressPercent}%` }}
-                                    />
+                                <p className="text-[13px] text-muted-foreground mt-1 truncate">{progress.label}</p>
+                                <div className="mt-3 h-2 w-full rounded-full bg-secondary overflow-hidden">
+                                    <div className="h-full rounded-full system-stripe transition-[width] duration-300" style={{ width: `${pct}%` }} />
                                 </div>
-                                <p className="text-white/30 text-xs">
-                                    {progress.phase === 'troncales' && 'Obteniendo troncales...'}
-                                    {progress.phase === 'estaciones' && `Estaciones ${progress.loaded}/${progress.total}`}
-                                    {progress.phase === 'rutas' && `Estaciones procesadas ${progress.loaded}/${progress.total}`}
+                                <p className="text-[12px] text-muted-foreground mt-1.5 tabular">
+                                    {progress.phase === 'troncales' && 'Leyendo troncales'}
+                                    {progress.phase === 'estaciones' && `Estaciones de ${progress.loaded} de ${progress.total} troncales`}
+                                    {progress.phase === 'rutas' && `${progress.loaded} de ${progress.total} estaciones revisadas`}
                                 </p>
                             </>
                         )}
                     </div>
-                </div>
-            </div>
-        );
-    }
+                )}
 
-    // ─── Catalog loaded ──────────────────────────────────
-    return (
-        <div className="absolute inset-0 z-50 flex flex-col bg-black/60" onClick={onClose}>
-            <div
-                className="mt-auto w-full glass rounded-t-3xl flex flex-col overflow-hidden animate-slide-up"
-                style={{ maxHeight: '85vh' }}
-                onClick={(e) => e.stopPropagation()}
-            >
-                {/* Handle + Header */}
-                <div className="flex-shrink-0 px-5 pt-3 pb-2">
-                    <div className="flex justify-center mb-3">
-                        <div className="w-10 h-1 rounded-full bg-white/20" />
-                    </div>
-
-                    <div className="flex items-center justify-between mb-3">
-                        <div>
-                            <h3 className="text-white font-bold text-base">Catálogo de Rutas</h3>
-                            <p className="text-white/40 text-xs">
-                                {catalog!.entries.length} rutas · {catalog!.troncalCount} troncales · {catalog!.estacionCount} estaciones
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={() => loadCatalog(true)}
-                                className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center active:scale-90 transition-transform"
-                                title="Refrescar catálogo"
-                            >
-                                <svg className="w-4 h-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M2.985 19.644l3.181-3.182" />
-                                </svg>
-                            </button>
-                            <button
-                                onClick={onClose}
-                                className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center active:scale-90 transition-transform"
-                            >
-                                <svg className="w-4 h-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Search */}
-                    <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 mb-3">
-                        <svg className="w-4 h-4 text-white/40 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                        <input
-                            type="text"
-                            placeholder="Buscar ruta (ej: E44, Portal Norte)..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="flex-1 bg-transparent outline-none text-white text-sm placeholder:text-white/30"
-                        />
-                        {search && (
-                            <button onClick={() => setSearch('')} className="text-white/40 text-xs">✕</button>
-                        )}
-                    </div>
-
-                    {/* Troncal filter chips */}
-                    <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-hide">
-                        <button
-                            onClick={() => setFilterTroncal(null)}
-                            className={`flex-shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${!filterTroncal
-                                ? 'bg-blue-500 text-white'
-                                : 'bg-white/5 text-white/50'
-                                }`}
-                        >
-                            Todas
-                        </button>
-                        {troncales.map((t) => (
-                            <button
-                                key={t.id}
-                                onClick={() => setFilterTroncal(filterTroncal === t.id ? null : t.id)}
-                                className={`flex-shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all flex items-center gap-1 ${filterTroncal === t.id
-                                    ? 'text-white'
-                                    : 'bg-white/5 text-white/50'
-                                    }`}
-                                style={filterTroncal === t.id ? { backgroundColor: t.color } : {}}
-                            >
-                                <span
-                                    className="w-2 h-2 rounded-full flex-shrink-0"
-                                    style={{ backgroundColor: t.color }}
+                {/* Loaded */}
+                {catalog && !loading && (
+                    <>
+                        <div className="shrink-0 px-4 space-y-3 pb-2">
+                            <label className="relative block">
+                                <span className="sr-only">Buscar ruta</span>
+                                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                                <input
+                                    type="search"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    placeholder="Código o destino, ej. E44 o Portal Norte"
+                                    className="w-full h-11 pl-10 pr-3 rounded-full bg-secondary text-[15px] placeholder:text-muted-foreground border border-transparent focus:border-ring focus:outline-none"
                                 />
-                                {t.letra}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Selection bar */}
-                    {selected.size > 0 && (
-                        <div className="flex items-center gap-2 mt-1 mb-1">
-                            <span className="text-white/50 text-[11px]">{selected.size} seleccionada{selected.size !== 1 ? 's' : ''}</span>
-                            <button
-                                onClick={() => setSelected(new Set())}
-                                className="text-red-400/80 text-[11px] font-semibold"
-                            >
-                                Limpiar
-                            </button>
-                            <div className="flex-1" />
-                            <button
-                                onClick={handleViewSelected}
-                                className="px-4 py-1.5 rounded-xl bg-blue-500 text-white text-xs font-bold active:scale-95 transition-transform shadow-lg shadow-blue-500/20"
-                            >
-                                Ver en mapa ({selected.size})
-                            </button>
-                        </div>
-                    )}
-                </div>
-
-                {/* Results count */}
-                <div className="flex-shrink-0 px-5 pb-2">
-                    <p className="text-white/30 text-[11px]">{filtered.length} rutas</p>
-                </div>
-
-                {/* Route list */}
-                <div className="flex-1 overflow-y-auto px-5 pb-6 space-y-1.5">
-                    {filtered.map((entry) => {
-                        const isSelected = selected.has(entry.id);
-                        return (
-                            <button
-                                key={entry.id}
-                                onClick={() => toggleSelect(entry.id)}
-                                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all active:scale-[0.98] text-left ${isSelected
-                                    ? 'bg-blue-500/15 border border-blue-500/30'
-                                    : 'bg-white/[0.03] border border-transparent hover:bg-white/[0.06]'
-                                    }`}
-                            >
-                                {/* Checkbox */}
-                                <div className={`w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center border-2 transition-colors ${isSelected
-                                    ? 'bg-blue-500 border-blue-500'
-                                    : 'border-white/20'
-                                    }`}>
-                                    {isSelected && (
-                                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                        </svg>
-                                    )}
-                                </div>
-
-                                {/* Route badge */}
-                                <span
-                                    className="px-2 py-0.5 rounded-lg text-white text-[11px] font-bold flex-shrink-0"
-                                    style={{ backgroundColor: entry.color || '#6b7280' }}
+                            </label>
+                            <div className="flex gap-1.5 overflow-x-auto scrollbar-hidden -mx-4 px-4">
+                                <button
+                                    onClick={() => setFilterTroncal(null)}
+                                    className={cn('h-8 px-3.5 rounded-full text-[13px] font-semibold shrink-0', !filterTroncal ? 'bg-foreground text-background' : 'bg-secondary text-muted-foreground')}
                                 >
-                                    {entry.codigo}
-                                </span>
+                                    Todas
+                                </button>
+                                {troncales.map((t) => {
+                                    const active = filterTroncal === t.id;
+                                    return (
+                                        <button
+                                            key={t.id}
+                                            onClick={() => setFilterTroncal(active ? null : t.id)}
+                                            title={t.nombre}
+                                            aria-pressed={active}
+                                            className={cn('h-8 min-w-8 px-2.5 rounded-full text-[14px] font-bold font-signage shrink-0 flex items-center gap-1.5', !active && 'bg-secondary text-foreground')}
+                                            style={active ? { backgroundColor: t.color, color: readableOn(t.color) } : undefined}
+                                        >
+                                            {!active && <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: t.color }} />}
+                                            {t.letra}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            <p className="text-[12px] text-muted-foreground tabular">{filtered.length} rutas</p>
+                        </div>
 
-                                {/* Info */}
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-white text-xs font-semibold truncate">{entry.nombre}</p>
-                                    <p className="text-white/30 text-[10px] truncate">
-                                        {entry.tipoServicio} · {entry.troncalNombre}
-                                    </p>
-                                </div>
+                        <ul className="flex-1 overflow-y-auto px-2 pb-4">
+                            {filtered.map((e) => {
+                                const checked = selected.has(e.id);
+                                return (
+                                    <li key={e.id}>
+                                        <button
+                                            onClick={() => toggle(e.id)}
+                                            role="checkbox"
+                                            aria-checked={checked}
+                                            className={cn('w-full flex items-center gap-3 px-2 py-2 rounded-xl text-left transition', checked ? 'bg-accent' : 'hover:bg-accent/60')}
+                                        >
+                                            <span className={cn('w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0', checked ? 'bg-foreground border-foreground' : 'border-muted-foreground/50')}>
+                                                {checked && <Check className="w-3.5 h-3.5 text-background" strokeWidth={3} />}
+                                            </span>
+                                            <RouteBadge code={e.codigo} color={e.color} size="md" />
+                                            <span className="flex-1 min-w-0">
+                                                <span className="block font-signage text-[17px] font-semibold truncate">{e.nombre}</span>
+                                                <span className="block text-[12px] text-muted-foreground truncate">Troncal {e.troncalLetra} · {e.troncalNombre}</span>
+                                            </span>
+                                        </button>
+                                    </li>
+                                );
+                            })}
+                        </ul>
 
-                                {/* Troncal dot */}
-                                <span
-                                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                                    style={{ backgroundColor: entry.troncalColor }}
-                                />
-                            </button>
-                        );
-                    })}
-                </div>
+                        {selected.size > 0 && (
+                            <div className="shrink-0 px-4 pt-2 pb-[calc(env(safe-area-inset-bottom)+12px)] border-t border-border flex items-center gap-3">
+                                <button onClick={() => setSelected(new Set())} className="h-12 px-4 rounded-full text-[14px] font-semibold hover:bg-accent">
+                                    Limpiar
+                                </button>
+                                <button onClick={viewSelected} className="flex-1 h-12 rounded-full bg-foreground text-background text-[15px] font-semibold active:scale-[0.98] transition">
+                                    Ver {selected.size} en el mapa
+                                </button>
+                            </div>
+                        )}
+                    </>
+                )}
             </div>
         </div>
     );

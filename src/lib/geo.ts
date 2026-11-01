@@ -113,4 +113,46 @@ export function lerpLngLat(a: LngLat, b: LngLat, t: number): LngLat {
     return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
 }
 
+/**
+ * Order unordered stations along their corridor: start at one end of the main
+ * axis (principal component), then chain nearest neighbours. Works for straight
+ * and gently curved troncales; items without coordinates keep their order at the end.
+ */
+export function orderAlongLine<T>(items: T[], coordOf: (item: T) => LatLng | null): T[] {
+    const withC = items.map((item) => ({ item, c: coordOf(item) })).filter((x): x is { item: T; c: LatLng } => !!x.c);
+    const without = items.filter((item) => !coordOf(item));
+    if (withC.length < 3) return [...withC.map((x) => x.item), ...without];
+
+    const k = Math.cos(toRad(withC[0].c.lat));
+    const pts = withC.map((x) => ({ ...x, x: x.c.lng * k, y: x.c.lat }));
+    const mx = pts.reduce((s, p) => s + p.x, 0) / pts.length;
+    const my = pts.reduce((s, p) => s + p.y, 0) / pts.length;
+    let sxx = 0, sxy = 0, syy = 0;
+    for (const p of pts) {
+        sxx += (p.x - mx) ** 2;
+        sxy += (p.x - mx) * (p.y - my);
+        syy += (p.y - my) ** 2;
+    }
+    const angle = 0.5 * Math.atan2(2 * sxy, sxx - syy);
+    const ax = Math.cos(angle), ay = Math.sin(angle);
+    // Start at the north/west-most end so lines read like the official maps
+    let start = pts.reduce((best, p) => ((p.x - mx) * ax + (p.y - my) * ay > (best.x - mx) * ax + (best.y - my) * ay ? p : best));
+    if (ay < 0) start = pts.reduce((best, p) => ((p.x - mx) * ax + (p.y - my) * ay < (best.x - mx) * ax + (best.y - my) * ay ? p : best));
+
+    const ordered = [start];
+    const left = new Set(pts.filter((p) => p !== start));
+    while (left.size) {
+        const last = ordered[ordered.length - 1];
+        let next: typeof start | null = null;
+        let best = Infinity;
+        for (const p of left) {
+            const d = (p.x - last.x) ** 2 + (p.y - last.y) ** 2;
+            if (d < best) { best = d; next = p; }
+        }
+        ordered.push(next!);
+        left.delete(next!);
+    }
+    return [...ordered.map((p) => p.item), ...without];
+}
+
 export const BOGOTA_BBOX: [number, number, number, number] = [-74.25, 4.45, -73.98, 4.85];

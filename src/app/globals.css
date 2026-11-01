@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* Mapbox base styles in a low cascade layer, so Tailwind utilities (e.g. `absolute`) override them */
+@import "../../node_modules/mapbox-gl/dist/mapbox-gl.css" layer(base);
 
 @custom-variant dark (&:where(.dark, .dark *));
 

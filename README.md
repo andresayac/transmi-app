@@ -140,6 +140,7 @@ pnpm dev                     # http://localhost:3000
 | `ANTHROPIC_API_KEY` | ❌ Opcional | Activa el asistente con IA. Sin ella el resto de la app funciona |
 | `ASSISTANT_MODEL` | ❌ Opcional | Modelo del asistente (por defecto `claude-opus-5-5`) |
 | `ASSISTANT_EFFORT` | ❌ Opcional | `low` (por defecto) · `medium` · `high` · `xhigh` · `max` |
+| `NEXT_PUBLIC_MAP_PROVIDER` | ❌ Opcional | `mapbox` o `openfreemap`. Sin definir: Mapbox, con cambio automático a OpenFreeMap si Mapbox rechaza las teselas |
 
 #### Sobre `PROXY_BASE`
 

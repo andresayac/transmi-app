@@ -2,7 +2,7 @@ import 'server-only';
 
 import { bodega, cached, loader, planner } from './upstream';
 import { BOGOTA_BBOX, LngLat, boundsOf, haversine, parseCoord, simplify } from '@/lib/geo';
-import { colorForRouteCode, readableOn } from '@/lib/color';
+import { colorForRouteCode, readableOn, TRONCAL_COLORS, ZONAL_BLUE } from '@/lib/color';
 import type {
     Arrival,
     Itinerary,
@@ -420,6 +420,19 @@ function lineKind(agency: string, code: string): PlanLine['kind'] {
     return 'zonal';
 }
 
+/**
+ * The planner only sends placeholder colors (#ff0000 troncal, #0000ff zonal),
+ * so colors come from the route code and service type instead.
+ */
+function lineColor(kind: PlanLine['kind'], code: string): string {
+    if (kind === 'cable') return TRONCAL_COLORS.T;
+    if (kind === 'alimentador') return '#5BA33B';
+    if (kind === 'zonal') return ZONAL_BLUE;
+    const letter = code.trim().charAt(0).toUpperCase();
+    // Numbered "rutas fáciles" have no troncal letter
+    return /^[A-Z]\d/i.test(code.trim()) && TRONCAL_COLORS[letter] ? TRONCAL_COLORS[letter] : '#404040';
+}
+
 export async function planTrip(from: PlanPlace, to: PlanPlace, opts: { date?: string; time?: string } = {}): Promise<Itinerary[]> {
     const params: Record<string, string> = {
         origen: `${from.lat.toFixed(6)},${from.lng.toFixed(6)}`,
@@ -441,7 +454,8 @@ export async function planTrip(from: PlanPlace, to: PlanPlace, opts: { date?: st
                 const line = td.line!;
                 const agency = line.agencies?.[0]?.name || '';
                 const code = line.short_name || line.name;
-                const color = colorForRouteCode(code, line.color && line.color.toLowerCase() !== '#ff0000' ? line.color : undefined);
+                const kind = lineKind(agency, code);
+                const color = lineColor(kind, code);
                 return {
                     mode: 'TRANSIT' as const,
                     durationMin: parseMinutes(s.duration.text),
@@ -450,7 +464,7 @@ export async function planTrip(from: PlanPlace, to: PlanPlace, opts: { date?: st
                     from: toStop(td.departure_stop, s.start_location, 'Salida'),
                     to: toStop(td.arrival_stop, s.end_location, 'Llegada'),
                     geometry,
-                    line: { id: line.id, code, name: line.name, longName: line.long_name, color, agency, kind: lineKind(agency, code) },
+                    line: { id: line.id, code, name: line.name, longName: line.long_name, color, agency, kind },
                     stops: (td.intermediate_stops || []).map((st) => toStop(st, st.location, st.name)),
                     suspendedStops: td.num_nodos_suspendidos || 0,
                 };
@@ -474,7 +488,8 @@ export async function planTrip(from: PlanPlace, to: PlanPlace, opts: { date?: st
             durationMin: Math.round((leg.durationValue || 0) / 60) || legs.reduce((s, l) => s + l.durationMin, 0),
             walkMeters,
             walkMin: legs.filter((l) => l.mode === 'WALK').reduce((s, l) => s + l.durationMin, 0),
-            transfers: leg.transferencias ?? Math.max(0, legs.filter((l) => l.mode === 'TRANSIT').length - 1),
+            // Upstream 'transferencias' counts boardings (1 for a direct ride); derive real transfers from the legs
+            transfers: Math.max(0, legs.filter((l) => l.mode === 'TRANSIT').length - 1),
             legs,
             bounds: boundsOf(all),
             tags: [] as ItineraryTag[],
