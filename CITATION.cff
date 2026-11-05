@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "Si usas TransMi como referencia, cítalo con estos datos."
+type: software
+title: "TransMi: investigación aplicada en movilidad urbana para Bogotá"
+abstract: >-
+  Proyecto de investigación con fines educativos que explora cómo sería una app de
+  transporte público diseñada hoy: una aplicación web progresiva sobre los datos en vivo
+  de TransMilenio y el SITP, con planeador de viajes, buses en vivo, avisos con la app
+  cerrada, viajes compartidos que siguen al bus y no al teléfono, un asistente con IA y
+  un servidor MCP para Claude, ChatGPT y Gemini. No es la app oficial de TransMilenio.
+authors:
+  - alias: andresayac
+repository-code: "https://github.com/andresayac/transmi-app"
+url: "https://github.com/andresayac/transmi-app"
+keywords:
+  - movilidad urbana
+  - transporte público
+  - Bogotá
+  - TransMilenio
+  - PWA
+  - Model Context Protocol
+  - asistentes de IA

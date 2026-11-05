@@ -46,3 +46,6 @@ next-env.d.ts
 
 # Shared trips (short links for "Sigue mi viaje")
 .data/
+
+# Demo video clips (kept local; the README uses the WebP previews in docs/media)
+/docs/videos/
