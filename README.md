@@ -57,52 +57,26 @@ El proyecto prueba ideas concretas. Una app web, sin tienda de aplicaciones, pue
 
 Grabado con datos en vivo: los buses, las llegadas y el clima son reales. Casa, Trabajo y la tarjeta TuLlave son datos de demostración. Las vistas previas van aceleradas.
 
-<table>
-  <tr>
-    <td align="center" width="33%">
-      <img src="docs/media/inicio.webp" width="240" alt="Pantalla de inicio con la rutina, las llegadas en vivo y el saldo TuLlave" /><br />
-      <b>Inicio</b><br /><sub>Tu rutina, llegadas en vivo y saldo TuLlave</sub>
-    </td>
-    <td align="center" width="33%">
-      <img src="docs/media/planear.webp" width="240" alt="Planeador de viajes con opciones etiquetadas y detalle paso a paso" /><br />
-      <b>Planeador</b><br /><sub>Opciones del planeador oficial, paso a paso</sub>
-    </td>
-    <td align="center" width="33%">
-      <img src="docs/media/modo-viaje.webp" width="240" alt="Modo viaje con transbordo, aviso para bajarse y resumen de llegada" /><br />
-      <b>Modo viaje</b><br /><sub>Te avisa antes de tu parada (simulación)</sub>
-    </td>
-  </tr>
-  <tr>
-    <td align="center" colspan="2">
-      <img src="docs/media/sigue-mi-viaje.webp" width="480" alt="Sigue mi viaje en pantalla dividida: quien viaja y quien recibe el enlace ven el mismo bus en vivo" /><br />
-      <b>Sigue mi viaje</b><br /><sub>Quien viaja y quien recibe el enlace ven el mismo bus real (B12) en vivo</sub>
-    </td>
-    <td align="center">
-      <img src="docs/media/asistente.webp" width="240" alt="Asistente con IA respondiendo cómo llegar al Movistar Arena con una tarjeta de viaje" /><br />
-      <b>Asistente con IA</b><br /><sub>Consulta datos en vivo y responde con tarjetas</sub>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="docs/media/comparar-rutas.webp" width="240" alt="Comparación de tres rutas con sus buses en vivo desde la estación más cercana" /><br />
-      <b>Comparar rutas</b><br /><sub>Desde la estación más cercana, en vivo</sub>
-    </td>
-    <td align="center">
-      <img src="docs/media/luz-del-mapa.webp" width="240" alt="Mapa 3D con la luz cambiando de día a noche" /><br />
-      <b>Mapa 3D</b><br /><sub>Con la luz del cielo de Bogotá</sub>
-    </td>
-    <td align="center">
-      <img src="docs/media/tema-oscuro.webp" width="240" alt="Estadísticas de tu movilidad, tema oscuro y letra grande" /><br />
-      <b>Tu movilidad y accesibilidad</b><br /><sub>CO₂ evitado, tema oscuro, letra grande</sub>
-    </td>
-  </tr>
-  <tr>
-    <td align="center" colspan="3">
-      <img src="docs/media/computadora.webp" width="720" alt="Versión para computadora: al pasar el cursor por cada opción del planeador se dibuja su ruta en el mapa" /><br />
-      <b>Versión para computadora</b><br /><sub>Al pasar el cursor por cada opción se dibuja su ruta en el mapa</sub>
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <img src="docs/media/inicio.webp" width="270" hspace="2" alt="Inicio: tu rutina, las llegadas en vivo y el saldo TuLlave" />
+  <img src="docs/media/planear.webp" width="270" hspace="2" alt="Planeador de viajes: opciones del planeador oficial y detalle paso a paso" />
+  <img src="docs/media/modo-viaje.webp" width="270" hspace="2" alt="Modo viaje: transbordo, aviso para bajarse con voz y resumen de llegada (simulación)" />
+</p>
+
+<p align="center">
+  <img src="docs/media/sigue-mi-viaje.webp" width="520" hspace="2" alt="Sigue mi viaje en pantalla dividida: quien viaja y quien recibe el enlace ven el mismo bus B12 en vivo" />
+  <img src="docs/media/asistente.webp" width="270" hspace="2" alt="Asistente con IA: pregunta cómo llegar al Movistar Arena y responde con una tarjeta de viaje y el clima" />
+</p>
+
+<p align="center">
+  <img src="docs/media/comparar-rutas.webp" width="270" hspace="2" alt="Comparar rutas: desde la estación más cercana, tres rutas con sus buses en vivo" />
+  <img src="docs/media/luz-del-mapa.webp" width="270" hspace="2" alt="Mapa 3D: edificios en 3D y la luz del mapa de día a noche" />
+  <img src="docs/media/tema-oscuro.webp" width="270" hspace="2" alt="Tu movilidad, tema oscuro y letra grande" />
+</p>
+
+<p align="center">
+  <img src="docs/media/computadora.webp" width="720" hspace="2" alt="Versión para computadora: al pasar el cursor por cada opción del planeador se dibuja su ruta en el mapa" />
+</p>
 
 ---
 
