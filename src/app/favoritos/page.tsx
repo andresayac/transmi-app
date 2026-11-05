@@ -393,8 +393,8 @@ export default function GuardadosPage() {
                         <LockAlertsRow />
                         <Link href="/conectar" className="flex items-center justify-between gap-3 py-3">
                             <span>
-                                <span className="block text-15 font-medium">Úsala desde Claude</span>
-                                <span className="block text-13 text-muted-foreground">Pregúntale a Claude por tus viajes con los datos de TransMi</span>
+                                <span className="block text-15 font-medium">Úsala desde Claude o ChatGPT</span>
+                                <span className="block text-13 text-muted-foreground">Pregúntales por tus viajes con los datos de TransMi</span>
                             </span>
                             <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
                         </Link>

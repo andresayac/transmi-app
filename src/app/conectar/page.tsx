@@ -53,7 +53,7 @@ function Step({ n, children }: { n: number; children: React.ReactNode }) {
     );
 }
 
-/** How to use TransMi from Claude: the MCP server lives at /api/mcp on this same site. */
+/** How to use TransMi from Claude, ChatGPT and other MCP apps: the server lives at /api/mcp on this same site. */
 export default function ConectarPage() {
     // The address to paste is this site's own, whatever domain serves it
     const origin = useSyncExternalStore(noSubscription, () => window.location.origin, () => '');
@@ -62,12 +62,12 @@ export default function ConectarPage() {
 
     return (
         <div className="safe-bottom">
-            <AppHeader title="Conéctala a Claude" width="narrow" />
+            <AppHeader title="Conéctala a tu IA" width="narrow" />
 
             <main className="px-4 pt-5 space-y-9 lg:max-w-3xl lg:mx-auto lg:px-8 lg:pt-4">
                 <section>
                     <p className="text-15 text-muted-foreground">
-                        Pregúntale a Claude cómo moverte por Bogotá y te responde con los datos en vivo de TransMi: viajes, llegadas, buses en vivo, recargas, clima y tarifa.
+                        Pregúntale a Claude o a ChatGPT cómo moverte por Bogotá y te responde con los datos en vivo de TransMi: viajes, llegadas, buses en vivo, recargas, clima y tarifa.
                     </p>
                     <div className="mt-4 rounded-2xl border border-border p-4">
                         <p className="text-13 font-semibold text-muted-foreground">Dirección del conector</p>
@@ -80,7 +80,7 @@ export default function ConectarPage() {
                     </div>
                     {origin && !origin.startsWith('https://') && (
                         <p className="mt-2 text-13 text-muted-foreground">
-                            Claude se conecta desde internet y necesita una dirección pública con https: usa la del sitio publicado. En tu computador puedes probar con Claude Code.
+                            Claude y ChatGPT se conectan desde internet y necesitan una dirección pública con https: usa la del sitio publicado. En tu computador puedes probar con Claude Code.
                         </p>
                     )}
                 </section>
@@ -104,13 +104,36 @@ export default function ConectarPage() {
                     </p>
                 </section>
 
+                <section aria-labelledby="chatgpt-title">
+                    <h2 id="chatgpt-title" className="font-signage text-24 font-bold">En ChatGPT</h2>
+                    <p className="text-14 text-muted-foreground mb-3">Con un plan de pago (Plus, Pro, Business, Enterprise o Edu), desde chatgpt.com.</p>
+                    <ol className="space-y-3">
+                        <Step n={1}>
+                            En <strong className="font-semibold">Configuración → Apps y conectores → Avanzado</strong>, activa el{' '}
+                            <strong className="font-semibold">Modo desarrollador</strong> (<em>Developer mode</em>).
+                        </Step>
+                        <Step n={2}>Vuelve a <strong className="font-semibold">Apps y conectores</strong> y toca <strong className="font-semibold">Crear</strong> (<em>Create</em>).</Step>
+                        <Step n={3}>
+                            Ponle de nombre <strong className="font-semibold">TransMi</strong>, pega la dirección, elige{' '}
+                            <strong className="font-semibold">Sin autenticación</strong> (<em>No authentication</em>), confirma que confías en la app y créala.
+                        </Step>
+                        <Step n={4}>En un chat, toca <strong className="font-semibold">+ → Más → Modo desarrollador</strong>, activa TransMi y pregúntale.</Step>
+                    </ol>
+                    <p className="mt-3 text-13 text-muted-foreground">
+                        En los planes Business y Enterprise, quien administra la cuenta debe permitir el modo desarrollador. Los nombres de los menús pueden cambiar un poco.
+                    </p>
+                </section>
+
                 <section aria-labelledby="code-title">
-                    <h2 id="code-title" className="font-signage text-24 font-bold">En Claude Code</h2>
-                    <p className="text-14 text-muted-foreground mb-3">Pega esto en la terminal:</p>
+                    <h2 id="code-title" className="font-signage text-24 font-bold">En Claude Code y otras apps</h2>
+                    <p className="text-14 text-muted-foreground mb-3">Para Claude Code, pega esto en la terminal:</p>
                     <div className="flex items-center gap-3 rounded-2xl bg-secondary p-4">
                         <code className="min-w-0 flex-1 wrap-anywhere text-14">{command}</code>
                         <CopyButton text={command} label="Copiar el comando" />
                     </div>
+                    <p className="mt-3 text-13 text-muted-foreground">
+                        Cualquier otra app compatible con MCP por HTTP sirve con la misma dirección, sin autenticación.
+                    </p>
                 </section>
 
                 <section aria-labelledby="preguntas-title">
@@ -123,7 +146,7 @@ export default function ConectarPage() {
                 </section>
 
                 <p className="text-12 text-muted-foreground">
-                    TransMi no le pasa a Claude tus lugares guardados ni tu ubicación: se quedan en este dispositivo, y no necesitas cuenta. El conector es de código abierto; mira cómo funciona o móntalo en tu propio servidor desde{' '}
+                    TransMi no le pasa a Claude ni a ChatGPT tus lugares guardados ni tu ubicación: se quedan en este dispositivo, y no necesitas cuenta. El conector es de código abierto; mira cómo funciona o móntalo en tu propio servidor desde{' '}
                     <a href={REPO} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">GitHub</a>.
                 </p>
             </main>
