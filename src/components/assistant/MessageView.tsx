@@ -18,6 +18,11 @@ const DONE_LABEL: Record<string, string> = {
     puntos_recarga_cercanos: 'Puntos encontrados',
     clima: 'Clima revisado',
     tarifa: 'Tarifa consultada',
+    consultar_saldo: 'Saldo consultado',
+    rutas_estacion: 'Rutas de la estación',
+    troncales: 'Troncal consultada',
+    zonas_sitp: 'Zona consultada',
+    seguir_viaje: 'Viaje consultado',
 };
 
 const FAILED_LABEL = 'No se pudo completar';

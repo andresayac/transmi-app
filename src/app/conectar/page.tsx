@@ -12,7 +12,8 @@ const QUESTIONS = [
     '¿Cómo llego de Portal Norte a Unicentro si salgo a las 6 p. m.?',
     '¿Cuándo pasa la B13 por la Calle 72?',
     '¿Qué tan llena va la K23 ahora?',
-    '¿Dónde recargo la TuLlave cerca del Parque de la 93?',
+    '¿Cuánto saldo tiene mi TuLlave? Y si está bajo, ¿dónde recargo cerca del Parque de la 93?',
+    '¿Mi hermana ya casi llega? Me mandó este enlace de Sigue mi viaje…',
 ];
 
 type App = 'claude' | 'chatgpt' | 'gemini';
@@ -144,7 +145,7 @@ export default function ConectarPage() {
             <main className="px-4 pt-5 space-y-9 lg:max-w-3xl lg:mx-auto lg:px-8 lg:pt-4">
                 <section>
                     <p className="text-15 text-muted-foreground">
-                        Pregúntale a Claude, ChatGPT o Gemini cómo moverte por Bogotá y te responde con los datos en vivo de TransMi: viajes, llegadas, buses en vivo, recargas, clima y tarifa.
+                        Pregúntale a Claude, ChatGPT o Gemini cómo moverte por Bogotá y te responde con los datos en vivo de TransMi: viajes, llegadas, buses en vivo, rutas, troncales y zonas, saldo de la TuLlave, recargas abiertas, viajes compartidos, clima y tarifa.
                     </p>
                     <div className="mt-4 rounded-2xl border border-border p-4">
                         <p className="text-13 font-semibold text-muted-foreground">Dirección del conector</p>

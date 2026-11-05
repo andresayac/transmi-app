@@ -58,12 +58,12 @@ La idea surgió como un **proyecto educativo** para aprender a integrar APIs de 
 - Comparación de varias rutas (multi-ruta), estaciones con llegadas en vivo y capas de **puntos de recarga** y **personalización** TuLlave
 
 ### ✨ Asistente con IA (`/asistente`)
-- Conversación en español con **cualquier proveedor compatible con el estándar de chat completions** (Groq, Xiaomi MiMo, OpenRouter, DeepSeek, Ollama…) y herramientas sobre los datos reales: buscar lugares, planear viajes, rutas, llegadas, buses en vivo, recargas, clima y tarifa
+- Conversación en español con **cualquier proveedor compatible con el estándar de chat completions** (Groq, Xiaomi MiMo, OpenRouter, DeepSeek, Ollama…) y herramientas sobre los datos reales: buscar lugares, planear viajes, rutas (también por estación), troncales, zonas del SITP, llegadas, buses en vivo, saldo TuLlave, recargas abiertas ahora, viajes compartidos, clima y tarifa
 - Respuestas con **tarjetas interactivas** (itinerarios que se inician con un toque, tableros de llegadas, rutas)
 - **Dictado por voz** (es-CO) y lectura en voz alta con voces neuronales
 
 ### 🔌 Conéctala a tu IA: Claude, ChatGPT o Gemini (MCP, `/api/mcp`)
-- Servidor **MCP** (Streamable HTTP) con las mismas herramientas del asistente, de solo lectura: buscar lugares, planear viajes, rutas, llegadas, buses en vivo, estaciones cercanas, recargas, clima y tarifa
+- Servidor **MCP** (Streamable HTTP) con las mismas herramientas del asistente, de solo lectura (15): buscar lugares, planear viajes, rutas (también por estación), troncales, zonas del SITP, llegadas, buses en vivo, estaciones cercanas, saldo TuLlave, recargas abiertas ahora, "Sigue mi viaje", clima y tarifa
 - Cada viaje planeado trae un enlace que lo abre en el planeador de TransMi
 - No necesita cuenta ni clave: los datos son públicos
 - La pantalla **`/conectar`** (enlazada desde Guardados y el asistente) explica los pasos con la dirección del sitio lista para copiar

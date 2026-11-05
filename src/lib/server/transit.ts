@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { bodega, cached, loader, planner } from './upstream';
-import { BOGOTA_BBOX, LngLat, boundsOf, haversine, parseCoord, simplify } from '@/lib/geo';
+import { BOGOTA_BBOX, LngLat, boundsOf, haversine, orderAlongLine, parseCoord, simplify } from '@/lib/geo';
 import { colorForRouteCode, readableOn, TRONCAL_COLORS, ZONAL_BLUE } from '@/lib/color';
 import type {
     Arrival,
@@ -20,6 +20,7 @@ import type {
 } from '@/types/transit';
 import type { StationMapEntry } from '@/types/station';
 import type { RouteSearchResult } from '@/types/route';
+import type { Estacion, Troncal, ZonaOperacional } from '@/types/explorar';
 
 // ─── Stations (all stops, cached 2h) ─────────────────────
 
@@ -108,6 +109,61 @@ export async function routesAtStation(stationId: string): Promise<RouteSearchRes
     const data = await loader<{ lista_rutas?: RouteSearchResult[] }>('searchRutasByEstacionTroncales', { estacion: stationId });
     const list = Array.isArray(data.lista_rutas) ? data.lista_rutas : [];
     return list.filter((r, i, arr) => arr.findIndex((x) => x.id === r.id) === i);
+}
+
+// ─── Troncales and SITP zones ────────────────────────────
+
+export async function getTroncales(): Promise<Troncal[]> {
+    const data = await loader<{ lista_troncales?: Troncal[] }>('allTroncales', {}, 3600);
+    return Array.isArray(data.lista_troncales) ? data.lista_troncales : [];
+}
+
+/** "A", "Caracas", "troncal NQS" → that troncal, by letter or name. */
+export async function findTroncal(query: string): Promise<Troncal | null> {
+    const q = normalizeText(query.replace(/^troncal\s+/i, ''));
+    if (!q) return null;
+    const troncales = await getTroncales();
+    return troncales.find((t) => t.letra.toLowerCase() === q) ?? troncales.find((t) => normalizeText(t.nombre).includes(q)) ?? null;
+}
+
+/**
+ * Stations of a troncal in line order, with coordinates. The upstream list is
+ * alphabetical and has no coordinates; we join them from the stations catalog.
+ */
+export async function getTroncalStations(troncalId: string): Promise<Estacion[]> {
+    const [data, stations] = await Promise.all([
+        loader<{ lista_estaciones?: Estacion[] }>('estacionesByTroncal', { troncal: troncalId }, 3600),
+        getStations().catch(() => []),
+    ]);
+    const byCode = new Map(stations.map((s) => [s.codigo, s]));
+    const list = (data.lista_estaciones || []).map((e) => {
+        const s = byCode.get(e.codigo);
+        return s ? { ...e, coordenada: e.coordenada || `${s.lat},${s.lng}` } : e;
+    });
+    return orderAlongLine(list, (e) => {
+        const s = byCode.get(e.codigo);
+        return s ? { lat: s.lat, lng: s.lng } : null;
+    });
+}
+
+export async function getZones(): Promise<ZonaOperacional[]> {
+    const data = await loader<{ lista_zonas?: ZonaOperacional[] }>('zonaOperacional', { tipo_ruta: '8' }, 3600);
+    return Array.isArray(data.lista_zonas) ? data.lista_zonas : [];
+}
+
+/** "Suba", "zona Usme" → that SITP zone. Names pair areas ("Ciudad Bolívar / Usme"): any part matches. */
+export async function findZone(query: string): Promise<ZonaOperacional | null> {
+    const q = normalizeText(query.replace(/^zona\s+/i, ''));
+    if (!q) return null;
+    const zones = await getZones();
+    return zones.find((z) => z.nombre.split('/').some((part) => normalizeText(part) === q))
+        ?? zones.find((z) => normalizeText(z.nombre).includes(q))
+        ?? null;
+}
+
+export async function routesInZone(zoneId: string): Promise<RouteSearchResult[]> {
+    const data = await loader<{ lista_rutas?: RouteSearchResult[] }>('searchRutaByTipo', { tipo_ruta: '8', zona: zoneId });
+    return Array.isArray(data.lista_rutas) ? data.lista_rutas : [];
 }
 
 interface RawRouteInfo {
@@ -334,6 +390,22 @@ export async function nearestServicePoints(kind: 'recarga' | 'personalizacion', 
         .map((p) => ({ ...p, distanceM: haversine({ lat, lng }, p) }))
         .sort((a, b) => a.distanceM! - b.distanceM!)
         .slice(0, limit);
+}
+
+// ─── TuLlave balance ─────────────────────────────────────
+
+interface RawBalance {
+    saldo_tarjeta: string;
+    tipo: string;
+    ultima_transaccion: string;
+}
+
+/** Balance of a TuLlave card, or null when the number isn't a card TransMilenio knows. */
+export async function getCardBalance(cardNumber: string): Promise<{ value: number; kind: string; lastTransaction: string } | null> {
+    const data = await bodega<RawBalance[] | RawBalance | null>('lectura_tarjeta', { method: 'POST', body: { numero_tarjeta: cardNumber, consultar: 'true' } });
+    const first = Array.isArray(data) ? data[0] : data;
+    const value = parseInt(first?.saldo_tarjeta || '');
+    return first && !Number.isNaN(value) ? { value, kind: first.tipo || '', lastTransaction: first.ultima_transaccion || '' } : null;
 }
 
 // ─── Fare (from the official app's help file) ────────────

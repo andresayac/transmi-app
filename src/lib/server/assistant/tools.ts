@@ -3,22 +3,34 @@ import 'server-only';
 import { z } from 'zod/v4';
 import {
     findStations,
+    findTroncal,
+    findZone,
     getArrivals,
+    getCardBalance,
     getFare,
     getLiveBuses,
     getRouteDetail,
+    getTroncales,
+    getTroncalStations,
     getWeather,
+    getZones,
     nearestServicePoints,
     nearestStations,
     planTrip,
+    routesAtStation,
+    routesInZone,
     searchPlaces,
     searchRoutes,
 } from '@/lib/server/transit';
+import { getSharedTrip, SHARE_ID } from '@/lib/server/sharedTrips';
 import { formatDistance } from '@/lib/geo';
-import { bogotaNow, isActiveNow } from '@/lib/schedule';
-import { plannerUrl, ymd } from '@/components/plan/utils';
+import { tripsLeft } from '@/lib/balance';
+import { bogotaNow, formatTime, isActiveNow, openingState } from '@/lib/schedule';
+import { unpackTrip, type ShareState, type SharedTrip } from '@/lib/tripShare';
+import { plannerUrl, stopLabel, ymd } from '@/components/plan/utils';
 import type { AssistantContext, AssistantEvent } from '@/components/assistant/types';
 import type { Itinerary, PlanPlace } from '@/types/transit';
+import type { RouteSearchResult } from '@/types/route';
 
 type Emit = (event: AssistantEvent) => void;
 
@@ -80,6 +92,61 @@ function departureParams(hora?: string, fecha?: string): { date?: string; time?:
         y = now.getFullYear(); mo = now.getMonth() + 1; d = now.getDate();
     }
     return { date: `${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}-${y}`, time };
+}
+
+/** A route as the tools list it: enough for detalle_ruta and buses_en_vivo. */
+const routeRow = (r: RouteSearchResult) => ({
+    id: r.id,
+    codigo: r.codigo,
+    nombre: r.nombre,
+    tipo: r.tipoServicio,
+    opera_ahora: isActiveNow(r.horarios?.data),
+});
+
+/** Bogotá clock time for an instant: "6:40 pm". */
+const bogotaClock = (ms: number) => formatTime(bogotaNow(new Date(ms)));
+
+/** Minutes after midnight (may pass 24 h) → "9:00 pm". */
+const clockText = (min: number) => formatTime(new Date(2000, 0, 1, Math.floor(min / 60) % 24, min % 60));
+
+/** "2026-11-05 18:20:00 UTC" → "5/11/2026 1:20 pm" in Bogotá; anything else as it came. */
+function bogotaDateTime(raw: string): string {
+    const d = new Date(raw.replace(' UTC', 'Z'));
+    if (Number.isNaN(d.getTime())) return raw;
+    const b = bogotaNow(d);
+    return `${b.getDate()}/${b.getMonth() + 1}/${b.getFullYear()} ${formatTime(b)}`;
+}
+
+/** The id in ".../sigue/Xk3a9Qz2Lp", or the id alone. */
+function shareIdFrom(link: string): string | null {
+    const text = link.trim();
+    if (SHARE_ID.test(text)) return text;
+    return text.match(/\/sigue\/([A-Za-z0-9_-]{10})(?:[/?#]|$)/)?.[1] ?? null;
+}
+
+/** Where a shared trip is, in words. `state` is null for #links, which carry only the plan. */
+function describeSharedTrip(trip: SharedTrip, state: ShareState | null) {
+    const at = (p: [string, number, number]) => stopLabel(p[0]).station;
+    const legIndex = Math.min(state?.leg ?? trip.cur, trip.legs.length - 1);
+    const leg = trip.legs[legIndex];
+    const next = trip.legs.slice(legIndex + 1).find((l) => l.m === 'T');
+    const quietMin = state ? Math.round((Date.now() - state.at) / 60000) : null;
+    return {
+        ...(trip.by ? { quien: trip.by } : {}),
+        destino: at(trip.to),
+        llego: state?.ended ?? false,
+        ...(state?.ended ? {} : {
+            tramo_actual: leg.m === 'T' ? `En el ${leg.c} hacia ${leg.n}, de ${at(leg.f)} a ${at(leg.t)}` : `Caminando hacia ${at(leg.t)}`,
+            ...((state?.bus ?? trip.bus) ? { bus: state?.bus ?? trip.bus } : {}),
+            ...(next ? { despues: `Toma el ${next.c} en ${at(next.f)}` } : {}),
+            llegada_estimada: bogotaClock(state?.eta ?? trip.eta * 1000),
+        }),
+        ...(quietMin === null
+            ? { nota: 'Este enlace trae solo el plan del viaje, sin avances en vivo.' }
+            : quietMin >= 10 && !state?.ended
+                ? { nota: `El teléfono no reporta hace ${quietMin} min: la hora de llegada es la del plan.` }
+                : {}),
+    };
 }
 
 function summarizeItinerary(it: Itinerary, i: number) {
@@ -156,13 +223,7 @@ export function createTools(emit: Emit, ctx: AssistantContext, { appOrigin }: To
             track(emit, 'buscar_rutas', `Buscando la ruta ${input.texto}…`, callId, async () => {
                 const routes = await searchRoutes(input.texto);
                 if (!routes.length) return 'No se encontraron rutas con ese texto.';
-                return json(routes.slice(0, 12).map((r) => ({
-                    id: r.id,
-                    codigo: r.codigo,
-                    nombre: r.nombre,
-                    tipo: r.tipoServicio,
-                    opera_ahora: isActiveNow(r.horarios?.data),
-                })));
+                return json(routes.slice(0, 12).map(routeRow));
             }),
     });
 
@@ -286,22 +347,33 @@ export function createTools(emit: Emit, ctx: AssistantContext, { appOrigin }: To
 
     const puntosRecarga = defineTool({
         name: 'puntos_recarga_cercanos',
-        description: 'Puntos de recarga de la tarjeta TuLlave (tiendas, droguerías) o puntos de personalización de la tarjeta más cercanos a un punto, con horarios.',
+        description:
+            'Puntos de recarga de la tarjeta TuLlave (tiendas, droguerías) o puntos de personalización de la tarjeta más cercanos a un punto, con horarios y si están abiertos ahora (festivos incluidos).',
         inputSchema: z.object({
             lat,
             lng,
             tipo: z.enum(['recarga', 'personalizacion']).optional().describe('recarga (por defecto) o personalizacion'),
+            solo_abiertos: z.boolean().optional().describe('true para traer solo los que están abiertos ahora'),
         }),
         run: (input, callId) =>
             track(emit, 'puntos_recarga_cercanos', input.tipo === 'personalizacion' ? 'Buscando puntos de personalización…' : 'Buscando puntos de recarga…', callId, async () => {
                 const kind = input.tipo || 'recarga';
-                const points = await nearestServicePoints(kind, input.lat, input.lng, 5);
-                if (!points.length) return 'No hay puntos registrados cerca.';
+                const now = bogotaNow();
+                // Open ones can be a few blocks further than the nearest: look wider before filtering
+                const nearest = await nearestServicePoints(kind, input.lat, input.lng, input.solo_abiertos ? 25 : 5);
+                const rows = nearest
+                    .map((p) => ({ p, state: openingState(p.hours, now) }))
+                    .filter((r) => !input.solo_abiertos || r.state.open)
+                    .slice(0, 5);
+                if (!rows.length) return input.solo_abiertos ? 'No hay puntos abiertos ahora cerca. Ofrece los más cercanos con su horario.' : 'No hay puntos registrados cerca.';
+                const points = rows.map((r) => r.p);
                 emit({ type: 'card', card: { kind: 'places', title: kind === 'recarga' ? 'Puntos de recarga cercanos' : 'Puntos de personalización', places: points } });
-                return json(points.map((p) => ({
+                return json(rows.map(({ p, state }) => ({
                     nombre: p.name,
                     direccion: p.address,
                     distancia_m: Math.round(p.distanceM || 0),
+                    abierto_ahora: state.open,
+                    ...(state.closesAt !== null ? { cierra: clockText(state.closesAt) } : {}),
                     horario: { semana: p.hours.wk, sabado: p.hours.sat, domingo_festivo: p.hours.hol },
                 })));
             }),
@@ -335,6 +407,118 @@ export function createTools(emit: Emit, ctx: AssistantContext, { appOrigin }: To
             }),
     });
 
-    // Order is part of the cached prefix: keep it fixed.
-    return <ToolDef[]>[buscarLugar, planearViaje, buscarRutas, detalleRuta, llegadasEstacion, busesEnVivo, estacionesCercanas, puntosRecarga, clima, tarifa];
+    const consultarSaldo = defineTool({
+        name: 'consultar_saldo',
+        description:
+            'Saldo de una tarjeta TuLlave y para cuántos viajes alcanza con la tarifa actual. Necesita el número impreso al respaldo de la tarjeta: si el usuario no lo ha dado, pídeselo. No repitas el número completo en tu respuesta.',
+        inputSchema: z.object({
+            numero_tarjeta: z.string().regex(/^\d{10,20}$/).describe('Número de la tarjeta: solo dígitos, sin espacios'),
+        }),
+        run: (input, callId) =>
+            track(emit, 'consultar_saldo', 'Consultando el saldo…', callId, async () => {
+                // An unknown card and a service hiccup look the same upstream (an empty answer), as in the app
+                const [balance, fare] = await Promise.all([getCardBalance(input.numero_tarjeta).catch(() => null), getFare()]);
+                if (!balance) {
+                    return 'No se pudo leer esa tarjeta. Pide al usuario revisar el número impreso al respaldo; si está bien, el servicio de TransMilenio puede no estar respondiendo y conviene intentar en un momento.';
+                }
+                const trips = tripsLeft(balance.value, fare);
+                return json({
+                    saldo_cop: balance.value,
+                    alcanza_para_viajes: trips,
+                    tarifa_cop: fare,
+                    ...(balance.kind ? { tipo_tarjeta: balance.kind } : {}),
+                    ...(balance.lastTransaction ? { ultima_transaccion: bogotaDateTime(balance.lastTransaction) } : {}),
+                    ...(trips < 2 ? { nota: 'Saldo bajo: ofrece buscar un punto de recarga abierto ahora con puntos_recarga_cercanos.' } : {}),
+                });
+            }),
+    });
+
+    const rutasEstacion = defineTool({
+        name: 'rutas_estacion',
+        description:
+            'Rutas que paran en una estación de TransMilenio o paradero zonal, por nombre (p. ej. "Calle 72", "Portal Norte"), y si operan ahora. Devuelve id, código y nombre para detalle_ruta o buses_en_vivo.',
+        inputSchema: z.object({ estacion: z.string().min(2).max(100).describe('Nombre de la estación o paradero') }),
+        run: (input, callId) =>
+            track(emit, 'rutas_estacion', `Buscando las rutas de ${input.estacion}…`, callId, async () => {
+                const matches = await findStations(input.estacion, 3);
+                if (!matches.length) return `No encontré una estación llamada "${input.estacion}". Pide el nombre exacto o usa buscar_lugar.`;
+                const station = matches[0];
+                const routes = await routesAtStation(station.id);
+                return json({
+                    estacion: station.nombre,
+                    otras_coincidencias: matches.slice(1).map((m) => m.nombre),
+                    rutas: routes.slice(0, 50).map(routeRow),
+                    ...(routes.length ? {} : { nota: 'TransMilenio no reporta rutas para esta parada. Prueba llegadas_estacion para ver qué buses vienen.' }),
+                });
+            }),
+    });
+
+    const troncales = defineTool({
+        name: 'troncales',
+        description:
+            'Troncales de TransMilenio (p. ej. A Caracas, B Autonorte, T TransMiCable). Con `troncal`, sus estaciones en orden a lo largo de la línea; sin ella, la lista de troncales.',
+        inputSchema: z.object({
+            troncal: z.string().max(60).optional().describe('Letra o nombre de la troncal, p. ej. "B" o "Autonorte"'),
+        }),
+        run: (input, callId) =>
+            track(emit, 'troncales', input.troncal ? `Consultando la troncal ${input.troncal}…` : 'Consultando las troncales…', callId, async () => {
+                const troncal = input.troncal?.trim() ? await findTroncal(input.troncal) : null;
+                if (!troncal) {
+                    const list = (await getTroncales()).map((t) => `${t.letra} ${t.nombre}`);
+                    return json(input.troncal?.trim() ? { nota: `No hay una troncal "${input.troncal}".`, troncales: list } : { troncales: list });
+                }
+                const stations = await getTroncalStations(troncal.id);
+                return json({ troncal: `${troncal.letra} ${troncal.nombre}`, estaciones: stations.map((e) => e.nombre) });
+            }),
+    });
+
+    const zonasSitp = defineTool({
+        name: 'zonas_sitp',
+        description:
+            'Zonas del SITP (TransMiZonal), como "Suba" o "Kennedy / Las Américas". Con `zona`, las rutas zonales de esa zona y si operan ahora; sin ella, la lista de zonas.',
+        inputSchema: z.object({
+            zona: z.string().max(60).optional().describe('Nombre de la zona o localidad, p. ej. "Suba" o "Usme"'),
+        }),
+        run: (input, callId) =>
+            track(emit, 'zonas_sitp', input.zona ? `Consultando la zona ${input.zona}…` : 'Consultando las zonas del SITP…', callId, async () => {
+                const zone = input.zona?.trim() ? await findZone(input.zona) : null;
+                if (!zone) {
+                    const list = (await getZones()).map((z) => z.nombre);
+                    return json(input.zona?.trim() ? { nota: `No hay una zona "${input.zona}".`, zonas: list } : { zonas: list });
+                }
+                const routes = await routesInZone(zone.id);
+                return json({ zona: zone.nombre, total_rutas: routes.length, rutas: routes.slice(0, 60).map(routeRow) });
+            }),
+    });
+
+    const seguirViaje = defineTool({
+        name: 'seguir_viaje',
+        description:
+            'Cómo va un viaje compartido con "Sigue mi viaje" de TransMi, con el enlace que le enviaron al usuario (…/sigue/Xk3a9Qz2Lp): hacia dónde va, en qué tramo y bus va, a qué hora llega y si ya llegó.',
+        inputSchema: z.object({
+            enlace: z.string().min(10).max(4000).describe('El enlace completo de "Sigue mi viaje", o su código de 10 caracteres'),
+        }),
+        run: (input, callId) =>
+            track(emit, 'seguir_viaje', 'Consultando el viaje compartido…', callId, async () => {
+                const id = shareIdFrom(input.enlace);
+                if (id) {
+                    const shared = await getSharedTrip(id);
+                    if (!shared) return 'Ese enlace no existe o ya expiró (duran 3 días).';
+                    return json({
+                        ...describeSharedTrip(shared.trip, shared.state),
+                        ...(appOrigin ? { ver_en_vivo: `${appOrigin}/sigue/${id}` } : {}),
+                    });
+                }
+                // Links made when a short one couldn't be: the whole trip after the #
+                const trip = unpackTrip(input.enlace.split('#')[1] ?? '');
+                if (!trip) return 'Ese enlace no es de "Sigue mi viaje" o se cortó al copiarlo. Pide el enlace completo.';
+                return json(describeSharedTrip(trip, null));
+            }),
+    });
+
+    // Order is part of the cached prefix: keep it fixed, and add new tools at the end.
+    return <ToolDef[]>[
+        buscarLugar, planearViaje, buscarRutas, detalleRuta, llegadasEstacion, busesEnVivo, estacionesCercanas, puntosRecarga, clima, tarifa,
+        consultarSaldo, rutasEstacion, troncales, zonasSitp, seguirViaje,
+    ];
 }
