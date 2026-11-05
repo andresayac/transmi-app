@@ -180,7 +180,7 @@ export default function AssistantPage() {
                         </div>
 
                         <Link href="/conectar" className="mt-auto self-start pt-8 text-13 text-muted-foreground underline-offset-2 hover:text-foreground hover:underline">
-                            ¿Usas Claude o ChatGPT? Conéctales TransMi y pregunta desde allá
+                            ¿Usas Claude, ChatGPT o Gemini? Conéctales TransMi y pregunta desde allá
                         </Link>
                     </div>
                 ) : (

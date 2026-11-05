@@ -13,8 +13,8 @@ function publicOrigin(request: Request): string {
     return `${proto}://${host}`;
 }
 
-// POST /api/mcp — MCP server (Streamable HTTP) with the assistant's tools, for Claude, ChatGPT and
-// other MCP clients. Stateless with JSON responses: no sessions, every request gets its own server.
+// POST /api/mcp — MCP server (Streamable HTTP) with the assistant's tools, for Claude, ChatGPT, Gemini
+// and other MCP clients. Stateless with JSON responses: no sessions, every request gets its own server.
 export async function POST(request: Request) {
     const server = createMcpServer(publicOrigin(request));
     const transport = new WebStandardStreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });

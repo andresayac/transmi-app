@@ -8,6 +8,7 @@ import AppHeader from '@/components/layout/AppHeader';
 import PlacePicker from '@/components/places/PlacePicker';
 import VoicePicker from '@/components/places/VoicePicker';
 import RouteBadge from '@/components/transit/RouteBadge';
+import Segmented from '@/components/ui/Segmented';
 import { planHref } from '@/components/home/PlannerHero';
 import { useToast } from '@/components/ui/Toast';
 import { SavedPlace, TextSize, ThemePref, useAppStore, useHydrated } from '@/stores/app';
@@ -27,24 +28,6 @@ function timeAgo(dateStr: string): string {
     if (days < 30) return `hace ${days} días`;
     const months = Math.floor(days / 30);
     return `hace ${months} ${months === 1 ? 'mes' : 'meses'}`;
-}
-
-function Segmented<T extends string>({ value, options, onChange, label }: { value: T; options: { value: T; label: string }[]; onChange: (v: T) => void; label: string }) {
-    return (
-        <div role="radiogroup" aria-label={label} className="inline-grid grid-flow-col auto-cols-fr p-1 rounded-xl bg-secondary">
-            {options.map((o) => (
-                <button
-                    key={o.value}
-                    role="radio"
-                    aria-checked={value === o.value}
-                    onClick={() => onChange(o.value)}
-                    className={cn('h-8 px-3 rounded-lg text-13 font-semibold transition', value === o.value ? 'bg-background shadow-sm' : 'text-muted-foreground')}
-                >
-                    {o.label}
-                </button>
-            ))}
-        </div>
-    );
 }
 
 function Switch({ checked, onChange, label }: { checked: boolean; onChange: (on: boolean) => void; label: string }) {
@@ -393,8 +376,8 @@ export default function GuardadosPage() {
                         <LockAlertsRow />
                         <Link href="/conectar" className="flex items-center justify-between gap-3 py-3">
                             <span>
-                                <span className="block text-15 font-medium">Úsala desde Claude o ChatGPT</span>
-                                <span className="block text-13 text-muted-foreground">Pregúntales por tus viajes con los datos de TransMi</span>
+                                <span className="block text-15 font-medium">Úsala desde tu IA</span>
+                                <span className="block text-13 text-muted-foreground">Pregúntale a Claude, ChatGPT o Gemini por tus viajes</span>
                             </span>
                             <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
                         </Link>

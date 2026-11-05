@@ -99,7 +99,7 @@ function summarizeItinerary(it: Itinerary, i: number) {
 
 export interface ToolOptions {
     /**
-     * Set when the tools run outside the app (MCP clients such as Claude or ChatGPT): nobody renders the
+     * Set when the tools run outside the app (MCP clients such as Claude, ChatGPT or Gemini): nobody renders the
      * cards, so results link to the app at this origin instead.
      */
     appOrigin?: string;

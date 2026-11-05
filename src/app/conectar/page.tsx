@@ -3,6 +3,7 @@
 import { useState, useSyncExternalStore } from 'react';
 import { Check, Copy } from 'lucide-react';
 import AppHeader from '@/components/layout/AppHeader';
+import Segmented from '@/components/ui/Segmented';
 import { useToast } from '@/components/ui/Toast';
 
 const REPO = 'https://github.com/andresayac/transmi-app';
@@ -12,6 +13,14 @@ const QUESTIONS = [
     '¿Cuándo pasa la B13 por la Calle 72?',
     '¿Qué tan llena va la K23 ahora?',
     '¿Dónde recargo la TuLlave cerca del Parque de la 93?',
+];
+
+type App = 'claude' | 'chatgpt' | 'gemini';
+
+const APPS: { value: App; label: string }[] = [
+    { value: 'claude', label: 'Claude' },
+    { value: 'chatgpt', label: 'ChatGPT' },
+    { value: 'gemini', label: 'Gemini' },
 ];
 
 const noSubscription = () => () => { };
@@ -53,12 +62,80 @@ function Step({ n, children }: { n: number; children: React.ReactNode }) {
     );
 }
 
-/** How to use TransMi from Claude, ChatGPT and other MCP apps: the server lives at /api/mcp on this same site. */
+/** One app's steps: who can use it, the steps, and the fine print. */
+function Guide({ lead, steps, note }: { lead: string; steps: React.ReactNode[]; note: string }) {
+    return (
+        <>
+            <p className="text-14 text-muted-foreground mb-3">{lead}</p>
+            <ol className="space-y-3">
+                {steps.map((step, i) => <Step key={i} n={i + 1}>{step}</Step>)}
+            </ol>
+            <p className="mt-3 text-13 text-muted-foreground">{note}</p>
+        </>
+    );
+}
+
+const GUIDES: Record<App, React.ReactNode> = {
+    claude: (
+        <Guide
+            lead="Se agrega desde la web o la app de escritorio; después también funciona en el celular."
+            steps={[
+                <>
+                    Abre{' '}
+                    <a href="https://claude.ai/settings/connectors" target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-2">
+                        Configuración → Conectores
+                    </a>.
+                </>,
+                <>Elige <strong className="font-semibold">Agregar conector personalizado</strong> (<em>Add custom connector</em>).</>,
+                <>Ponle de nombre <strong className="font-semibold">TransMi</strong>, pega la dirección y guarda.</>,
+                <>En un chat, activa TransMi desde el botón <strong className="font-semibold">+</strong> y pregúntale.</>,
+            ]}
+            note="En el plan gratuito de Claude puedes tener un conector personalizado. En los planes Team y Enterprise lo agrega quien administra la cuenta."
+        />
+    ),
+    chatgpt: (
+        <Guide
+            lead="Con un plan de pago (Plus, Pro, Business, Enterprise o Edu), desde chatgpt.com."
+            steps={[
+                <>
+                    En <strong className="font-semibold">Configuración → Apps y conectores → Avanzado</strong>, activa el{' '}
+                    <strong className="font-semibold">Modo desarrollador</strong> (<em>Developer mode</em>).
+                </>,
+                <>Vuelve a <strong className="font-semibold">Apps y conectores</strong> y toca <strong className="font-semibold">Crear</strong> (<em>Create</em>).</>,
+                <>
+                    Ponle de nombre <strong className="font-semibold">TransMi</strong>, pega la dirección, elige{' '}
+                    <strong className="font-semibold">Sin autenticación</strong> (<em>No authentication</em>), confirma que confías en la app y créala.
+                </>,
+                <>En un chat, toca <strong className="font-semibold">+ → Más → Modo desarrollador</strong>, activa TransMi y pregúntale.</>,
+            ]}
+            note="En los planes Business y Enterprise, quien administra la cuenta debe permitir el modo desarrollador. Los nombres de los menús pueden cambiar un poco."
+        />
+    ),
+    gemini: (
+        <Guide
+            lead="Por ahora Google lo ofrece solo en Estados Unidos, en inglés y con una cuenta personal de Google (mayores de 18 años): desde Colombia todavía no aparece."
+            steps={[
+                <>
+                    En{' '}
+                    <a href="https://gemini.google.com" target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-2">gemini.google.com</a>, abre{' '}
+                    <strong className="font-semibold">Settings → Connected Apps</strong> (si no aparece, entra por <em>Personal Intelligence</em>).
+                </>,
+                <>En <strong className="font-semibold">Custom apps</strong>, toca <strong className="font-semibold">Add a custom app</strong>.</>,
+                <>Pega la dirección, toca <strong className="font-semibold">Next</strong> y sigue las instrucciones.</>,
+                <>En un chat, escribe <strong className="font-semibold">@</strong>, elige TransMi y pregúntale.</>,
+            ]}
+            note="Se agrega desde la web y luego funciona también en el celular. Necesita la actividad de Gemini activada (Keep Activity)."
+        />
+    ),
+};
+
+/** How to use TransMi from Claude, ChatGPT, Gemini and other MCP apps: the server lives at /api/mcp on this same site. */
 export default function ConectarPage() {
     // The address to paste is this site's own, whatever domain serves it
     const origin = useSyncExternalStore(noSubscription, () => window.location.origin, () => '');
     const url = origin && `${origin}/api/mcp`;
     const command = origin && `claude mcp add --transport http transmi ${url}`;
+    const [app, setApp] = useState<App>('claude');
 
     return (
         <div className="safe-bottom">
@@ -67,7 +144,7 @@ export default function ConectarPage() {
             <main className="px-4 pt-5 space-y-9 lg:max-w-3xl lg:mx-auto lg:px-8 lg:pt-4">
                 <section>
                     <p className="text-15 text-muted-foreground">
-                        Pregúntale a Claude o a ChatGPT cómo moverte por Bogotá y te responde con los datos en vivo de TransMi: viajes, llegadas, buses en vivo, recargas, clima y tarifa.
+                        Pregúntale a Claude, ChatGPT o Gemini cómo moverte por Bogotá y te responde con los datos en vivo de TransMi: viajes, llegadas, buses en vivo, recargas, clima y tarifa.
                     </p>
                     <div className="mt-4 rounded-2xl border border-border p-4">
                         <p className="text-13 font-semibold text-muted-foreground">Dirección del conector</p>
@@ -80,48 +157,15 @@ export default function ConectarPage() {
                     </div>
                     {origin && !origin.startsWith('https://') && (
                         <p className="mt-2 text-13 text-muted-foreground">
-                            Claude y ChatGPT se conectan desde internet y necesitan una dirección pública con https: usa la del sitio publicado. En tu computador puedes probar con Claude Code.
+                            Estas apps se conectan desde internet y necesitan una dirección pública con https: usa la del sitio publicado. En tu computador puedes probar con Claude Code.
                         </p>
                     )}
                 </section>
 
-                <section aria-labelledby="claude-title">
-                    <h2 id="claude-title" className="font-signage text-24 font-bold">En Claude</h2>
-                    <p className="text-14 text-muted-foreground mb-3">Se agrega desde la web o la app de escritorio; después también funciona en el celular.</p>
-                    <ol className="space-y-3">
-                        <Step n={1}>
-                            Abre{' '}
-                            <a href="https://claude.ai/settings/connectors" target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-2">
-                                Configuración → Conectores
-                            </a>.
-                        </Step>
-                        <Step n={2}>Elige <strong className="font-semibold">Agregar conector personalizado</strong> (<em>Add custom connector</em>).</Step>
-                        <Step n={3}>Ponle de nombre <strong className="font-semibold">TransMi</strong>, pega la dirección y guarda.</Step>
-                        <Step n={4}>En un chat, activa TransMi desde el botón <strong className="font-semibold">+</strong> y pregúntale.</Step>
-                    </ol>
-                    <p className="mt-3 text-13 text-muted-foreground">
-                        En el plan gratuito de Claude puedes tener un conector personalizado. En los planes Team y Enterprise lo agrega quien administra la cuenta.
-                    </p>
-                </section>
-
-                <section aria-labelledby="chatgpt-title">
-                    <h2 id="chatgpt-title" className="font-signage text-24 font-bold">En ChatGPT</h2>
-                    <p className="text-14 text-muted-foreground mb-3">Con un plan de pago (Plus, Pro, Business, Enterprise o Edu), desde chatgpt.com.</p>
-                    <ol className="space-y-3">
-                        <Step n={1}>
-                            En <strong className="font-semibold">Configuración → Apps y conectores → Avanzado</strong>, activa el{' '}
-                            <strong className="font-semibold">Modo desarrollador</strong> (<em>Developer mode</em>).
-                        </Step>
-                        <Step n={2}>Vuelve a <strong className="font-semibold">Apps y conectores</strong> y toca <strong className="font-semibold">Crear</strong> (<em>Create</em>).</Step>
-                        <Step n={3}>
-                            Ponle de nombre <strong className="font-semibold">TransMi</strong>, pega la dirección, elige{' '}
-                            <strong className="font-semibold">Sin autenticación</strong> (<em>No authentication</em>), confirma que confías en la app y créala.
-                        </Step>
-                        <Step n={4}>En un chat, toca <strong className="font-semibold">+ → Más → Modo desarrollador</strong>, activa TransMi y pregúntale.</Step>
-                    </ol>
-                    <p className="mt-3 text-13 text-muted-foreground">
-                        En los planes Business y Enterprise, quien administra la cuenta debe permitir el modo desarrollador. Los nombres de los menús pueden cambiar un poco.
-                    </p>
+                <section aria-labelledby="app-title">
+                    <h2 id="app-title" className="font-signage text-24 font-bold mb-3">¿Qué app usas?</h2>
+                    <Segmented label="App de IA" value={app} onChange={setApp} options={APPS} className="w-full sm:w-auto mb-4" />
+                    {GUIDES[app]}
                 </section>
 
                 <section aria-labelledby="code-title">
@@ -146,7 +190,7 @@ export default function ConectarPage() {
                 </section>
 
                 <p className="text-12 text-muted-foreground">
-                    TransMi no le pasa a Claude ni a ChatGPT tus lugares guardados ni tu ubicación: se quedan en este dispositivo, y no necesitas cuenta. El conector es de código abierto; mira cómo funciona o móntalo en tu propio servidor desde{' '}
+                    TransMi no le pasa a la IA tus lugares guardados ni tu ubicación: se quedan en este dispositivo, y no necesitas cuenta. El conector es de código abierto; mira cómo funciona o móntalo en tu propio servidor desde{' '}
                     <a href={REPO} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">GitHub</a>.
                 </p>
             </main>
