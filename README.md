@@ -62,6 +62,15 @@ La idea surgió como un **proyecto educativo** para aprender a integrar APIs de 
 - Respuestas con **tarjetas interactivas** (itinerarios que se inician con un toque, tableros de llegadas, rutas)
 - **Dictado por voz** (es-CO) y lectura en voz alta con voces neuronales
 
+### 🔌 Conéctala a Claude (MCP, `/api/mcp`)
+- Servidor **MCP** (Streamable HTTP) con las mismas herramientas del asistente, de solo lectura: buscar lugares, planear viajes, rutas, llegadas, buses en vivo, estaciones cercanas, recargas, clima y tarifa
+- Cada viaje planeado trae un enlace que lo abre en el planeador de TransMi
+- No necesita cuenta ni clave: los datos son públicos
+- La pantalla **`/conectar`** (enlazada desde Guardados y el asistente) explica los pasos con la dirección del sitio lista para copiar
+- **Claude (web o escritorio)**: *Configuración → Conectores → Agregar conector personalizado* y pega `https://tu-dominio/api/mcp`. Después también funciona en la app del celular
+- **Claude Code**: `claude mcp add --transport http transmi https://tu-dominio/api/mcp`
+- Claude se conecta desde sus servidores, así que la URL debe ser pública y con https. Para probar en local usa Claude Code con `http://localhost:3000/api/mcp`
+
 ### 🔍 Explorar y ⭐ Guardados
 - Búsqueda de rutas con comparación en el mapa, troncales como diagrama de línea, zonas y paradas con llegadas en vivo
 - Casa, Trabajo y lugares propios; rutas guardadas; estadísticas de **tu movilidad** (viajes, horas, km, CO₂ evitado estimado); ajustes de tema, luz del mapa, alarma y **voz** (Ava, Emma, Andrew o Brian, con muestra)
@@ -109,6 +118,7 @@ src/
 │   ├── asistente/            # Chat con IA
 │   ├── explorar/             # Rutas, troncales, zonas, paradas
 │   ├── favoritos/            # Guardados, movilidad y ajustes
+│   ├── conectar/             # Cómo usar TransMi desde Claude (MCP)
 │   └── api/
 │       ├── plan/             # Planeador (OpenTripPlanner oficial)
 │       ├── geocode/          # Lugares y dirección inversa
@@ -121,7 +131,8 @@ src/
 │       ├── clima/  info/     # Clima y tarifa
 │       ├── sigue/            # Enlaces cortos de "Sigue mi viaje"
 │       ├── avisos/           # Avisos push con la app cerrada
-│       └── asistente/        # Asistente (streaming NDJSON)
+│       ├── asistente/        # Asistente (streaming NDJSON)
+│       └── mcp/              # Servidor MCP para Claude y otros clientes
 ├── components/
 │   ├── transit/              # RouteBadge, LineDiagram, ArrivalBoard, SegmentBar…
 │   ├── mapa/  plan/  trip/   # Piezas de cada experiencia

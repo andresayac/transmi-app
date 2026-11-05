@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
     Briefcase,
@@ -177,6 +178,10 @@ export default function AssistantPage() {
                                 <SuggestionButton key={s.text} icon={s.icon} text={s.text} onClick={handleSend} />
                             ))}
                         </div>
+
+                        <Link href="/conectar" className="mt-auto self-start pt-8 text-13 text-muted-foreground underline-offset-2 hover:text-foreground hover:underline">
+                            ¿Usas Claude? Conéctale TransMi y pregúntale desde allá
+                        </Link>
                     </div>
                 ) : (
                     <div className="space-y-6 px-4 py-5 lg:mx-auto lg:max-w-3xl lg:px-6">

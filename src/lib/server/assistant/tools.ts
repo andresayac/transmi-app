@@ -16,6 +16,7 @@ import {
 } from '@/lib/server/transit';
 import { formatDistance } from '@/lib/geo';
 import { bogotaNow, isActiveNow } from '@/lib/schedule';
+import { plannerUrl, ymd } from '@/components/plan/utils';
 import type { AssistantContext, AssistantEvent } from '@/components/assistant/types';
 import type { Itinerary, PlanPlace } from '@/types/transit';
 
@@ -96,7 +97,15 @@ function summarizeItinerary(it: Itinerary, i: number) {
     };
 }
 
-export function createTools(emit: Emit, ctx: AssistantContext): ToolDef[] {
+export interface ToolOptions {
+    /**
+     * Set when the tools run outside the app (MCP clients such as Claude): nobody renders the
+     * cards, so results link to the app at this origin instead.
+     */
+    appOrigin?: string;
+}
+
+export function createTools(emit: Emit, ctx: AssistantContext, { appOrigin }: ToolOptions = {}): ToolDef[] {
     const buscarLugar = defineTool({
         name: 'buscar_lugar',
         description:
@@ -116,7 +125,8 @@ export function createTools(emit: Emit, ctx: AssistantContext): ToolDef[] {
     const planearViaje = defineTool({
         name: 'planear_viaje',
         description:
-            'Planea un viaje en transporte público entre dos puntos de Bogotá con el planeador oficial (TransMilenio, zonal, alimentadores, caminata). Devuelve hasta 3 opciones resumidas; la app muestra las tarjetas completas.',
+            'Planea un viaje en transporte público entre dos puntos de Bogotá con el planeador oficial (TransMilenio, zonal, alimentadores, caminata). Devuelve hasta 3 opciones resumidas' +
+            (appOrigin ? ' y un enlace para verlas completas en la app TransMi: compártelo con el usuario.' : '; la app muestra las tarjetas completas.'),
         inputSchema: z.object({
             origen: placeSchema.describe('Punto de partida'),
             destino: placeSchema.describe('Punto de llegada'),
@@ -131,7 +141,10 @@ export function createTools(emit: Emit, ctx: AssistantContext): ToolDef[] {
                 if (!itineraries.length) return 'El planeador no encontró opciones para ese trayecto. Sugiere revisar los puntos o intentar otra hora.';
                 const top = itineraries.slice(0, 3);
                 emit({ type: 'card', card: { kind: 'itineraries', from, to, itineraries: top } });
-                return json({ opciones: top.map(summarizeItinerary), nota: 'La app ya muestra estas opciones como tarjetas.' });
+                if (!appOrigin) return json({ opciones: top.map(summarizeItinerary), nota: 'La app ya muestra estas opciones como tarjetas.' });
+                // The planner wants both date and time to leave later; a time alone means today
+                const when: Record<string, string> = input.hora_salida ? { date: input.fecha || ymd(bogotaNow()), time: input.hora_salida.padStart(5, '0') } : {};
+                return json({ opciones: top.map(summarizeItinerary), abrir_en_transmi: appOrigin + plannerUrl(from, to, when) });
             }),
     });
 
@@ -193,7 +206,9 @@ export function createTools(emit: Emit, ctx: AssistantContext): ToolDef[] {
 
     const llegadasEstacion = defineTool({
         name: 'llegadas_estacion',
-        description: 'Próximos buses en vivo de una estación de TransMilenio o paradero zonal, por nombre (p. ej. "Calle 72", "Portal Norte"). Si el usuario pregunta por una ruta concreta, pasa su código en `ruta` (la app la resalta en el tablero de llegadas).',
+        description:
+            'Próximos buses en vivo de una estación de TransMilenio o paradero zonal, por nombre (p. ej. "Calle 72", "Portal Norte"). Si el usuario pregunta por una ruta concreta, pasa su código en `ruta`' +
+            (appOrigin ? '.' : ' (la app la resalta en el tablero de llegadas).'),
         inputSchema: z.object({
             estacion: z.string().min(2).max(100).describe('Nombre de la estación o paradero'),
             ruta: z.string().max(20).optional().describe('Código de ruta para filtrar, p. ej. "B13"'),

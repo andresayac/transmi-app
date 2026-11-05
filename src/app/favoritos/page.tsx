@@ -3,7 +3,7 @@
 import { useMemo, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Briefcase, House, MapPin, Navigation, Pencil, Plus, Share2, Trash2, X } from 'lucide-react';
+import { Briefcase, ChevronRight, House, MapPin, Navigation, Pencil, Plus, Share2, Trash2, X } from 'lucide-react';
 import AppHeader from '@/components/layout/AppHeader';
 import PlacePicker from '@/components/places/PlacePicker';
 import VoicePicker from '@/components/places/VoicePicker';
@@ -391,6 +391,13 @@ export default function GuardadosPage() {
                             />
                         </div>
                         <LockAlertsRow />
+                        <Link href="/conectar" className="flex items-center justify-between gap-3 py-3">
+                            <span>
+                                <span className="block text-15 font-medium">Úsala desde Claude</span>
+                                <span className="block text-13 text-muted-foreground">Pregúntale a Claude por tus viajes con los datos de TransMi</span>
+                            </span>
+                            <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
+                        </Link>
                         <div className="flex flex-wrap gap-2 pt-4">
                             {s.searchHistory.length > 0 && (
                                 <button onClick={() => { s.clearSearches(); toast.show('Historial borrado', 'info'); }} className="h-9 px-3.5 rounded-full border border-border text-13 font-medium hover:bg-accent">
